@@ -1,8 +1,8 @@
 ## SDL3 App From Source Minimal Example
-This is a minimal example for building and using SDL3 from source 
+This is a minimal example for building and using SDL3 from source
 using C++ and CMake. It also demonstrates setting up things like macOS/iOS
 bundles.
-See `src/main.cpp` for the code. 
+See `src/main.cpp` for the code.
 
 ### Building And Running
 Are you a complete beginner? If so, read [this](https://github.com/Ravbug/sdl3-sample/wiki/Setting-up-your-computer)!
@@ -15,7 +15,7 @@ mkdir build
 cd build
 cmake ..
 ```
-You can also use an init script inside `config/`. Then open the IDE project inside `build/` 
+You can also use an init script inside `config/`. Then open the IDE project inside `build/`
 (If you had CMake generate one) and run!
 
 ## Supported Platforms
@@ -40,7 +40,7 @@ git pull
 ```
 You don't need to use a submodule, you can also copy the source in directly. This
 repository uses a submodule to keep its size to a minimum. Note that as of writing, SDL3 is
-in development, so expect APIs to change. 
+in development, so expect APIs to change.
 
 
 ## Reporting issues

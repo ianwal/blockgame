@@ -5,12 +5,70 @@ cmake_minimum_required(VERSION 3.21)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>")
 
-# prevent installing to system directories. 
+# prevent installing to system directories.
 set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}" CACHE INTERNAL "")
 
 # Declare the project
-project(sdl-min)
+project(sdl-min LANGUAGES CXX)
 set (CMAKE_CXX_STANDARD 20)
+
+# Sanitizer build type options.
+# This allows you to build with address/thread sanitizer by using
+# -DCMAKE_BUILD_TYPE=Asan or Tsan on the generator.
+# From https://stackoverflow.com/a/64294837
+if(NOT MSVC)
+get_property(isMultiConfig GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+
+if(isMultiConfig)
+    if(NOT "Asan" IN_LIST CMAKE_CONFIGURATION_TYPES)
+        list(APPEND CMAKE_CONFIGURATION_TYPES Asan)
+    endif()
+    if(NOT "Tsan" IN_LIST CMAKE_CONFIGURATION_TYPES)
+        list(APPEND CMAKE_CONFIGURATION_TYPES Tsan)
+    endif()
+else()
+    set(allowedBuildTypes Asan Tsan Debug Release RelWithDebInfo MinSizeRel)
+    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "${allowedBuildTypes}")
+
+    if(CMAKE_BUILD_TYPE AND NOT CMAKE_BUILD_TYPE IN_LIST allowedBuildTypes)
+        message(FATAL_ERROR "Invalid build type: ${CMAKE_BUILD_TYPE}")
+    endif()
+endif()
+
+# Asan
+set(CMAKE_C_FLAGS_ASAN
+    "${CMAKE_C_FLAGS_DEBUG} -fsanitize=address,leak,undefined -fno-omit-frame-pointer" CACHE STRING
+    "Flags used by the C compiler for Asan build type or configuration." FORCE)
+
+set(CMAKE_CXX_FLAGS_ASAN
+    "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address,leak,undefined -fno-omit-frame-pointer" CACHE STRING
+    "Flags used by the C++ compiler for Asan build type or configuration." FORCE)
+
+set(CMAKE_EXE_LINKER_FLAGS_ASAN
+    "${CMAKE_EXE_LINKER_FLAGS_DEBUG} -fsanitize=address,leak,undefined" CACHE STRING
+    "Linker flags to be used to create executables for Asan build type." FORCE)
+
+set(CMAKE_SHARED_LINKER_FLAGS_ASAN
+    "${CMAKE_SHARED_LINKER_FLAGS_DEBUG} -fsanitize=address,leak,undefined" CACHE STRING
+    "Linker lags to be used to create shared libraries for Asan build type." FORCE)
+
+# Tsan
+set(CMAKE_C_FLAGS_TSAN
+    "${CMAKE_C_FLAGS_DEBUG} -fsanitize=thread,undefined -fno-omit-frame-pointer" CACHE STRING
+    "Flags used by the C compiler for Asan build type or configuration." FORCE)
+
+set(CMAKE_CXX_FLAGS_TSAN
+    "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=thread,undefined -fno-omit-frame-pointer" CACHE STRING
+    "Flags used by the C++ compiler for Asan build type or configuration." FORCE)
+
+set(CMAKE_EXE_LINKER_FLAGS_TSAN
+    "${CMAKE_EXE_LINKER_FLAGS_DEBUG} -fsanitize=thread,undefined" CACHE STRING
+    "Linker flags to be used to create executables for Tsan build type." FORCE)
+
+set(CMAKE_SHARED_LINKER_FLAGS_TSAN
+    "${CMAKE_SHARED_LINKER_FLAGS_DEBUG} -fsanitize=thread,undefined" CACHE STRING
+    "Linker lags to be used to create shared libraries for Tsan build type." FORCE)
+endif()
 
 # Set the name of the executable
 set(EXECUTABLE_NAME ${PROJECT_NAME})
@@ -24,8 +82,8 @@ else()
 	add_executable(${EXECUTABLE_NAME})
 endif()
 
-target_sources(${EXECUTABLE_NAME} 
-PRIVATE 
+target_sources(${EXECUTABLE_NAME}
+PRIVATE
     src/main.cpp
     src/time.cpp
     src/button.cpp
@@ -39,11 +97,11 @@ PRIVATE
 # should show the user while the application is starting up. If you don't include one,
 # then you get placed in a compatibility mode that does not allow HighDPI.
 # This file is referenced inside Info.plist.in, where it is marked as the launch screen file.
-# It is also ignored on non-Apple platforms. 
+# It is also ignored on non-Apple platforms.
 
 # What is Sample.appxManifest? This file describes deployment settings for Universal Windows Platform
-# applications, like splash screen and icon resolutions, which are required for the application to run. 
-# It is ignored on other platforms. Below, we add those images. 
+# applications, like splash screen and icon resolutions, which are required for the application to run.
+# It is ignored on other platforms. Below, we add those images.
 if (WINDOWS_STORE)
     target_sources("${EXECUTABLE_NAME}" PRIVATE "src/logo44.png" "src/logo150.png" "src/logo50.png" "src/logo620x300.png")
 elseif(APPLE)
@@ -68,7 +126,7 @@ endif()
 # pollute upwards into our configuration.
 add_subdirectory(SDL EXCLUDE_FROM_ALL)
 
-# Link SDL to our executable. This also makes its include directory available to us. 
+# Link SDL to our executable. This also makes its include directory available to us.
 target_link_libraries(${EXECUTABLE_NAME} PUBLIC SDL3::SDL3)
 target_compile_definitions(${EXECUTABLE_NAME} PUBLIC SDL_MAIN_USE_CALLBACKS)
 
@@ -77,7 +135,7 @@ target_compile_definitions(${EXECUTABLE_NAME} PUBLIC SDL_MAIN_USE_CALLBACKS)
 # pollute upwards into our configuration.
 add_subdirectory(SDL_ttf EXCLUDE_FROM_ALL)
 
-# Link SDL_ttf to our executable. This also makes its include directory available to us. 
+# Link SDL_ttf to our executable. This also makes its include directory available to us.
 target_link_libraries(${EXECUTABLE_NAME} PUBLIC SDL3_ttf::SDL3_ttf )
 # target_compile_definitions(${EXECUTABLE_NAME} PUBLIC SDL_MAIN_USE_CALLBACKS)
 
@@ -90,11 +148,11 @@ target_include_directories(${EXECUTABLE_NAME} PUBLIC
 )
 
 # set some extra configs for each platform
-set_target_properties(${EXECUTABLE_NAME} PROPERTIES 
+set_target_properties(${EXECUTABLE_NAME} PROPERTIES
     # On macOS, make a proper .app bundle instead of a bare executable
     MACOSX_BUNDLE TRUE
     # Set the Info.plist file for Apple Mobile platforms. Without this file, your app
-    # will not launch. 
+    # will not launch.
     MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/src/Info.plist.in"
 
     # in Xcode, create a Scheme in the schemes dropdown for the app.
@@ -109,13 +167,13 @@ set_target_properties(${EXECUTABLE_NAME} PROPERTIES
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT "${EXECUTABLE_NAME}")
 
 # On macOS Platforms, ensure that the bundle is valid for distribution by calling fixup_bundle.
-# note that fixup_bundle does not work on iOS, so you will want to use static libraries 
+# note that fixup_bundle does not work on iOS, so you will want to use static libraries
 # or manually copy dylibs and set rpaths
 if(CMAKE_SYSTEM_NAME MATCHES "Darwin")
-    INSTALL(CODE 
+    INSTALL(CODE
         "include(BundleUtilities)
         fixup_bundle(\"$<TARGET_BUNDLE_DIR:${EXECUTABLE_NAME}>\" \"\" \"\")
-        " 
+        "
         COMPONENT Runtime
     )
 endif()

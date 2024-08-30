@@ -1,2 +1,2 @@
 #!/bin/bash
-cmake --build build -j && ./build/Debug/sdl-min
+cmake --build build -j && ./build/Asan/sdl-min

@@ -6,6 +6,7 @@
 #include <SDL3_ttf/SDL_ttf.h>
 #include <cassert>
 #include <cmath>
+#include <iostream>
 #include <string>
 #include <string_view>
 
@@ -13,22 +14,48 @@ using Alf::Timestamp;
 
 struct AppContext
 {
-    SDL_Window *window{};
+    AppContext(SDL_Renderer *renderer, SDL_Window *window, Alf::GameContext *game)
+        : renderer{renderer}, window{window}, game{game}
+    {
+        assert(this->renderer != nullptr);
+        assert(this->window != nullptr);
+        assert(this->game != nullptr);
+    }
+
     SDL_Renderer *renderer{};
+    SDL_Window *window{};
+    Alf::GameContext *game{};
+
     SDL_AppResult app_quit{SDL_APP_CONTINUE};
     Timestamp current_time{};
-    Alf::GameContext *game{};
+
+    ~AppContext()
+    {
+        SDL_DestroyRenderer(renderer);
+        SDL_DestroyWindow(window);
+        delete game;
+    }
 };
 
-auto calculate_fps(Timestamp previous_frame, Timestamp current_frame)
+std::chrono::nanoseconds calculate_frame_time(Timestamp previous_frame, Timestamp current_frame)
 {
-    int64_t const frames{1000};
-    std::chrono::milliseconds const frame_time{current_frame - previous_frame};
-    // auto const frame_time_ms = frame_time.count() > 0 ? frame_time.count() : 1000;
-    auto const frame_time_ms = frame_time.count();
+    return current_frame - previous_frame;
+}
 
-    assert(frame_time_ms > 0);
-    return int64_t{frames / frame_time_ms};
+int64_t calculate_fps(Timestamp previous_frame, Timestamp current_frame)
+{
+    auto const frame_time{current_frame - previous_frame};
+    auto const frames = decltype(frame_time)(std::chrono::seconds{1}).count();
+    // auto const frame_time_ms = frame_time.count() > 0 ? frame_time.count() : 1000;
+
+    assert(frame_time.count() > 0);
+
+    if (frame_time.count() == 0)
+    {
+        return int64_t{999};
+    }
+
+    return int64_t{frames / frame_time.count()};
 }
 
 /**
@@ -79,12 +106,12 @@ SDL_AppResult SDL_Fail()
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 {
     // init the library, here we make a window so we only need the Video capabilities.
-    if (SDL_Init(SDL_INIT_VIDEO) != 0)
+    if (SDL_Init(SDL_INIT_VIDEO) != SDL_TRUE)
     {
         return SDL_Fail();
     }
 
-    if (!TTF_Init())
+    if (TTF_Init() != SDL_TRUE)
     {
         return SDL_Fail();
     }
@@ -118,16 +145,15 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 
     // set up the application data
     *appstate = new AppContext{
-        window,
         renderer,
+        window,
+        new Alf::GameContext{},
     };
-    ((AppContext *)appstate)->current_time = Alf::get_time();
-    assert(((AppContext *)appstate)->current_time.count() > 0);
 
     SDL_SetRenderVSync(renderer, SDL_WINDOW_SURFACE_VSYNC_DISABLED);
     SDL_Log("Application started successfully!");
 
-    ((AppContext *)*appstate)->game = new Alf::GameContext{};
+    Alf::global_font_init();
 
     return SDL_APP_CONTINUE;
 }
@@ -152,21 +178,11 @@ void render(AppContext &app_ctx)
     auto &app = app_ctx;
     // draw a color
     auto const current_time = Alf::get_time();
-    auto const time = std::chrono::milliseconds{current_time}.count() / 1000.f;
+    auto const time =
+        std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::nanoseconds{current_time}).count() / 1000.f;
     auto const red = (std::sin(time) + 1) / 2.0 * 255;
     auto const green = (std::sin(time / 2) + 1) / 2.0 * 255;
     auto const blue = (std::sin(time) * 2 + 1) / 2.0 * 255;
-
-    // ttf stuff
-    TTF_Font *font;
-    int const ptsize{18};
-    font = TTF_OpenFont(font_file, ptsize);
-    if (font == nullptr)
-    {
-        SDL_Fail();
-        assert(false);
-        return;
-    }
 
     SDL_Color const forecol{0, 0, 0, 255};
 
@@ -180,7 +196,7 @@ void render(AppContext &app_ctx)
     std::string text{};
     text = std::to_string(fps);
 
-    SDL_Surface *text_surface{TTF_RenderUTF8_Solid(font, text.c_str(), forecol)};
+    SDL_Surface *text_surface{TTF_RenderUTF8_Solid(&get_font(), text.c_str(), forecol)};
     SDL_Texture *text_texture{SDL_CreateTextureFromSurface(app.renderer, text_surface)};
     auto const text_width = text_surface->w;
     auto const text_height = text_surface->h;
@@ -189,13 +205,12 @@ void render(AppContext &app_ctx)
     SDL_RenderTexture(app.renderer, text_texture, nullptr, &renderQuad);
     SDL_DestroySurface(text_surface);
     SDL_DestroyTexture(text_texture);
-    // TTF_CloseFont(font);
 
     app.game->gui_objects.render(*app.renderer);
 
     SDL_RenderPresent(app.renderer);
 
-    // SDL_Log("FPS: %ld Frame time: %ld ms", fps, (current_time.count() - previous_time.count()));
+    SDL_Log("FPS: %ld Frame time: %ld ns", fps, calculate_frame_time(previous_time, current_time).count());
 }
 
 } // namespace Alf
@@ -203,8 +218,12 @@ void render(AppContext &app_ctx)
 SDL_AppResult SDL_AppIterate(void *appstate)
 {
     auto &app = *static_cast<AppContext *>(appstate);
+    app.current_time = Alf::get_time();
+    assert(app.current_time.count() > 0);
+
     try
     {
+
         static bool added_button = [&app]() {
             added_button = true;
             auto const test_callback = []() { SDL_Log("Button pressed!"); };
@@ -224,7 +243,6 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     {
         SDL_Log("%s", e.what());
         app.app_quit = SDL_APP_FAILURE;
-        return app.app_quit;
     }
 
     return app.app_quit;
@@ -233,12 +251,9 @@ SDL_AppResult SDL_AppIterate(void *appstate)
 void SDL_AppQuit(void *appstate)
 {
     auto *app = static_cast<AppContext *>(appstate);
-    if (app)
-    {
-        SDL_DestroyRenderer(app->renderer);
-        SDL_DestroyWindow(app->window);
-        delete app;
-    }
+    delete app;
+
+    Alf::destroy_global_font();
 
     SDL_Quit();
     SDL_Log("Application quit successfully!");

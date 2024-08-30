@@ -60,7 +60,7 @@ class VisibleButton
         SDL_SetRenderDrawColor(&renderer, 100, 255, 255, SDL_ALPHA_OPAQUE);
         SDL_RenderRect(&renderer, &rect);
         auto const result = SDL_RenderFillRect(&renderer, &rect);
-        assert(result == 0);
+        assert(result == SDL_TRUE);
     }
 
     Button button;

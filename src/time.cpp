@@ -3,9 +3,9 @@
 namespace Alf
 {
 
-std::chrono::milliseconds get_time()
+std::chrono::nanoseconds get_time()
 {
-    return std::chrono::milliseconds{SDL_GetTicks()};
+    return std::chrono::steady_clock::now().time_since_epoch();
 }
 
 void test()

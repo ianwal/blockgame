@@ -22,7 +22,7 @@ jobs:
           - name: Upload Build
             uses: actions/upload-artifact@v4
             if: ${{ matrix.target != 'WindowsStore' }}
-            with: 
+            with:
                 name: sdl-min-${{ matrix.target }}-${{ matrix.arch }}
                 path: |
                     build/Release/*.exe
@@ -50,11 +50,11 @@ jobs:
             run: cmake --build build --target install --config Release
 
           - name: Create DMG
-            run: | 
+            run: |
                 cd build
                 hdiutil create -size 2g -srcfolder release -volname sdl_min_apple_${{ matrix.target }} sdl_min_apple_${{ matrix.target }}.dmg
           - name: Upload Build
             uses: actions/upload-artifact@v4
-            with: 
+            with:
                 name: sdl-min-apple-${{ matrix.target }}
                 path: build/*.dmg

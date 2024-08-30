@@ -7,10 +7,10 @@
 namespace Alf
 {
 
-using Timestamp = std::chrono::milliseconds;
+using Timestamp = std::chrono::nanoseconds;
 
 // Get monotonic time.
-std::chrono::milliseconds get_time();
+std::chrono::nanoseconds get_time();
 
 void test();
 
