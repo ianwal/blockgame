@@ -1,8 +1,11 @@
 #pragma once
 
 #include "src/button.h"
+#include "src/event_handling.h"
+#include "src/time.h"
 #include <cstdint>
 #include <deque>
+#include <memory>
 #include <variant>
 
 namespace Alf
@@ -33,6 +36,9 @@ struct GuiObjects
 struct GameContext
 {
     GuiObjects gui_objects{};
+    std::unique_ptr<EventBuffer> input_event_buffer{std::make_unique<EventBuffer>()};
+    uint64_t frame_num{};
+    Timestamp previous_frame_time{};
 };
 
 } // namespace Alf

@@ -21,7 +21,7 @@ using ButtonCallbackFn = std::function<void(void)>;
 class Button
 {
   public:
-    Button(ButtonCallbackFn callback_fn) : m_callback_fn{std::move(callback_fn)}
+    explicit Button(ButtonCallbackFn callback_fn) : m_callback_fn{std::move(callback_fn)}
     {
     }
 
@@ -70,27 +70,28 @@ class VisibleButton
 class Text
 {
   public:
-    Text(std::string text) : Text{text, SDL_Point{}}
+    explicit Text(std::string str) : Text{str, SDL_Point{}}
     {
     }
 
-    Text(std::string text, SDL_Point pos) : text{std::move(text)}, pos{pos}
+    Text(std::string str, SDL_Point pos) : str{std::move(str)}, pos{pos}
     {
     }
 
-    void render(SDL_Renderer &renderer) const
+    void set_string(std::string str)
     {
-        SDL_Color const forecol{0, 0, 0, 255};
-        SDL_Surface *text_surface{TTF_RenderUTF8_Solid(&get_font(), text.c_str(), forecol)};
-        SDL_Texture *text_texture{SDL_CreateTextureFromSurface(&renderer, text_surface)};
-        SDL_FRect const render_quad{static_cast<float>(pos.x), static_cast<float>(pos.y),
-                                    static_cast<float>(text_surface->w), static_cast<float>(text_surface->h)};
-        SDL_RenderTexture(&renderer, text_texture, nullptr, &render_quad);
-        SDL_DestroySurface(text_surface);
-        SDL_DestroyTexture(text_texture);
+        this->str = std::move(str);
     }
 
-    std::string text;
+    std::string const &get_string() const
+    {
+        return this->str;
+    }
+
+    void render(SDL_Renderer &renderer) const;
+
+    std::string str;
+    SDL_Color color{0, 0, 0, 255};
     SDL_Point pos;
     Font font{};
 };
@@ -105,19 +106,45 @@ class TextButton
 {
   public:
     TextButton(Text text, VisibleButton visible_button)
+        : TextButton{std::move(text), std::move(visible_button), SDL_Point{}}
+    {
+    }
+
+    TextButton(Text text, VisibleButton visible_button, SDL_Point pos)
         : text{std::move(text)}, visible_button{std::move(visible_button)}
     {
-        center_text(this->text, get_center_in_rect(this->visible_button.rect));
     }
 
     void render(SDL_Renderer &renderer) const
     {
-        visible_button.render(renderer);
-        text.render(renderer);
+        this->visible_button.render(renderer);
+        this->text.render(renderer);
+    }
+
+    void update_text_str(std::string str)
+    {
+        this->text.set_string(std::move(str));
+        set_pos(pos);
+    }
+
+    void set_text(Text text)
+    {
+        this->text = text;
+        // update the text position to the center of the rectangle.
+        set_pos(pos);
+    }
+
+    void set_pos(SDL_Point new_pos)
+    {
+        this->pos = new_pos;
+        visible_button.rect.x = this->pos.x;
+        visible_button.rect.y = this->pos.y;
+        center_text(this->text, get_center_in_rect(this->visible_button.rect));
     }
 
     Text text;
     VisibleButton visible_button;
+    SDL_Point pos;
 };
 
 } // namespace Alf

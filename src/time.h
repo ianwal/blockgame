@@ -12,6 +12,4 @@ using Timestamp = std::chrono::nanoseconds;
 // Get monotonic time.
 std::chrono::nanoseconds get_time();
 
-void test();
-
 } // namespace Alf

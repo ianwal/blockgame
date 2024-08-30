@@ -14,17 +14,15 @@ using Alf::Timestamp;
 
 struct AppContext
 {
-    AppContext(SDL_Renderer *renderer, SDL_Window *window, Alf::GameContext *game)
-        : renderer{renderer}, window{window}, game{game}
+    AppContext(SDL_Renderer *renderer, SDL_Window *window) : renderer{renderer}, window{window}
     {
         assert(this->renderer != nullptr);
         assert(this->window != nullptr);
-        assert(this->game != nullptr);
     }
 
     SDL_Renderer *renderer{};
     SDL_Window *window{};
-    Alf::GameContext *game{};
+    std::unique_ptr<Alf::GameContext> game{std::make_unique<Alf::GameContext>()};
 
     SDL_AppResult app_quit{SDL_APP_CONTINUE};
     Timestamp current_time{};
@@ -33,7 +31,6 @@ struct AppContext
     {
         SDL_DestroyRenderer(renderer);
         SDL_DestroyWindow(window);
-        delete game;
     }
 };
 
@@ -45,7 +42,7 @@ std::chrono::nanoseconds calculate_frame_time(Timestamp previous_frame, Timestam
 int64_t calculate_fps(Timestamp previous_frame, Timestamp current_frame)
 {
     auto const frame_time{current_frame - previous_frame};
-    auto const frames = decltype(frame_time)(std::chrono::seconds{1}).count();
+    constexpr auto frames = decltype(frame_time){std::chrono::seconds{1}};
     // auto const frame_time_ms = frame_time.count() > 0 ? frame_time.count() : 1000;
 
     assert(frame_time.count() > 0);
@@ -55,46 +52,8 @@ int64_t calculate_fps(Timestamp previous_frame, Timestamp current_frame)
         return int64_t{999};
     }
 
-    return int64_t{frames / frame_time.count()};
-}
-
-/**
- * Render the message we want to display to a texture for drawing
- * @param message The message we want to display
- * @param fontFile The font we want to use to render the text
- * @param color The color we want the text to be
- * @param fontSize The size we want the font to be
- * @param renderer The renderer to load the texture in
- * @return An SDL_Texture containing the rendered message, or nullptr if something went wrong
- */
-SDL_Texture *renderText(const std::string &message, const std::string &fontFile, SDL_Color color, int fontSize,
-                        SDL_Renderer *renderer)
-{
-    // Open the font
-    TTF_Font *font = TTF_OpenFont(fontFile.c_str(), fontSize);
-    if (font == nullptr)
-    {
-        // logSDLError(std::cout, "TTF_OpenFont");
-        return nullptr;
-    }
-    // We need to first render to a surface as that's what TTF_RenderText
-    // returns, then load that surface into a texture
-    SDL_Surface *surf = TTF_RenderText_Blended(font, message.c_str(), color);
-    if (surf == nullptr)
-    {
-        TTF_CloseFont(font);
-        // logSDLError(std::cout, "TTF_RenderText");
-        return nullptr;
-    }
-    SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surf);
-    if (texture == nullptr)
-    {
-        // logSDLError(std::cout, "CreateTexture");
-    }
-    // Clean up the surface and font
-    SDL_DestroySurface(surf);
-    TTF_CloseFont(font);
-    return texture;
+    auto const fps = (static_cast<float>(frames.count()) / static_cast<float>(frame_time.count()));
+    return static_cast<int64_t>(fps);
 }
 
 SDL_AppResult SDL_Fail()
@@ -117,7 +76,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     }
 
     // create a window
-    SDL_Window *window = SDL_CreateWindow("Window", 1280, 720, SDL_WINDOW_OPENGL);
+    SDL_Window *window = SDL_CreateWindow("Window", 1280, 720, 0);
     if (!window)
     {
         return SDL_Fail();
@@ -147,7 +106,6 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     *appstate = new AppContext{
         renderer,
         window,
-        new Alf::GameContext{},
     };
 
     SDL_SetRenderVSync(renderer, SDL_WINDOW_SURFACE_VSYNC_DISABLED);
@@ -160,11 +118,27 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 
 SDL_AppResult SDL_AppEvent(void *appstate, const SDL_Event *event)
 {
-    auto *app = static_cast<AppContext *>(appstate);
+    auto &app = *static_cast<AppContext *>(appstate);
+    auto &ev = *event;
 
-    if (event->type == SDL_EVENT_QUIT)
+    switch (ev.type)
     {
-        app->app_quit = SDL_APP_SUCCESS;
+    case SDL_EVENT_MOUSE_BUTTON_DOWN:
+    case SDL_EVENT_MOUSE_BUTTON_UP:
+    case SDL_EVENT_KEY_UP:
+    case SDL_EVENT_KEY_DOWN: {
+        SDL_Log("KEY DOWN OR UP\n");
+        app.game->input_event_buffer->write(ev);
+    }
+    break;
+    case SDL_EVENT_QUIT: {
+        app.app_quit = SDL_APP_SUCCESS;
+    }
+    break;
+    default: {
+        // SDL_Log("DEFAULT EVENT\n");
+    }
+    break;
     }
 
     return SDL_APP_CONTINUE;
@@ -210,7 +184,9 @@ void render(AppContext &app_ctx)
 
     SDL_RenderPresent(app.renderer);
 
-    SDL_Log("FPS: %ld Frame time: %ld ns", fps, calculate_frame_time(previous_time, current_time).count());
+    // SDL_Log("FPS: %ld Frame time: %ld ns", fps, calculate_frame_time(previous_time, current_time).count());
+    // SDL_Log("%ld", app.game->frame_num);
+    ++app.game->frame_num;
 }
 
 } // namespace Alf
@@ -218,12 +194,12 @@ void render(AppContext &app_ctx)
 SDL_AppResult SDL_AppIterate(void *appstate)
 {
     auto &app = *static_cast<AppContext *>(appstate);
+    auto const previous_time = app.current_time;
     app.current_time = Alf::get_time();
     assert(app.current_time.count() > 0);
 
     try
     {
-
         static bool added_button = [&app]() {
             added_button = true;
             auto const test_callback = []() { SDL_Log("Button pressed!"); };
@@ -233,11 +209,31 @@ SDL_AppResult SDL_AppIterate(void *appstate)
             app.game->gui_objects.add(std::move(visible_button));
             Alf::TextButton text_button{Alf::Text{"test"},
                                         Alf::VisibleButton{Alf::Button{test_callback}, SDL_FRect{200, 200, 50, 50}}};
+            text_button.set_pos(SDL_Point{500, 500});
             app.game->gui_objects.add(std::move(text_button));
             return true;
         }();
 
+        auto const input_opt = app.game->input_event_buffer->consume();
+        if (input_opt.has_value())
+        {
+            auto &input = input_opt.value();
+            static int input_count = 0;
+            auto &text_button = std::get<Alf::TextButton>(app.game->gui_objects.objects[1]);
+            text_button.update_text_str(std::to_string(input_count));
+            ++input_count;
+            SDL_Log("Received event.\n Event type: %d", input.type);
+        }
+
         Alf::render(app);
+
+        // Limit fps to 300
+        auto const fps = calculate_fps(previous_time, Alf::get_time());
+        std::cout << std::to_string(fps) << '\n';
+        if (fps > 300)
+        {
+            SDL_Delay(1);
+        }
     }
     catch (const std::exception &e)
     {
