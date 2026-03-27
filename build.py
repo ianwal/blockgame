@@ -10,7 +10,7 @@ def main():
 
     parser.add_argument(
         "arch",
-        choices=["win64"],
+        choices=["linux64"],
         help="Target architecture",
     )
 
@@ -40,7 +40,7 @@ def main():
     args = parser.parse_args()
 
     build_target_map = {
-        "win64": "BUILD_TARGET_WIN64",
+        "linux64": "BUILD_TARGET_LINUX64",
     }
     assert args.arch in build_target_map.keys()
 
@@ -73,7 +73,7 @@ def main():
     subprocess.run(["cmake", "--build", f"{build_dir}", "--parallel"], check=True)
 
     # Print the filesize
-    exe_path = build_dir / "sdl-min"
+    exe_path = build_dir / "Asan" / "sdl-min"
     size_bytes = exe_path.stat().st_size
     size_kb = math.ceil(size_bytes / 1024)
     print(f"EXE Size: {size_kb} kb")

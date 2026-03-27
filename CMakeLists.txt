@@ -11,6 +11,7 @@ set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}" CACHE INTERNAL "")
 # Declare the project
 project(sdl-min LANGUAGES CXX)
 set (CMAKE_CXX_STANDARD 20)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Sanitizer build type options.
 # This allows you to build with address/thread sanitizer by using

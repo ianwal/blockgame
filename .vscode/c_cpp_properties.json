@@ -1,0 +1,17 @@
+{
+    "configurations": [
+        {
+            "name": "Linux C++",
+            "includePath": [
+                "${workspaceFolder}/**"
+            ],
+            "defines": [],
+            "compilerPath": "",
+            "compileCommands": "${workspaceFolder}/.build-linux64/compile_commands.json",
+            "cppStandard": "gnu++20",
+            "cStandard": "c23",
+            "intelliSenseMode": "linux-gcc-x64"
+        }
+    ],
+    "version": 4
+}
