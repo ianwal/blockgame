@@ -1,5 +1,7 @@
 #pragma once
 
+#include <source_location>
+
 namespace Alf
 {
 
@@ -8,8 +10,6 @@ struct Dim2d
     int width{};
     int height{};
 };
-
-void fatal_error(const char *const msg);
 
 #define ASSETS_DIR "assets/"
 
