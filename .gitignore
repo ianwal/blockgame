@@ -71,4 +71,4 @@ Testing/
 .DS_Store
 build/
 venv/
-.build-*/
+.*/
