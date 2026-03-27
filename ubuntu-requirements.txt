@@ -1,1 +1,3 @@
 libfreetype-dev # for SDL_ttf
+xorg # x11
+libxext-dev # for x11
