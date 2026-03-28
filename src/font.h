@@ -13,15 +13,14 @@ bool global_font_init();
 // CALL ONCE AT END OF PROGRAM.
 void destroy_global_font();
 
-TTF_Font &get_font();
+TTF_Font& get_font();
 
-struct Font
-{
-    Font() : font{&get_font()}
+struct Font {
+    Font() : font{ &get_font() }
     {
     }
 
-    TTF_Font *font{};
+    TTF_Font* font{};
 };
 
 } // namespace Alf

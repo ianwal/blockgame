@@ -17,18 +17,16 @@ using Render_layer_t = uint8_t;
 
 using Gui_object_var_t = std::variant<Alf::VisibleButton, Alf::TextButton, Alf::Text>;
 
-struct GuiObjects
-{
-    void add(Gui_object_var_t &&obj)
+struct GuiObjects {
+    void add(Gui_object_var_t&& obj)
     {
         objects.push_back(obj);
     }
 
-    void render(SDL_Renderer &renderer)
+    void render(SDL_Renderer& renderer)
     {
-        for (auto &obj : this->objects)
-        {
-            std::visit([&renderer](auto &&arg) { arg.render(renderer); }, obj);
+        for (auto& obj : this->objects) {
+            std::visit([&renderer](auto&& arg) { arg.render(renderer); }, obj);
         }
     }
 
@@ -38,16 +36,15 @@ struct GuiObjects
 /// Interface for entity rendering information.
 class IEntityRenderInfo
 {
-  public:
+public:
     virtual ~IEntityRenderInfo() = default;
 };
 
 /// Interface for entities.
 class IEntity
 {
-  public:
-    enum class EntityType
-    {
+public:
+    enum class EntityType {
         BLOCK,
     };
 
@@ -59,15 +56,15 @@ class IEntity
 /// Interface for an entity renderer.
 class IEntityRenderer
 {
-  public:
-    virtual void render(IEntityRenderInfo const &renderInfo) = 0;
+public:
+    virtual void render(IEntityRenderInfo const& renderInfo) = 0;
 
     virtual ~IEntityRenderer() = default;
 };
 
 class EntityRendererManager
 {
-  public:
+public:
     EntityRendererManager() = default;
 
     void addRenderer(IEntity::EntityType entityType, std::unique_ptr<IEntityRenderer> renderer)
@@ -76,25 +73,24 @@ class EntityRendererManager
         mEntityRendererMap[entityType] = std::move(renderer);
     }
 
-    void renderEntity(IEntity const &entity) const
+    void renderEntity(IEntity const& entity) const
     {
         auto it = mEntityRendererMap.find(entity.getEntityType());
         assert(it != mEntityRendererMap.end());
         it->second->render({});
     }
 
-  private:
+private:
     std::map<IEntity::EntityType, std::unique_ptr<IEntityRenderer>> mEntityRendererMap{};
 };
 
-struct GameContext
-{
+struct GameContext {
     std::vector<IEntity> entities{};
 
     EntityRendererManager entityRendererManager{};
 
     GuiObjects gui_objects{};
-    std::unique_ptr<EventBuffer> input_event_buffer{std::make_unique<EventBuffer>()};
+    std::unique_ptr<EventBuffer> input_event_buffer{ std::make_unique<EventBuffer>() };
     uint64_t frame_num{};
     Timestamp previous_frame_time{};
 };

@@ -10,16 +10,15 @@ namespace
 {
 
 // smart pointer wrapper around TTF_Font
-struct TTF_Font_Deleter
-{
-    void operator()(TTF_Font *ptr) const
+struct TTF_Font_Deleter {
+    void operator()(TTF_Font* ptr) const
     {
         TTF_CloseFont(ptr);
     }
 };
 using TTF_Font_Ptr = std::unique_ptr<TTF_Font, TTF_Font_Deleter>;
 
-TTF_Font_Ptr main_font{nullptr};
+TTF_Font_Ptr main_font{ nullptr };
 
 } // namespace
 
@@ -27,7 +26,7 @@ TTF_Font_Ptr main_font{nullptr};
 bool global_font_init()
 {
     assert(main_font == nullptr);
-    main_font = TTF_Font_Ptr{TTF_OpenFont(font_file, 12)};
+    main_font = TTF_Font_Ptr{ TTF_OpenFont(font_file, 12) };
     return (main_font == nullptr);
 }
 
@@ -38,7 +37,7 @@ void destroy_global_font()
 }
 
 // call global_font_init() before this
-TTF_Font &get_font()
+TTF_Font& get_font()
 {
     return *(main_font.get());
 }

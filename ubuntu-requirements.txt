@@ -1,3 +1,6 @@
 libfreetype-dev # for SDL_ttf
 xorg # x11
 libxext-dev # for x11
+libglew-dev # for GLEW
+libjpeg-dev # for cImg
+libglm-dev # for GLM

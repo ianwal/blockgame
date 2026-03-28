@@ -6,8 +6,7 @@ namespace Alf
 {
 
 /// Dimension 2D.
-struct Dim2d
-{
+struct Dim2d {
     int width{};
     int height{};
 };
@@ -18,6 +17,6 @@ struct Dim2d
 
 #define FONTS_DIR ASSETS_DIR "fonts/"
 
-constexpr auto const font_file{FONTS_DIR FONT_FILE_NAME};
+constexpr auto const font_file{ FONTS_DIR FONT_FILE_NAME };
 
 } // namespace Alf

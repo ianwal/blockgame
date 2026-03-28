@@ -72,7 +72,7 @@ def main():
     input_files = []
     for dir in dirs_to_format:
         input_files.extend(
-            [p for p in dir.rglob("*") if p.suffix in [".cpp", ".c", ".h", ".hpp"]]
+            [p for p in dir.rglob("*") if p.suffix in [".cpp", ".c", ".h", ".hpp"] and p.name not in "CImg.h"]
         )
     for file in input_files:
         proc = subprocess.run(

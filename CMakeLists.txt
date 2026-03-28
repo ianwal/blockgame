@@ -85,11 +85,12 @@ endif()
 
 target_sources(${EXECUTABLE_NAME}
 PRIVATE
-    src/main.cpp
     src/time.cpp
-    src/button.cpp
-    src/common.cpp
+    src/shaders.cpp
+    src/main.cpp
     src/font.cpp
+    src/common.cpp
+    src/button.cpp
     src/iosLaunchScreen.storyboard
     src/Sample.appxManifest
 )
@@ -109,7 +110,6 @@ elseif(APPLE)
     target_sources("${EXECUTABLE_NAME}" PRIVATE "src/logo.png")
 endif()
 
-# use C++11
 target_compile_features(${EXECUTABLE_NAME} PUBLIC cxx_std_20)
 
 if(CMAKE_SYSTEM_NAME MATCHES Emscripten)
@@ -137,8 +137,28 @@ target_compile_definitions(${EXECUTABLE_NAME} PUBLIC SDL_MAIN_USE_CALLBACKS)
 add_subdirectory(SDL_ttf EXCLUDE_FROM_ALL)
 
 # Link SDL_ttf to our executable. This also makes its include directory available to us.
-target_link_libraries(${EXECUTABLE_NAME} PUBLIC SDL3_ttf::SDL3_ttf )
-# target_compile_definitions(${EXECUTABLE_NAME} PUBLIC SDL_MAIN_USE_CALLBACKS)
+target_link_libraries(${EXECUTABLE_NAME} PUBLIC SDL3_ttf::SDL3_ttf)
+
+# Link GLEW
+find_package(GLEW)
+target_link_libraries(${EXECUTABLE_NAME} PRIVATE GLEW::GLEW)
+
+# Link OpenGL
+find_package(OpenGL)
+target_link_libraries(${EXECUTABLE_NAME} PRIVATE OpenGL::OpenGL)
+
+# Link GLM
+find_package(glm CONFIG REQUIRED)
+target_link_libraries(${EXECUTABLE_NAME} PRIVATE glm::glm)
+
+# Link PNG for cImg
+find_package(PNG)
+target_link_libraries(${EXECUTABLE_NAME} PRIVATE PNG::PNG)
+
+# Enable PNG support for cImg
+target_compile_definitions(${EXECUTABLE_NAME} PRIVATE cimg_use_png)
+# Do not include display for cImg (would require linking against x11)
+target_compile_definitions(${EXECUTABLE_NAME} PRIVATE cimg_display=0)
 
 # FOR ACTUAL GAME SRC THAT IS NOT SDL:
 # We need this directory, and users of the library will need it too.
