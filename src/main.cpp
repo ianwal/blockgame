@@ -6,6 +6,7 @@
 #include <SDL3_ttf/SDL_ttf.h>
 #include <cassert>
 #include <cmath>
+#include <cstdlib>
 #include <iostream>
 #include <string>
 #include <string_view>
@@ -223,6 +224,12 @@ SDL_AppResult SDL_AppIterate(void *appstate)
             text_button.update_text_str(std::to_string(input_count));
             ++input_count;
             SDL_Log("Received event.\n Event type: %d", input.type);
+
+            // Quit the game.
+            if ((input.type == SDL_EVENT_KEY_UP) && (input.key.key == SDLK_ESCAPE))
+            {
+                std::quick_exit(0);
+            }
         }
 
         Alf::render(app);
