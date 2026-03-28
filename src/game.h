@@ -84,10 +84,28 @@ private:
     std::map<IEntity::EntityType, std::unique_ptr<IEntityRenderer>> mEntityRendererMap{};
 };
 
+struct Coord3D {
+    float x{};
+    float y{};
+    float z{};
+};
+
+/// Inputs. True is pressed down, false is not pressed.
+struct Inputs {
+    bool w{};
+    bool a{};
+    bool s{};
+    bool d{};
+};
+
 struct GameContext {
     std::vector<IEntity> entities{};
 
     EntityRendererManager entityRendererManager{};
+
+    Coord3D player_position{ 4, 3, 3 }; // Player position in world space.
+
+    Inputs prev_inputs{};
 
     GuiObjects gui_objects{};
     std::unique_ptr<EventBuffer> input_event_buffer{ std::make_unique<EventBuffer>() };

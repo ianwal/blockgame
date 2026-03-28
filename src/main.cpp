@@ -9,6 +9,7 @@
 #include <cassert>
 #include <cmath>
 #include <cstdlib>
+#include <glm/gtc/matrix_transform.hpp>
 #include <iostream>
 #include <string>
 #include <string_view>
@@ -246,6 +247,30 @@ void render(AppContext& app_ctx)
     glDrawArrays(GL_TRIANGLES, 0, 3); // Starting from vertex 0; 3 vertices total -> 1 triangle
     glDisableVertexAttribArray(0);
 
+    int width{};
+    int height{};
+    auto get_window_size_status = SDL_GetWindowSize(app_ctx.window, &width, &height);
+    assert(get_window_size_status == SDL_TRUE);
+    float const fov                 = 90.0f;
+    float const near_clipping_plane = 0.1f;   // Keep as big as possible or you'll get precision issues.
+    float const far_clipping_plane  = 100.0f; // Keep as small as possible.
+    glm::mat4 projection_mat        = glm::perspective(glm::radians(fov), static_cast<float>(width) / static_cast<float>(height),
+                                                       near_clipping_plane, far_clipping_plane);
+    glm::mat4 view_mat            = glm::lookAt(glm::vec3(app_ctx.game->player_position.x, app_ctx.game->player_position.y,
+                                                            app_ctx.game->player_position.z), // Camera is at this coordinate in world space
+                                                  glm::vec3(0, 0, 0),                         // Camera looks at this coordinate
+                                                  glm::vec3(0, 1, 0) // Camera head is up (0, -1, 0 would be looking upside-down)
+               );
+    glm::mat4 model_mat             = glm::mat4(1.0f); // identity matrix so model will be at the origin
+    glm::mat4 model_view_projection = projection_mat * view_mat * model_mat;
+
+    // Get a handle for the MVP uniform
+    // This only needs to be done during initialization, so it should be moved there.
+    GLuint matrixId = glGetUniformLocation(alf::ShaderManagerSingleton::get().get("vertex_shader"), "MVP");
+    // Send the transformation to the currently bound shader in the MVP uniform
+    // Each model will have a different MVP (well... a different M) so this will be done in the main rendering loop.
+    glUniformMatrix4fv(matrixId, 1, GL_FALSE, &model_view_projection[0][0]);
+
     glUseProgram(alf::ShaderManagerSingleton::get().get("vertex_shader"));
 
     auto swapWindowSuccess = SDL_GL_SwapWindow(app.window);
@@ -282,8 +307,10 @@ SDL_AppResult SDL_AppIterate(void* appstate)
             return true;
         }();
 
-        auto const input_opt = app.game->input_event_buffer->consume();
-        if (input_opt.has_value()) {
+        // Assume nothing is changed, overwrite later.
+        Alf::Inputs curr_inputs = app.game->prev_inputs;
+
+        while (auto input_opt = app.game->input_event_buffer->consume()) {
             auto& input            = input_opt.value();
             static int input_count = 0;
             auto& text_button      = std::get<Alf::TextButton>(app.game->gui_objects.objects[1]);
@@ -291,12 +318,46 @@ SDL_AppResult SDL_AppIterate(void* appstate)
             ++input_count;
             SDL_Log("Received event.\n Event type: %d", input.type);
 
-            // Quit the game.
             if ((input.type == SDL_EVENT_KEY_UP) && (input.key.key == SDLK_ESCAPE)) {
+                // Quit the game.
+                std::quick_exit(0); // TODO: Just for debugging for instant exit.
                 SDL_Event quit_event{};
                 quit_event.type = SDL_EVENT_QUIT;
                 SDL_PushEvent(&quit_event);
+            } else if ((input.type == SDL_EVENT_KEY_DOWN) && (input.key.key == SDLK_A)) {
+                curr_inputs.a = true;
+            } else if ((input.type == SDL_EVENT_KEY_UP) && (input.key.key == SDLK_A)) {
+                curr_inputs.a = false;
+            } else if ((input.type == SDL_EVENT_KEY_DOWN) && (input.key.key == SDLK_D)) {
+                curr_inputs.d = true;
+            } else if ((input.type == SDL_EVENT_KEY_UP) && (input.key.key == SDLK_D)) {
+                curr_inputs.d = false;
+            } else if ((input.type == SDL_EVENT_KEY_DOWN) && (input.key.key == SDLK_W)) {
+                curr_inputs.w = true;
+            } else if ((input.type == SDL_EVENT_KEY_UP) && (input.key.key == SDLK_W)) {
+                curr_inputs.w = false;
+            } else if ((input.type == SDL_EVENT_KEY_DOWN) && (input.key.key == SDLK_S)) {
+                curr_inputs.s = true;
+            } else if ((input.type == SDL_EVENT_KEY_UP) && (input.key.key == SDLK_S)) {
+                curr_inputs.s = false;
+            } else {
             }
+        }
+
+        // Process input.
+        constexpr float scaling_factor{ 0.1 };
+
+        if (curr_inputs.a == true) {
+            app.game->player_position.x -= scaling_factor;
+        }
+        if (curr_inputs.d == true) {
+            app.game->player_position.x += scaling_factor;
+        }
+        if (curr_inputs.w == true) {
+            app.game->player_position.z -= scaling_factor;
+        }
+        if (curr_inputs.s == true) {
+            app.game->player_position.z += scaling_factor;
         }
 
         Alf::render(app);
@@ -306,6 +367,7 @@ SDL_AppResult SDL_AppIterate(void* appstate)
         if (fps > 300) {
             SDL_Delay(1);
         }
+        app.game->prev_inputs = curr_inputs;
     } catch (const std::exception& e) {
         SDL_Log("%s", e.what());
         app.app_quit = SDL_APP_FAILURE;
