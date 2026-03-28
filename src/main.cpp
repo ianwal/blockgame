@@ -1,5 +1,5 @@
 #include "src/button.h"
-#include "src/gui.h"
+#include "src/game.h"
 #include "src/time.h"
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
@@ -127,8 +127,8 @@ SDL_AppResult SDL_AppEvent(void *appstate, const SDL_Event *event)
     case SDL_EVENT_MOUSE_BUTTON_UP:
     case SDL_EVENT_KEY_UP:
     case SDL_EVENT_KEY_DOWN: {
-        SDL_Log("KEY DOWN OR UP\n");
-        app.game->input_event_buffer->write(ev);
+        // SDL_Log("KEY DOWN OR UP\n");
+        app.game->input_event_buffer->push(ev);
     }
     break;
     case SDL_EVENT_QUIT: {

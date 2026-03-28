@@ -5,6 +5,7 @@
 namespace Alf
 {
 
+/// Dimension 2D.
 struct Dim2d
 {
     int width{};
