@@ -293,7 +293,9 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 
             // Quit the game.
             if ((input.type == SDL_EVENT_KEY_UP) && (input.key.key == SDLK_ESCAPE)) {
-                std::quick_exit(0);
+                SDL_Event quit_event{};
+                quit_event.type = SDL_EVENT_QUIT;
+                SDL_PushEvent(&quit_event);
             }
         }
 
