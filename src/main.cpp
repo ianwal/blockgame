@@ -254,14 +254,23 @@ void render(AppContext& app_ctx)
     float const fov                 = 90.0f;
     float const near_clipping_plane = 0.1f;   // Keep as big as possible or you'll get precision issues.
     float const far_clipping_plane  = 100.0f; // Keep as small as possible.
-    glm::mat4 projection_mat        = glm::perspective(glm::radians(fov), static_cast<float>(width) / static_cast<float>(height),
-                                                       near_clipping_plane, far_clipping_plane);
-    glm::mat4 view_mat            = glm::lookAt(glm::vec3(app_ctx.game->player_position.x, app_ctx.game->player_position.y,
-                                                            app_ctx.game->player_position.z), // Camera is at this coordinate in world space
-                                                  glm::vec3(0, 0, 0),                         // Camera looks at this coordinate
-                                                  glm::vec3(0, 1, 0) // Camera head is up (0, -1, 0 would be looking upside-down)
-               );
-    glm::mat4 model_mat             = glm::mat4(1.0f); // identity matrix so model will be at the origin
+    glm::vec3 camera_pos(app_ctx.game->player_position.x, app_ctx.game->player_position.y,
+                         app_ctx.game->player_position.z); // Camera position in world space.
+
+    glm::mat4 projection_mat = glm::perspective(glm::radians(fov), static_cast<float>(width) / static_cast<float>(height),
+                                                near_clipping_plane, far_clipping_plane);
+    glm::mat4 view_mat =
+        glm::lookAt(camera_pos,                      // Camera is at this coordinate in world space
+                    camera_pos - glm::vec3(0, 0, 2), // Camera looks at this coordinate. Look at 1 unit in front of the camera.
+                    glm::vec3(0, 1, 0)               // Camera head is up (0, -1, 0) would be looking upside-down)
+        );
+
+    glm::mat4 model_mat = glm::mat4(1.0f); // identity matrix so model will be at the origin
+
+    // Rotate the object over time (for debugging).
+    view_mat            = glm::rotate(
+        view_mat, (float) (std::chrono::duration_cast<std::chrono::milliseconds>(app_ctx.current_time).count()) * glm::radians(0.5f),
+        glm::vec3(0.5f, 1.0f, 0.0f));
     glm::mat4 model_view_projection = projection_mat * view_mat * model_mat;
 
     // Get a handle for the MVP uniform
@@ -280,6 +289,7 @@ void render(AppContext& app_ctx)
 
     // SDL_Log("FPS: %ld Frame time: %ld ns", fps, calculate_frame_time(previous_time, current_time).count());
     // SDL_Log("%ld", app.game->frame_num);
+    std::cout << "Player position: " << app.game->player_position.to_string() << '\n';
     ++app.game->frame_num;
 }
 
@@ -340,12 +350,20 @@ SDL_AppResult SDL_AppIterate(void* appstate)
                 curr_inputs.s = true;
             } else if ((input.type == SDL_EVENT_KEY_UP) && (input.key.key == SDLK_S)) {
                 curr_inputs.s = false;
+            } else if ((input.type == SDL_EVENT_KEY_DOWN) && (input.key.key == SDLK_LCTRL)) {
+                curr_inputs.ctrl = true;
+            } else if ((input.type == SDL_EVENT_KEY_UP) && (input.key.key == SDLK_LCTRL)) {
+                curr_inputs.ctrl = false;
+            } else if ((input.type == SDL_EVENT_KEY_DOWN) && (input.key.key == SDLK_SPACE)) {
+                curr_inputs.space = true;
+            } else if ((input.type == SDL_EVENT_KEY_UP) && (input.key.key == SDLK_SPACE)) {
+                curr_inputs.space = false;
             } else {
             }
         }
 
         // Process input.
-        constexpr float scaling_factor{ 0.1 };
+        constexpr float scaling_factor{ 0.01 };
 
         if (curr_inputs.a == true) {
             app.game->player_position.x -= scaling_factor;
@@ -358,6 +376,12 @@ SDL_AppResult SDL_AppIterate(void* appstate)
         }
         if (curr_inputs.s == true) {
             app.game->player_position.z += scaling_factor;
+        }
+        if (curr_inputs.ctrl == true) {
+            app.game->player_position.y -= scaling_factor;
+        }
+        if (curr_inputs.space == true) {
+            app.game->player_position.y += scaling_factor;
         }
 
         Alf::render(app);

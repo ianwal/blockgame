@@ -14,6 +14,8 @@ https://glusoft.com/sdl3-tutorials/opengl-3d-cube-sdl3/
 
 https://antongerdelan.net/opengl/raycasting.html
 
+https://learnopengl.com/Getting-Started/Camera
+
 All vertices are at first relative to the center of their model (if there is a model) which is called Model Space. Once you
 apply the model matrix to the vertices, they will be put into World Space
 

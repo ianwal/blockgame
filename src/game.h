@@ -6,8 +6,11 @@
 #include <cassert>
 #include <cstdint>
 #include <deque>
+#include <iomanip>
 #include <map>
 #include <memory>
+#include <sstream>
+#include <string>
 #include <variant>
 
 namespace Alf
@@ -88,6 +91,17 @@ struct Coord3D {
     float x{};
     float y{};
     float z{};
+
+    std::string to_string() const
+    {
+        std::stringstream ss{};
+        ss << std::fixed << std::setprecision(2);
+        ss << "[x: " << x;
+        ss << ", y: " << y;
+        ss << ", z: " << z;
+        ss << "]";
+        return ss.str();
+    }
 };
 
 /// Inputs. True is pressed down, false is not pressed.
@@ -96,6 +110,21 @@ struct Inputs {
     bool a{};
     bool s{};
     bool d{};
+    bool space{};
+    bool ctrl{};
+
+    std::string to_string() const
+    {
+        std::stringstream ss{};
+        ss << "[w: " << w;
+        ss << ", a: " << a;
+        ss << ", s: " << s;
+        ss << ", d: " << d;
+        ss << ", sp: " << space;
+        ss << ", ctrl: " << ctrl;
+        ss << "]";
+        return ss.str();
+    }
 };
 
 struct GameContext {
