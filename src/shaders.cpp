@@ -7,7 +7,7 @@
 #include <string_view>
 #include <vector>
 
-#include "src/lib/CImg.h"
+#include "src/img.h"
 
 namespace alf
 {
@@ -121,23 +121,12 @@ GLuint loadShader(std::string_view vertexPath, std::string_view fragmentPath)
     return ProgramID;
 }
 
-GLuint loadImage(std::string_view imagePath)
+GLuint loadTexture(std::string_view imagePath)
 {
-    cimg_library::CImg<unsigned char> img(std::string{ imagePath }.c_str());
-    int width      = img.width();
-    int height     = img.height();
-    int nrChannels = 3; // TODO: Hardcoded. How to get # of channels from cimg?
-
-    // Fix the color channel interleaving. CImg stores as RRRGGGBBB but OpenGL needs RGBRGBRBG.
-    std::vector<unsigned char> interleaved(width * height * 3);
-    for (int y = 0; y < height; y++)
-        for (int x = 0; x < width; x++) {
-            interleaved[(y * width + x) * 3 + 0] = img(x, y, 0, 0); // R
-            interleaved[(y * width + x) * 3 + 1] = img(x, y, 0, 1); // G
-            interleaved[(y * width + x) * 3 + 2] = img(x, y, 0, 2); // B
-        }
-
-    unsigned char* data = interleaved.data();
+    auto result          = Alf::loadImage(std::string{ imagePath }, true);
+    std::uint32_t width  = result.width;
+    std::uint32_t height = result.height;
+    unsigned char* data  = result.bytes.data();
 
     auto msg = std::string{ "Loaded image: " } + std::string{ imagePath } + " (" + std::to_string(width) + "x" +
                std::to_string(height) + ")\n";

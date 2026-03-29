@@ -97,6 +97,7 @@ struct Inputs {
     bool s{};
     bool d{};
     bool z{};
+    bool f3{};
     bool lshift{};
     bool space{};
     bool ctrl{};
@@ -133,21 +134,22 @@ inline std::string to_str(glm::vec3 const& v)
 }
 
 struct GameContext {
-
     GameContext()
     {
         // Generate some blocks.
-        constexpr int chunk_size{ 4 };
+        SDL_Log("debug: Generating chunks...");
+        constexpr int chunk_size{ 8 };
         for (int i = 0; i < chunk_size; ++i) {
             for (int j = 0; j < chunk_size; ++j) {
                 for (int k = 0; k < chunk_size; ++k) {
                     Block block{};
                     block.type = static_cast<BlockType>(SDL_rand(2));
-                    block.pos  = glm::vec3{ i - 4, j - 4, k - 4 };
+                    block.pos  = glm::vec3{ i - 4, j - 8, k - 16 };
                     blocks.push_back(block);
                 }
             }
         }
+        SDL_Log("debug: DONE generating chunks.");
     }
 
     std::vector<IEntity> entities{};

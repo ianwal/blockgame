@@ -11,7 +11,7 @@ namespace alf
 
 GLuint loadShader(std::string_view vertexPath, std::string_view fragmentPath);
 
-GLuint loadImage(std::string_view imagePath);
+GLuint loadTexture(std::string_view imagePath);
 
 class ShaderManager
 {
@@ -83,7 +83,7 @@ public:
     {
         assert(!textures.contains(name));
         if (!textures.contains(name)) {
-            textures[name] = loadImage(std::string_view{ path });
+            textures[name] = loadTexture(std::string_view{ path });
         }
         return *this;
     }

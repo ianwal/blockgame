@@ -87,7 +87,9 @@ target_sources(${EXECUTABLE_NAME}
 PRIVATE
     src/time.cpp
     src/shaders.cpp
+    src/renderer.cpp
     src/main.cpp
+    src/img.cpp
     src/font.cpp
     src/common.cpp
     src/button.cpp

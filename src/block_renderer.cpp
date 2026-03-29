@@ -108,16 +108,6 @@ void BlockRenderer::render(AppContext& ctx, Block const& block)
 
     glm::mat4 model_mat = glm::mat4(1.0f); // identity matrix so model will be at the origin
     model_mat = glm::translate(model_mat, glm::vec3((float) block.pos.x, (float) block.pos.y, (float) block.pos.z));
-
-    // Rotate the object over time (for debugging).
-    constexpr bool rotate = false;
-    if constexpr (rotate) {
-        view_mat =
-            glm::rotate(view_mat,
-                        (float) (std::chrono::duration_cast<std::chrono::milliseconds>(ctx.current_time).count()) *
-                            glm::radians(0.5f),
-                        glm::vec3(0.5f, 1.0f, 0.0f));
-    }
     glm::mat4 model_view_projection = projection_mat * view_mat * model_mat;
 
     // Texture
