@@ -261,16 +261,26 @@ add_custom_command(
 if(WIN32)
     set(MSYS2_BIN "C:/msys64/ucrt64/bin")
 
+    # Manually add the required DLLs.
+    # These can be found with ldd, e.g., ldd .build-win64/Debug/sdl-min.exe | grep ucrt64
     add_custom_command(TARGET ${EXECUTABLE_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${MSYS2_BIN}/libpng16-16.dll"
-            "${MSYS2_BIN}/libfreetype-6.dll"
-            "${MSYS2_BIN}/libharfbuzz-0.dll"
+            "${MSYS2_BIN}/glew32.dll"
+            "${MSYS2_BIN}/libbrotlicommon.dll"
             "${MSYS2_BIN}/libbrotlidec.dll"
+            "${MSYS2_BIN}/libbz2-1.dll"
+            "${MSYS2_BIN}/libfreetype-6.dll"
+            "${MSYS2_BIN}/libgcc_s_seh-1.dll"
             "${MSYS2_BIN}/libglib-2.0-0.dll"
             "${MSYS2_BIN}/libgraphite2.dll"
-            "${MSYS2_BIN}/libbrotlicommon.dll"
+            "${MSYS2_BIN}/libharfbuzz-0.dll"
+            "${MSYS2_BIN}/libiconv-2.dll"
+            "${MSYS2_BIN}/libintl-8.dll"
             "${MSYS2_BIN}/libpcre2-8-0.dll"
+            "${MSYS2_BIN}/libpng16-16.dll"
+            "${MSYS2_BIN}/libstdc++-6.dll"
+            "${MSYS2_BIN}/libwinpthread-1.dll"
+            "${MSYS2_BIN}/zlib1.dll"
             $<TARGET_FILE_DIR:${EXECUTABLE_NAME}>
     )
 endif()
