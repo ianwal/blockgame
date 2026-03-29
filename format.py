@@ -4,6 +4,20 @@ from pathlib import Path
 import platform
 import stat
 import sys
+import urllib.request
+import shutil
+
+
+def get_os() -> str:
+    if platform.system() == "Windows":
+        return "Windows"
+    elif platform.system() == "Darwin":
+        return "Darwin"
+    elif platform.system() == "Linux":
+        return "Linux"
+    else:
+        print("Unknown OS. Unexpected results may occur.")
+        return "Unknown"
 
 
 def format_files(clang_format_bin: Path, files: list[Path]):
@@ -49,19 +63,25 @@ def main():
         print("clang-format not found. Downloading clang-format...")
         clang_format_bin_dir.mkdir(exist_ok=True)
         # TODO: Add arm64 bin?
-        if platform.machine() != "x86_64":
-            raise RuntimeError("Program only currently supports x86_64.")
-        subprocess.run(
-            [
-                "wget",
-                "https://github.com/muttleyxd/clang-tools-static-binaries/releases/download/master-2da3e7b/clang-format-19_linux-amd64",
-                "--no-verbose",
-                "-O",
-                clang_format_bin,
-            ],
-            timeout=60.0,
-            check=True,
-        )
+        if platform.machine() not in ["x86_64", "AMD64"]:
+            raise RuntimeError(
+                f"Program only currently supports x86_64. Machine type: {platform.machine()}"
+            )
+
+        clang_format_bin_url_map = {
+            "Windows": "https://github.com/muttleyxd/clang-tools-static-binaries/releases/download/master-796e77c/clang-format-20_windows-amd64.exe",
+            "Linux": "https://github.com/muttleyxd/clang-tools-static-binaries/releases/download/master-796e77c/clang-format-20_linux-amd64",
+        }
+
+        if get_os() not in clang_format_bin_url_map:
+            raise RuntimeError(
+                f"Program only currently supports: {clang_format_bin_url_map.keys()}. OS type: {get_os()}"
+            )
+
+        clang_format_bin_url = clang_format_bin_url_map[get_os()]
+        with urllib.request.urlopen(clang_format_bin_url, timeout=60.0) as response:
+            with open(clang_format_bin, "wb") as f:
+                shutil.copyfileobj(response, f)
         clang_format_bin.chmod(clang_format_bin.stat().st_mode | stat.S_IEXEC)
     else:
         assert clang_format_bin.is_file()

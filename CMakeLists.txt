@@ -96,6 +96,7 @@ endif()
 
 target_sources(${EXECUTABLE_NAME}
 PRIVATE
+    src/app_context.cpp
     src/time.cpp
     src/shaders.cpp
     src/renderer.cpp
