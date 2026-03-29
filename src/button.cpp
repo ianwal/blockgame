@@ -8,7 +8,7 @@ namespace
 
 void render_text(SDL_Renderer& renderer, Text const& text)
 {
-    SDL_Surface* text_surface{ TTF_RenderUTF8_Solid(&get_font(), text.get_string().c_str(), text.color) };
+    SDL_Surface* text_surface{ TTF_RenderText_Solid(&get_font(), text.get_string().c_str(), 0, text.color) };
     SDL_Texture* text_texture{ SDL_CreateTextureFromSurface(&renderer, text_surface) };
     SDL_FRect const render_quad{ static_cast<float>(text.pos.x), static_cast<float>(text.pos.y),
                                  static_cast<float>(text_surface->w), static_cast<float>(text_surface->h) };
@@ -39,7 +39,7 @@ SDL_Point get_center_in_rect(SDL_FRect frect)
 Dim2d get_text_size(Text const& text)
 {
     Dim2d dim{};
-    auto const result = TTF_SizeUTF8(text.font.font, text.get_string().c_str(), &dim.width, &dim.height);
+    auto const result = TTF_GetStringSize(text.font.font, text.get_string().c_str(), 0, &dim.width, &dim.height);
     assert(result == true);
     return dim;
 }

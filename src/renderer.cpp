@@ -110,7 +110,9 @@ void Renderer::render(AppContext& app_ctx)
 
     // Swap the OpenGL buffer to draw to the window.
     auto swapWindowSuccess = SDL_GL_SwapWindow(app.window);
-    if (swapWindowSuccess != SDL_TRUE) {
+    if (swapWindowSuccess) {
+        // Success.
+    } else {
         std::cerr << "SDL_GL_SwapWindow() failure: " << SDL_GetError() << '\n';
         assert(false);
     }

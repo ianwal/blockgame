@@ -74,6 +74,17 @@ endif()
 # Set the name of the executable
 set(EXECUTABLE_NAME ${PROJECT_NAME})
 
+include(FetchContent)
+
+# Fetch dependencies
+FetchContent_Declare(
+	glm
+	GIT_REPOSITORY	https://github.com/g-truc/glm.git
+	GIT_TAG 	e7970a8b26732f1b0df9690f7180546f8c30e48e
+)
+
+FetchContent_MakeAvailable(glm)
+
 # Create an executable or a shared library based on the platform and add our sources to it
 if (ANDROID)
 	# The SDL java code is hardcoded to load libmain.so on android, so we need to change EXECUTABLE_NAME
@@ -126,6 +137,14 @@ if(WINDOWS_STORE)
     target_compile_options(${EXECUTABLE_NAME} PUBLIC "/EHsc")
 endif()
 
+set(SDL_X11_XCURSOR OFF CACHE BOOL "" FORCE)
+set(SDL_X11_XINPUT OFF CACHE BOOL "" FORCE)
+set(SDL_X11_XFIXES OFF CACHE BOOL "" FORCE)
+set(SDL_X11_XRANDR OFF CACHE BOOL "" FORCE)
+set(SDL_X11_XSCRNSAVER OFF CACHE BOOL "" FORCE)
+set(SDL_X11_XTEST OFF CACHE BOOL "" FORCE)
+set(SDL_MAIN_USE_CALLBACKS ON CACHE BOOL "" FORCE)
+
 # Configure SDL by calling its CMake file.
 # we use EXCLUDE_FROM_ALL so that its install targets and configs don't
 # pollute upwards into our configuration.
@@ -152,8 +171,7 @@ find_package(OpenGL)
 target_link_libraries(${EXECUTABLE_NAME} PRIVATE OpenGL::OpenGL)
 
 # Link GLM
-find_package(glm CONFIG REQUIRED)
-target_link_libraries(${EXECUTABLE_NAME} PRIVATE glm::glm)
+target_link_libraries(${EXECUTABLE_NAME} PRIVATE glm)
 
 # Link PNG for cImg
 find_package(PNG)

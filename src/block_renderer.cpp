@@ -101,7 +101,7 @@ void BlockRenderer::render(AppContext& ctx, Block const& block)
     int width{};
     int height{};
     auto get_window_size_status = SDL_GetWindowSize(ctx.window, &width, &height);
-    assert(get_window_size_status == SDL_TRUE);
+    assert(get_window_size_status);
     float const fov                 = 90.0f;
     float const near_clipping_plane = 0.1f;                  // Keep as big as possible or you'll get precision issues.
     float const far_clipping_plane  = 100.0f;                // Keep as small as possible.

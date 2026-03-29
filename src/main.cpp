@@ -37,11 +37,15 @@ SDL_AppResult SDL_Fail()
 SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 {
     // init the library, here we make a window so we only need the Video capabilities.
-    if (SDL_Init(SDL_INIT_VIDEO) != SDL_TRUE) {
+    if (SDL_Init(SDL_INIT_VIDEO)) {
+        // Success.
+    } else {
         return SDL_Fail();
     }
 
-    if (TTF_Init() != SDL_TRUE) {
+    if (TTF_Init()) {
+        // Success.
+    } else {
         return SDL_Fail();
     }
 
@@ -125,7 +129,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
     return SDL_APP_CONTINUE;
 }
 
-SDL_AppResult SDL_AppEvent(void* appstate, const SDL_Event* event)
+extern "C" SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
 {
     auto& app = *static_cast<AppContext*>(appstate);
     auto& ev  = *event;
@@ -298,7 +302,7 @@ SDL_AppResult SDL_AppIterate(void* appstate)
     return app.app_quit;
 }
 
-void SDL_AppQuit(void* appstate)
+extern "C" void SDL_AppQuit(void* appstate, SDL_AppResult result)
 {
     auto* app = static_cast<AppContext*>(appstate);
     delete app;
