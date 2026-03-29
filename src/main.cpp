@@ -21,6 +21,10 @@
 #include <string>
 #include <string_view>
 
+#include "imgui.h"
+#include "imgui_impl_opengl3.h"
+#include "imgui_impl_sdl3.h"
+
 using alf::AppContext;
 using alf::Timestamp;
 
@@ -105,6 +109,17 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 
     alf::Renderer::init();
 
+    // Setup Dear ImGui context
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;  // Enable Gamepad Controls
+
+    // Setup Platform/Renderer backends
+    ImGui_ImplSDL3_InitForOpenGL(window, context);
+    ImGui_ImplOpenGL3_Init();
+
     // print some information about the window
     SDL_ShowWindow(window);
     {
@@ -135,6 +150,8 @@ extern "C" SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
     auto& app = *static_cast<AppContext*>(appstate);
     auto& ev  = *event;
 
+    ImGui_ImplSDL3_ProcessEvent(event);
+
     switch (ev.type) {
         case SDL_EVENT_MOUSE_MOTION:
         case SDL_EVENT_MOUSE_BUTTON_DOWN:
@@ -156,6 +173,10 @@ extern "C" SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
 
 SDL_AppResult SDL_AppIterate(void* appstate)
 {
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplSDL3_NewFrame();
+    ImGui::NewFrame();
+
     auto& app                = *static_cast<AppContext*>(appstate);
     auto const previous_time = app.current_time;
     app.current_time         = alf::get_time();
@@ -283,7 +304,7 @@ SDL_AppResult SDL_AppIterate(void* appstate)
             app.game->cameraPos.y += scaling_factor;
         }
         if (curr_inputs.f3 == true) {
-            // TODO
+            ImGui::ShowDemoWindow();
         }
 
         alf::Renderer::render(app);
@@ -307,6 +328,10 @@ extern "C" void SDL_AppQuit(void* appstate, SDL_AppResult result)
 {
     auto* app = static_cast<AppContext*>(appstate);
     delete app;
+
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplSDL3_Shutdown();
+    ImGui::DestroyContext();
 
     alf::destroy_global_font();
 

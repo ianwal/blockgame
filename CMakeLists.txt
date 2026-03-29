@@ -108,6 +108,16 @@ PRIVATE
     src/block_renderer.cpp
     src/iosLaunchScreen.storyboard
     src/Sample.appxManifest
+
+    # imgui
+    imgui/imgui_demo.cpp
+    imgui/imgui_draw.cpp
+    imgui/imgui_tables.cpp
+    imgui/imgui_widgets.cpp
+    imgui/imgui.cpp
+    imgui/backends/imgui_impl_opengl3.cpp
+    imgui/backends/imgui_impl_sdl3.cpp
+    imgui/misc/cpp/imgui_stdlib.cpp
 )
 
 # What is iosLaunchScreen.storyboard? This file describes what Apple's mobile platforms
@@ -188,6 +198,13 @@ target_include_directories(${EXECUTABLE_NAME} PUBLIC
     # We go up a directory so that the source files can include the
     # whole path and avoid collisions for the same file names, e.g. "src/time.h"
     ${CMAKE_CURRENT_SOURCE_DIR}/
+)
+
+# imgui
+target_include_directories(${EXECUTABLE_NAME} PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/imgui
+    ${CMAKE_CURRENT_SOURCE_DIR}/imgui/backends
+    ${CMAKE_CURRENT_SOURCE_DIR}/imgui/misc/cpp
 )
 
 # set some extra configs for each platform

@@ -23,6 +23,9 @@
 #include <string>
 #include <string_view>
 
+#include "imgui.h"
+#include "imgui_impl_opengl3.h"
+
 namespace alf
 {
 
@@ -107,6 +110,9 @@ void Renderer::render(AppContext& app_ctx)
     for (auto const& block : app_ctx.game->blocks) {
         BlockRenderer::render(app_ctx, block);
     }
+
+    ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
     // Swap the OpenGL buffer to draw to the window.
     auto swapWindowSuccess = SDL_GL_SwapWindow(app.window);
