@@ -11,7 +11,7 @@
 #include <optional>
 #include <string>
 
-namespace Alf
+namespace alf
 {
 
 SDL_Point get_center_in_rect(SDL_Rect rect);
@@ -148,4 +148,4 @@ public:
     SDL_Point pos;
 };
 
-} // namespace Alf
+} // namespace alf

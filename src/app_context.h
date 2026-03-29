@@ -6,6 +6,9 @@
 #include <cassert>
 #include <cstdlib>
 
+namespace alf
+{
+
 struct AppContext {
     AppContext(SDL_Renderer* renderer, SDL_Window* window) : renderer{ renderer }, window{ window }
     {
@@ -15,10 +18,10 @@ struct AppContext {
 
     SDL_Renderer* renderer{};
     SDL_Window* window{};
-    std::unique_ptr<Alf::GameContext> game{ std::make_unique<Alf::GameContext>() };
+    std::unique_ptr<GameContext> game{ std::make_unique<GameContext>() };
 
     SDL_AppResult app_quit{ SDL_APP_CONTINUE };
-    Alf::Timestamp current_time{};
+    Timestamp current_time{};
 
     ~AppContext()
     {
@@ -26,3 +29,5 @@ struct AppContext {
         SDL_DestroyWindow(window);
     }
 };
+
+} // namespace alf

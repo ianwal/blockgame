@@ -21,7 +21,8 @@
 #include <string>
 #include <string_view>
 
-using Alf::Timestamp;
+using alf::AppContext;
+using alf::Timestamp;
 
 std::chrono::nanoseconds calculate_frame_time(Timestamp previous_frame, Timestamp current_frame)
 {
@@ -89,7 +90,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
         return SDL_Fail();
     }
 
-    Alf::global_font_init();
+    alf::global_font_init();
 
     // Load assets
 
@@ -102,7 +103,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
         .load("block.cobble", "assets/textures/cobble.png")
         .load("block.lucky", "assets/textures/lucky.png");
 
-    Alf::Renderer::init();
+    alf::Renderer::init();
 
     // print some information about the window
     SDL_ShowWindow(window);
@@ -157,18 +158,18 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 {
     auto& app                = *static_cast<AppContext*>(appstate);
     auto const previous_time = app.current_time;
-    app.current_time         = Alf::get_time();
+    app.current_time         = alf::get_time();
     assert(app.current_time.count() > 0);
 
     try {
         static bool added_button = [&app]() {
             added_button             = true;
             auto const test_callback = []() { SDL_Log("Button pressed!"); };
-            Alf::Button button{ test_callback };
+            alf::Button button{ test_callback };
             SDL_FRect rect{ 100, 100, 100, 100 };
-            Alf::VisibleButton visible_button{ button, rect };
+            alf::VisibleButton visible_button{ button, rect };
             app.game->gui_objects.add(std::move(visible_button));
-            Alf::TextButton text_button{ Alf::Text{ "test" }, Alf::VisibleButton{ Alf::Button{ test_callback },
+            alf::TextButton text_button{ alf::Text{ "test" }, alf::VisibleButton{ alf::Button{ test_callback },
                                                                                   SDL_FRect{ 200, 200, 50, 50 } } };
             text_button.set_pos(SDL_Point{ 500, 500 });
             app.game->gui_objects.add(std::move(text_button));
@@ -176,7 +177,7 @@ SDL_AppResult SDL_AppIterate(void* appstate)
         }();
 
         // Assume nothing is changed, overwrite later.
-        Alf::Inputs curr_inputs = app.game->prev_inputs;
+        alf::Inputs curr_inputs = app.game->prev_inputs;
 
         // TODO: The first time prev_inputs is set, it should be set from the player inputs, otherwise if you hold
         // a key when the game is starting it won't be registered.
@@ -184,7 +185,7 @@ SDL_AppResult SDL_AppIterate(void* appstate)
         while (auto input_opt = app.game->input_event_buffer->consume()) {
             auto& input            = input_opt.value();
             static int input_count = 0;
-            auto& text_button      = std::get<Alf::TextButton>(app.game->gui_objects.objects[1]);
+            auto& text_button      = std::get<alf::TextButton>(app.game->gui_objects.objects[1]);
             text_button.update_text_str(std::to_string(input_count));
             ++input_count;
             // SDL_Log("debug: Received event.\n Event type: %d", input.type);
@@ -285,10 +286,10 @@ SDL_AppResult SDL_AppIterate(void* appstate)
             // TODO
         }
 
-        Alf::Renderer::render(app);
+        alf::Renderer::render(app);
 
         // Limit fps to 300
-        auto const fps = Alf::calculate_fps(previous_time, Alf::get_time());
+        auto const fps = alf::calculate_fps(previous_time, alf::get_time());
         // std::cout << std::to_string(fps) << '\n';
         if (fps > 300) {
             SDL_Delay(1);
@@ -307,7 +308,7 @@ extern "C" void SDL_AppQuit(void* appstate, SDL_AppResult result)
     auto* app = static_cast<AppContext*>(appstate);
     delete app;
 
-    Alf::destroy_global_font();
+    alf::destroy_global_font();
 
     SDL_Quit();
     SDL_Log("Application quit successfully!");

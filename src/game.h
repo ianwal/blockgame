@@ -16,12 +16,12 @@
 #include <string>
 #include <variant>
 
-namespace Alf
+namespace alf
 {
 
 using Render_layer_t = std::uint8_t;
 
-using Gui_object_var_t = std::variant<Alf::VisibleButton, Alf::TextButton, Alf::Text>;
+using Gui_object_var_t = std::variant<alf::VisibleButton, alf::TextButton, alf::Text>;
 
 struct GuiObjects {
     void add(Gui_object_var_t&& obj)
@@ -172,4 +172,4 @@ struct GameContext {
     Timestamp previous_frame_time{};
 };
 
-} // namespace Alf
+} // namespace alf

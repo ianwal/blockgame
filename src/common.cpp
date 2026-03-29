@@ -1,6 +1,6 @@
 #include "src/common.h"
 
-namespace Alf
+namespace alf
 {
 
-} // namespace Alf
+} // namespace alf

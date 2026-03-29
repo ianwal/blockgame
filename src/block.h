@@ -5,7 +5,7 @@
 
 #include <cstdint>
 
-namespace Alf
+namespace alf
 {
 
 enum class BlockType : std::uint32_t {
@@ -20,4 +20,4 @@ struct Block {
 
 GLuint getBlockTexture(BlockType type);
 
-} // namespace Alf
+} // namespace alf

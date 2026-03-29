@@ -2,7 +2,7 @@
 
 #include <source_location>
 
-namespace Alf
+namespace alf
 {
 
 /// Dimension 2D.
@@ -19,4 +19,4 @@ struct Dim2d {
 
 constexpr auto const font_file{ FONTS_DIR FONT_FILE_NAME };
 
-} // namespace Alf
+} // namespace alf

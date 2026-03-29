@@ -4,7 +4,7 @@
 #include <cassert>
 #include <chrono>
 
-namespace Alf
+namespace alf
 {
 
 using Timestamp = std::chrono::nanoseconds;
@@ -12,4 +12,4 @@ using Timestamp = std::chrono::nanoseconds;
 // Get monotonic time.
 std::chrono::nanoseconds get_time();
 
-} // namespace Alf
+} // namespace alf

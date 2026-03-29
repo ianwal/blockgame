@@ -22,7 +22,7 @@
 #include <string>
 #include <string_view>
 
-namespace Alf
+namespace alf
 {
 
 GLuint BlockRenderer::vertexbuffer;
@@ -159,4 +159,4 @@ void BlockRenderer::render(AppContext& ctx, Block const& block)
     glDisable(GL_DEPTH_TEST);
 }
 
-} // namespace Alf
+} // namespace alf

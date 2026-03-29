@@ -8,7 +8,7 @@
 #include <cstdint>
 #include <string>
 
-namespace Alf
+namespace alf
 {
 
 GLuint getBlockTexture(BlockType type)
@@ -21,7 +21,6 @@ GLuint getBlockTexture(BlockType type)
 
         case BlockType::BLOCK_LUCKY: {
             name = "block.lucky";
-
         } break;
 
         default: {
@@ -33,4 +32,4 @@ GLuint getBlockTexture(BlockType type)
     return alf::TextureResourceManagerSingleton::get().get(name);
 }
 
-} // namespace Alf
+} // namespace alf

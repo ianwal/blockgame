@@ -123,7 +123,7 @@ GLuint loadShader(std::string_view vertexPath, std::string_view fragmentPath)
 
 GLuint loadTexture(std::string_view imagePath)
 {
-    auto result          = Alf::loadImage(std::string{ imagePath }, true);
+    auto result          = alf::loadImage(std::string{ imagePath }, true);
     std::uint32_t width  = result.width;
     std::uint32_t height = result.height;
     unsigned char* data  = result.bytes.data();

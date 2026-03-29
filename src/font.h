@@ -4,7 +4,7 @@
 #include <SDL3_ttf/SDL_ttf.h>
 #include <cassert>
 
-namespace Alf
+namespace alf
 {
 
 // CALL ONCE AT START OF PROGRAM.
@@ -23,4 +23,4 @@ struct Font {
     TTF_Font* font{};
 };
 
-} // namespace Alf
+} // namespace alf

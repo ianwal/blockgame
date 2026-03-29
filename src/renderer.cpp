@@ -23,7 +23,7 @@
 #include <string>
 #include <string_view>
 
-namespace Alf
+namespace alf
 {
 
 std::int64_t calculate_fps(Timestamp previous_frame, Timestamp current_frame)
@@ -63,7 +63,7 @@ void Renderer::render(AppContext& app_ctx)
 {
     auto& app = app_ctx;
     // draw a color
-    auto const current_time = Alf::get_time();
+    auto const current_time = alf::get_time();
     auto const time =
         std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::nanoseconds{ current_time }).count() /
         1000.f;
@@ -125,4 +125,4 @@ void Renderer::render(AppContext& app_ctx)
     ++app.game->frame_num;
 }
 
-} // namespace Alf
+} // namespace alf

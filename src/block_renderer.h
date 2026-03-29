@@ -4,7 +4,7 @@
 #include "src/block.h"
 #include <GL/glew.h>
 
-namespace Alf
+namespace alf
 {
 
 class BlockRenderer
@@ -21,4 +21,4 @@ private:
     static GLuint vertexbuffer;
 };
 
-} // namespace Alf
+} // namespace alf

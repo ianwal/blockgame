@@ -3,7 +3,7 @@
 
 #include <memory>
 
-namespace Alf
+namespace alf
 {
 
 namespace
@@ -42,4 +42,4 @@ TTF_Font& get_font()
     return *(main_font.get());
 }
 
-} // namespace Alf
+} // namespace alf

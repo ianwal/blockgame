@@ -6,7 +6,7 @@
 #include <queue>
 #include <utility>
 
-namespace Alf
+namespace alf
 {
 
 /// A thread-safe event queue.
@@ -42,4 +42,4 @@ private:
     std::mutex event_mtx{};
 };
 
-} // namespace Alf
+} // namespace alf
