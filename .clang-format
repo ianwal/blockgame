@@ -6,7 +6,7 @@ AllowShortFunctionsOnASingleLine: None
 BreakTemplateDeclarations: Yes
 AlwaysBreakTemplateDeclarations: true
 BreakBeforeBraces: Linux
-ColumnLimit: 140
+ColumnLimit: 120
 AlignConsecutiveAssignments: true
 AlignTrailingComments: true
 BreakBeforeTernaryOperators: true

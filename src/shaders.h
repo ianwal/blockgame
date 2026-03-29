@@ -25,12 +25,13 @@ public:
     }
 
     /// Load the shader and assign it a name.
-    void load(std::string const& name, std::string const& vert, std::string const& frag)
+    ShaderManager& load(std::string const& name, std::string const& vert, std::string const& frag)
     {
         assert(!programs.contains(name));
         if (!programs.contains(name)) {
             programs[name] = loadShader(std::string_view{ vert }, std::string_view{ frag });
         }
+        return *this;
     }
 
     void cleanup()
@@ -78,12 +79,13 @@ public:
     }
 
     /// Load the texture and assign it a name.
-    void load(std::string const& name, std::string const& path)
+    TextureResourceManager& load(std::string const& name, std::string const& path)
     {
         assert(!textures.contains(name));
         if (!textures.contains(name)) {
             textures[name] = loadImage(std::string_view{ path });
         }
+        return *this;
     }
 
     void cleanup()

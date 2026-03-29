@@ -10,8 +10,8 @@ void render_text(SDL_Renderer& renderer, Text const& text)
 {
     SDL_Surface* text_surface{ TTF_RenderUTF8_Solid(&get_font(), text.get_string().c_str(), text.color) };
     SDL_Texture* text_texture{ SDL_CreateTextureFromSurface(&renderer, text_surface) };
-    SDL_FRect const render_quad{ static_cast<float>(text.pos.x), static_cast<float>(text.pos.y), static_cast<float>(text_surface->w),
-                                 static_cast<float>(text_surface->h) };
+    SDL_FRect const render_quad{ static_cast<float>(text.pos.x), static_cast<float>(text.pos.y),
+                                 static_cast<float>(text_surface->w), static_cast<float>(text_surface->h) };
     SDL_RenderTexture(&renderer, text_texture, nullptr, &render_quad);
     SDL_DestroySurface(text_surface);
     SDL_DestroyTexture(text_texture);
@@ -19,7 +19,8 @@ void render_text(SDL_Renderer& renderer, Text const& text)
 
 SDL_Rect frect_to_rect(SDL_FRect frect)
 {
-    return SDL_Rect{ static_cast<int>(frect.x), static_cast<int>(frect.y), static_cast<int>(frect.w), static_cast<int>(frect.h) };
+    return SDL_Rect{ static_cast<int>(frect.x), static_cast<int>(frect.y), static_cast<int>(frect.w),
+                     static_cast<int>(frect.h) };
 }
 } // namespace
 

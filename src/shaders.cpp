@@ -1,4 +1,5 @@
 #include <GL/glew.h>
+#include <SDL3/SDL.h>
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -127,17 +128,33 @@ GLuint loadImage(std::string_view imagePath)
     int height     = img.height();
     int nrChannels = 3; // TODO: Hardcoded. How to get # of channels from cimg?
 
-    unsigned char* data = img.data();
+    // Fix the color channel interleaving. CImg stores as RRRGGGBBB but OpenGL needs RGBRGBRBG.
+    std::vector<unsigned char> interleaved(width * height * 3);
+    for (int y = 0; y < height; y++)
+        for (int x = 0; x < width; x++) {
+            interleaved[(y * width + x) * 3 + 0] = img(x, y, 0, 0); // R
+            interleaved[(y * width + x) * 3 + 1] = img(x, y, 0, 1); // G
+            interleaved[(y * width + x) * 3 + 2] = img(x, y, 0, 2); // B
+        }
 
-    std::cout << "Loaded image: " << imagePath << " (" << width << "x" << height << ")\n";
+    unsigned char* data = interleaved.data();
+
+    auto msg = std::string{ "Loaded image: " } + std::string{ imagePath } + " (" + std::to_string(width) + "x" +
+               std::to_string(height) + ")\n";
+    SDL_Log("debug: %s", msg.c_str());
 
     GLuint texture;
     glGenTextures(1, &texture);
     glBindTexture(GL_TEXTURE_2D, texture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    // Wrap
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glGenerateMipmap(GL_TEXTURE_2D);
 
     return texture;
 }

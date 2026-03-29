@@ -1,8 +1,10 @@
 #pragma once
 
+#include "src/block.h"
 #include "src/button.h"
 #include "src/event_handling.h"
 #include "src/time.h"
+#include <SDL3/SDL.h>
 #include <cassert>
 #include <cstdint>
 #include <deque>
@@ -17,7 +19,7 @@
 namespace Alf
 {
 
-using Render_layer_t = uint8_t;
+using Render_layer_t = std::uint8_t;
 
 using Gui_object_var_t = std::variant<Alf::VisibleButton, Alf::TextButton, Alf::Text>;
 
@@ -94,6 +96,8 @@ struct Inputs {
     bool a{};
     bool s{};
     bool d{};
+    bool z{};
+    bool lshift{};
     bool space{};
     bool ctrl{};
 
@@ -117,7 +121,7 @@ struct Inputs {
     }
 };
 
-std::string to_str(glm::vec3 const& v)
+inline std::string to_str(glm::vec3 const& v)
 {
     std::stringstream ss{};
     ss << std::fixed << std::setprecision(2);
@@ -129,21 +133,40 @@ std::string to_str(glm::vec3 const& v)
 }
 
 struct GameContext {
+
+    GameContext()
+    {
+        // Generate some blocks.
+        constexpr int chunk_size{ 4 };
+        for (int i = 0; i < chunk_size; ++i) {
+            for (int j = 0; j < chunk_size; ++j) {
+                for (int k = 0; k < chunk_size; ++k) {
+                    Block block{};
+                    block.type = static_cast<BlockType>(SDL_rand(2));
+                    block.pos  = glm::vec3{ i - 4, j - 4, k - 4 };
+                    blocks.push_back(block);
+                }
+            }
+        }
+    }
+
     std::vector<IEntity> entities{};
 
     EntityRendererManager entityRendererManager{};
 
     float yaw{ -90.0 };
     float pitch{};
-    glm::vec3 cameraPos{ 2, 1, 3 }; // Camera position in world space.
+    glm::vec3 cameraPos{ 0, 0, 0 }; // Camera position in world space.
     glm::vec3 cameraFront{ 0.0f, 0.0f, -1.0f };
     glm::vec3 cameraUp{ 0.0f, 1.0f, 0.0f };
+
+    std::vector<Block> blocks{};
 
     Inputs prev_inputs{};
 
     GuiObjects gui_objects{};
     std::unique_ptr<EventBuffer> input_event_buffer{ std::make_unique<EventBuffer>() };
-    uint64_t frame_num{};
+    std::uint64_t frame_num{};
     Timestamp previous_frame_time{};
 };
 

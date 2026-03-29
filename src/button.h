@@ -106,7 +106,8 @@ void center_text(Text& text, SDL_Point const point);
 class TextButton
 {
 public:
-    TextButton(Text text, VisibleButton visible_button) : TextButton{ std::move(text), std::move(visible_button), SDL_Point{} }
+    TextButton(Text text, VisibleButton visible_button)
+        : TextButton{ std::move(text), std::move(visible_button), SDL_Point{} }
     {
     }
 

@@ -91,6 +91,8 @@ PRIVATE
     src/font.cpp
     src/common.cpp
     src/button.cpp
+    src/block.cpp
+    src/block_renderer.cpp
     src/iosLaunchScreen.storyboard
     src/Sample.appxManifest
 )
