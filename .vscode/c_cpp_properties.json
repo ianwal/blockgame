@@ -11,6 +11,18 @@
             "cppStandard": "gnu++20",
             "cStandard": "c23",
             "intelliSenseMode": "linux-gcc-x64"
+        },
+        {
+            "name": "Windows C++",
+            "includePath": [
+                "${workspaceFolder}/**"
+            ],
+            "defines": [],
+            "compilerPath": "",
+            "compileCommands": "${workspaceFolder}/.build-win64/compile_commands.json",
+            "cppStandard": "gnu++20",
+            "cStandard": "c23",
+            "intelliSenseMode": "linux-gcc-x64"
         }
     ],
     "version": 4
