@@ -98,6 +98,8 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
         .load("block.cobble", "assets/textures/cobble.png")
         .load("block.lucky", "assets/textures/lucky.png");
 
+    Alf::Renderer::init();
+
     // print some information about the window
     SDL_ShowWindow(window);
     {
@@ -279,7 +281,7 @@ SDL_AppResult SDL_AppIterate(void* appstate)
             // TODO
         }
 
-        Alf::render(app);
+        Alf::Renderer::render(app);
 
         // Limit fps to 300
         auto const fps = Alf::calculate_fps(previous_time, Alf::get_time());

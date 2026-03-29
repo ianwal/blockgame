@@ -3,11 +3,24 @@
 #include "src/app_context.h"
 #include "src/time.h"
 
+#include <GL/glew.h>
+
 namespace Alf
 {
 
-std::int64_t calculate_fps(Timestamp previous_frame, Timestamp current_frame);
+class Renderer
+{
+public:
+    static void init();
 
-void render(AppContext& app_ctx);
+    static void cleanup();
+
+    static void render(AppContext& app_ctx);
+
+private:
+    static GLuint VertexArrayID;
+};
+
+std::int64_t calculate_fps(Timestamp previous_frame, Timestamp current_frame);
 
 } // namespace Alf

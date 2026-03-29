@@ -42,7 +42,24 @@ std::int64_t calculate_fps(Timestamp previous_frame, Timestamp current_frame)
     return static_cast<std::int64_t>(fps);
 }
 
-void render(AppContext& app_ctx)
+GLuint Renderer::VertexArrayID;
+
+void Renderer::init()
+{
+    // Create Vertex Array Object and set as current.
+    GLuint VertexArrayID;
+    glGenVertexArrays(1, &VertexArrayID);
+    glBindVertexArray(VertexArrayID);
+
+    BlockRenderer::init();
+}
+
+void Renderer::cleanup()
+{
+    glDeleteVertexArrays(1, &VertexArrayID);
+}
+
+void Renderer::render(AppContext& app_ctx)
 {
     auto& app = app_ctx;
     // draw a color
@@ -50,6 +67,7 @@ void render(AppContext& app_ctx)
     auto const time =
         std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::nanoseconds{ current_time }).count() /
         1000.f;
+    /*
     auto const red   = (std::sin(time) + 1) / 2.0 * 255;
     auto const green = (std::sin(time / 2) + 1) / 2.0 * 255;
     auto const blue  = (std::sin(time) * 2 + 1) / 2.0 * 255;
@@ -77,25 +95,24 @@ void render(AppContext& app_ctx)
     SDL_DestroyTexture(text_texture);
 
     app.game->gui_objects.render(*app.renderer);
+    */
 
     // SDL_RenderPresent(app.renderer);
 
-    SDL_GL_SetSwapInterval(1);
+    // SDL_GL_SetSwapInterval(1);
+
     // Clear context
     glClearColor(0.25, 0.6, 1, 1);
-
-    // Create Vertex Array Object and set as current.
-    GLuint VertexArrayID;
-    glGenVertexArrays(1, &VertexArrayID);
-    glBindVertexArray(VertexArrayID);
 
     for (auto const& block : app_ctx.game->blocks) {
         BlockRenderer::render(app_ctx, block);
     }
 
+    // Swap the OpenGL buffer to draw to the window.
     auto swapWindowSuccess = SDL_GL_SwapWindow(app.window);
     if (swapWindowSuccess != SDL_TRUE) {
         std::cerr << "SDL_GL_SwapWindow() failure: " << SDL_GetError() << '\n';
+        assert(false);
     }
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
