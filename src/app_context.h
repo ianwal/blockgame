@@ -1,5 +1,6 @@
 #pragma once
 
+#include "src/common.h"
 #include "src/game.h"
 #include "src/time.h"
 #include <SDL3/SDL.h>
@@ -29,5 +30,8 @@ struct AppContext {
         SDL_DestroyWindow(window);
     }
 };
+
+/// Get current game window size.
+Dim2d getWindowSize(AppContext& ctx);
 
 } // namespace alf

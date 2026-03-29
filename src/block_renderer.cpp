@@ -1,26 +1,18 @@
 #include "src/block_renderer.h"
 #include "src/app_context.h"
 #include "src/block.h"
-#include "src/button.h"
 #include "src/game.h"
 #include "src/shaders.h"
 #include "src/time.h"
 #include <GL/glew.h>
 #include <SDL3/SDL.h>
-#include <SDL3_ttf/SDL_ttf.h>
-#include <algorithm>
 #include <cassert>
-#include <cmath>
 #include <cstdlib>
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>
-#include <glm/vec4.hpp>
-#include <iostream>
-#include <string>
-#include <string_view>
 
 namespace alf
 {
@@ -100,8 +92,10 @@ void BlockRenderer::render(AppContext& ctx, Block const& block)
 
     int width{};
     int height{};
-    auto get_window_size_status = SDL_GetWindowSize(ctx.window, &width, &height);
-    assert(get_window_size_status);
+    auto windowSize = getWindowSize(ctx);
+    width           = windowSize.width;
+    height          = windowSize.height;
+
     float const fov                 = 90.0f;
     float const near_clipping_plane = 0.1f;                  // Keep as big as possible or you'll get precision issues.
     float const far_clipping_plane  = 100.0f;                // Keep as small as possible.
