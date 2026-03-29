@@ -1,5 +1,15 @@
 # Notes
 
+## Setup
+
+Install everything in ubuntu-requirements.txt.
+
+Init submodules:
+
+```sh
+git submodule update --init --recursive
+```
+
 ## SDL3_ttf
 
 Font paths are relative to the game executable.
