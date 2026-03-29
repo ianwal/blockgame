@@ -120,6 +120,10 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
     ImGui_ImplSDL3_InitForOpenGL(window, context);
     ImGui_ImplOpenGL3_Init();
 
+    // Make the cursor invisible and capture it.
+    SDL_HideCursor();
+    SDL_SetWindowRelativeMouseMode(window, true);
+
     // print some information about the window
     SDL_ShowWindow(window);
     {
@@ -252,6 +256,8 @@ SDL_AppResult SDL_AppIterate(void* appstate)
             } else if ((input.type == SDL_EVENT_KEY_DOWN) && (input.key.key == SDLK_F3)) {
                 curr_inputs.f3 = true;
             } else if ((input.type == SDL_EVENT_KEY_UP) && (input.key.key == SDLK_F3)) {
+                SDL_HideCursor();
+                SDL_SetWindowRelativeMouseMode(app.window, true);
                 curr_inputs.f3 = false;
             } else if ((input.type == SDL_EVENT_MOUSE_MOTION)) {
                 mouse_updated    = true;
@@ -304,6 +310,8 @@ SDL_AppResult SDL_AppIterate(void* appstate)
             app.game->cameraPos.y += scaling_factor;
         }
         if (curr_inputs.f3 == true) {
+            SDL_ShowCursor();
+            SDL_SetWindowRelativeMouseMode(app.window, false);
             ImGui::ShowDemoWindow();
         }
 
