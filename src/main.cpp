@@ -225,10 +225,46 @@ void render(AppContext& app_ctx)
     glGenVertexArrays(1, &VertexArrayID);
     glBindVertexArray(VertexArrayID);
 
-    // An array of 3 vectors which represents 3 vertices
+    // clang-format off
     static const GLfloat g_vertex_buffer_data[] = {
-        -1.0f, -1.0f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+        -1.0f,-1.0f,-1.0f, // triangle 1 : begin
+        -1.0f,-1.0f, 1.0f,
+        -1.0f, 1.0f, 1.0f, // triangle 1 : end
+        1.0f, 1.0f,-1.0f, // triangle 2 : begin
+        -1.0f,-1.0f,-1.0f,
+        -1.0f, 1.0f,-1.0f, // triangle 2 : end
+        1.0f,-1.0f, 1.0f,
+        -1.0f,-1.0f,-1.0f,
+        1.0f,-1.0f,-1.0f,
+        1.0f, 1.0f,-1.0f,
+        1.0f,-1.0f,-1.0f,
+        -1.0f,-1.0f,-1.0f,
+        -1.0f,-1.0f,-1.0f,
+        -1.0f, 1.0f, 1.0f,
+        -1.0f, 1.0f,-1.0f,
+        1.0f,-1.0f, 1.0f,
+        -1.0f,-1.0f, 1.0f,
+        -1.0f,-1.0f,-1.0f,
+        -1.0f, 1.0f, 1.0f,
+        -1.0f,-1.0f, 1.0f,
+        1.0f,-1.0f, 1.0f,
+        1.0f, 1.0f, 1.0f,
+        1.0f,-1.0f,-1.0f,
+        1.0f, 1.0f,-1.0f,
+        1.0f,-1.0f,-1.0f,
+        1.0f, 1.0f, 1.0f,
+        1.0f,-1.0f, 1.0f,
+        1.0f, 1.0f, 1.0f,
+        1.0f, 1.0f,-1.0f,
+        -1.0f, 1.0f,-1.0f,
+        1.0f, 1.0f, 1.0f,
+        -1.0f, 1.0f,-1.0f,
+        -1.0f, 1.0f, 1.0f,
+        1.0f, 1.0f, 1.0f,
+        -1.0f, 1.0f, 1.0f,
+        1.0f,-1.0f, 1.0f,
     };
+    // clang-format on
 
     // This will identify our vertex buffer
     GLuint vertexbuffer;
@@ -249,8 +285,8 @@ void render(AppContext& app_ctx)
                           0,        // stride
                           (void*) 0 // array buffer offset
     );
-    // Draw the triangle !
-    glDrawArrays(GL_TRIANGLES, 0, 3); // Starting from vertex 0; 3 vertices total -> 1 triangle
+    // Draw the triangles
+    glDrawArrays(GL_TRIANGLES, 0, 12 * 3); // 12*3 indices starting at 0 -> 12 triangles -> 6 squares
     glDisableVertexAttribArray(0);
 
     int width{};
@@ -268,14 +304,17 @@ void render(AppContext& app_ctx)
     glm::mat4 view_mat       = glm::lookAt(cameraPos,               // Camera is at this coordinate in world space
                                            cameraPos + cameraFront, // Camera looks at this coordinate.
                                            glm::vec3(0, 1, 0)       // Camera head is up (0, -1, 0) would be looking upside-down)
-          );
+    );
 
     glm::mat4 model_mat = glm::mat4(1.0f); // identity matrix so model will be at the origin
 
     // Rotate the object over time (for debugging).
-    view_mat = glm::rotate(
-        view_mat, (float) (std::chrono::duration_cast<std::chrono::milliseconds>(app_ctx.current_time).count()) * glm::radians(0.5f),
-        glm::vec3(0.5f, 1.0f, 0.0f));
+    constexpr bool rotate = false;
+    if constexpr (rotate) {
+        view_mat = glm::rotate(
+            view_mat, (float) (std::chrono::duration_cast<std::chrono::milliseconds>(app_ctx.current_time).count()) * glm::radians(0.5f),
+            glm::vec3(0.5f, 1.0f, 0.0f));
+    }
     glm::mat4 model_view_projection = projection_mat * view_mat * model_mat;
 
     // Get a handle for the MVP uniform
