@@ -6,10 +6,16 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <SDL3_ttf/SDL_ttf.h>
+#include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <cstdlib>
+#include <glm/ext/matrix_clip_space.hpp>
+#include <glm/ext/matrix_transform.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/mat4x4.hpp>
+#include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
 #include <iostream>
 #include <string>
 #include <string_view>
@@ -152,11 +158,11 @@ SDL_AppResult SDL_AppEvent(void* appstate, const SDL_Event* event)
     auto& ev  = *event;
 
     switch (ev.type) {
+        case SDL_EVENT_MOUSE_MOTION:
         case SDL_EVENT_MOUSE_BUTTON_DOWN:
         case SDL_EVENT_MOUSE_BUTTON_UP:
         case SDL_EVENT_KEY_UP:
         case SDL_EVENT_KEY_DOWN: {
-            // SDL_Log("KEY DOWN OR UP\n");
             app.game->input_event_buffer->push(ev);
         } break;
         case SDL_EVENT_QUIT: {
@@ -252,23 +258,22 @@ void render(AppContext& app_ctx)
     auto get_window_size_status = SDL_GetWindowSize(app_ctx.window, &width, &height);
     assert(get_window_size_status == SDL_TRUE);
     float const fov                 = 90.0f;
-    float const near_clipping_plane = 0.1f;   // Keep as big as possible or you'll get precision issues.
-    float const far_clipping_plane  = 100.0f; // Keep as small as possible.
-    glm::vec3 camera_pos(app_ctx.game->player_position.x, app_ctx.game->player_position.y,
-                         app_ctx.game->player_position.z); // Camera position in world space.
+    float const near_clipping_plane = 0.1f;                      // Keep as big as possible or you'll get precision issues.
+    float const far_clipping_plane  = 100.0f;                    // Keep as small as possible.
+    glm::vec3 cameraPos             = app_ctx.game->cameraPos;   // Camera position in world space.
+    glm::vec3 cameraFront           = app_ctx.game->cameraFront; // Front of the camera in world space.
 
     glm::mat4 projection_mat = glm::perspective(glm::radians(fov), static_cast<float>(width) / static_cast<float>(height),
                                                 near_clipping_plane, far_clipping_plane);
-    glm::mat4 view_mat =
-        glm::lookAt(camera_pos,                      // Camera is at this coordinate in world space
-                    camera_pos - glm::vec3(0, 0, 2), // Camera looks at this coordinate. Look at 1 unit in front of the camera.
-                    glm::vec3(0, 1, 0)               // Camera head is up (0, -1, 0) would be looking upside-down)
-        );
+    glm::mat4 view_mat       = glm::lookAt(cameraPos,               // Camera is at this coordinate in world space
+                                           cameraPos + cameraFront, // Camera looks at this coordinate.
+                                           glm::vec3(0, 1, 0)       // Camera head is up (0, -1, 0) would be looking upside-down)
+          );
 
     glm::mat4 model_mat = glm::mat4(1.0f); // identity matrix so model will be at the origin
 
     // Rotate the object over time (for debugging).
-    view_mat            = glm::rotate(
+    view_mat = glm::rotate(
         view_mat, (float) (std::chrono::duration_cast<std::chrono::milliseconds>(app_ctx.current_time).count()) * glm::radians(0.5f),
         glm::vec3(0.5f, 1.0f, 0.0f));
     glm::mat4 model_view_projection = projection_mat * view_mat * model_mat;
@@ -289,7 +294,7 @@ void render(AppContext& app_ctx)
 
     // SDL_Log("FPS: %ld Frame time: %ld ns", fps, calculate_frame_time(previous_time, current_time).count());
     // SDL_Log("%ld", app.game->frame_num);
-    std::cout << "Player position: " << app.game->player_position.to_string() << '\n';
+    std::cout << "Camera position: " << to_str(app.game->cameraPos) << '\n';
     ++app.game->frame_num;
 }
 
@@ -320,6 +325,9 @@ SDL_AppResult SDL_AppIterate(void* appstate)
         // Assume nothing is changed, overwrite later.
         Alf::Inputs curr_inputs = app.game->prev_inputs;
 
+        // TODO: The first time prev_inputs is set, it should be set from the player inputs, otherwise if you hold
+        // a key when the game is starting it won't be registered.
+        bool mouse_updated = false;
         while (auto input_opt = app.game->input_event_buffer->consume()) {
             auto& input            = input_opt.value();
             static int input_count = 0;
@@ -358,30 +366,48 @@ SDL_AppResult SDL_AppIterate(void* appstate)
                 curr_inputs.space = true;
             } else if ((input.type == SDL_EVENT_KEY_UP) && (input.key.key == SDLK_SPACE)) {
                 curr_inputs.space = false;
+            } else if ((input.type == SDL_EVENT_MOUSE_MOTION)) {
+                mouse_updated    = true;
+                curr_inputs.x    = input.motion.x;
+                curr_inputs.y    = input.motion.y;
+                curr_inputs.xRel = input.motion.xrel;
+                curr_inputs.yRel = input.motion.yrel;
             } else {
             }
         }
 
         // Process input.
         constexpr float scaling_factor{ 0.01 };
+        constexpr float sensitivity{ 0.5 };
+
+        if (mouse_updated) {
+            app.game->yaw += curr_inputs.xRel * sensitivity;
+            app.game->pitch -= curr_inputs.yRel * sensitivity;
+            app.game->pitch = std::clamp(app.game->pitch, -89.0f, 89.0f);
+        }
+        glm::vec3 direction{};
+        direction.x           = glm::cos(glm::radians(app.game->yaw)) * glm::cos(glm::radians(app.game->pitch));
+        direction.y           = glm::sin(glm::radians(app.game->pitch));
+        direction.z           = glm::sin(glm::radians(app.game->yaw)) * glm::cos(glm::radians(app.game->pitch));
+        app.game->cameraFront = glm::normalize(direction);
 
         if (curr_inputs.a == true) {
-            app.game->player_position.x -= scaling_factor;
+            app.game->cameraPos -= glm::normalize(glm::cross(app.game->cameraFront, app.game->cameraUp)) * scaling_factor;
         }
         if (curr_inputs.d == true) {
-            app.game->player_position.x += scaling_factor;
+            app.game->cameraPos += glm::normalize(glm::cross(app.game->cameraFront, app.game->cameraUp)) * scaling_factor;
         }
         if (curr_inputs.w == true) {
-            app.game->player_position.z -= scaling_factor;
+            app.game->cameraPos += app.game->cameraFront * scaling_factor;
         }
         if (curr_inputs.s == true) {
-            app.game->player_position.z += scaling_factor;
+            app.game->cameraPos -= app.game->cameraFront * scaling_factor;
         }
         if (curr_inputs.ctrl == true) {
-            app.game->player_position.y -= scaling_factor;
+            app.game->cameraPos.y -= scaling_factor;
         }
         if (curr_inputs.space == true) {
-            app.game->player_position.y += scaling_factor;
+            app.game->cameraPos.y += scaling_factor;
         }
 
         Alf::render(app);

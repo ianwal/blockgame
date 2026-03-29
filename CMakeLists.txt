@@ -211,4 +211,13 @@ add_custom_command(
         ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/assets
 )
 
+# On Windows, copy SDL3.dll to the build directory
+if(WIN32)
+    add_custom_command(
+        TARGET mygame POST_BUILD
+        COMMAND "${CMAKE_COMMAND}" -E copy $<TARGET_FILE:SDL3::SDL3-shared> $<TARGET_FILE_DIR:mygame>
+        VERBATIM
+    )
+endif()
+
 install(TARGETS ${EXECUTABLE_NAME} BUNDLE DESTINATION ./install)

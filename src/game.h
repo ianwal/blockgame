@@ -6,6 +6,7 @@
 #include <cassert>
 #include <cstdint>
 #include <deque>
+#include <glm/vec3.hpp>
 #include <iomanip>
 #include <map>
 #include <memory>
@@ -87,23 +88,6 @@ private:
     std::map<IEntity::EntityType, std::unique_ptr<IEntityRenderer>> mEntityRendererMap{};
 };
 
-struct Coord3D {
-    float x{};
-    float y{};
-    float z{};
-
-    std::string to_string() const
-    {
-        std::stringstream ss{};
-        ss << std::fixed << std::setprecision(2);
-        ss << "[x: " << x;
-        ss << ", y: " << y;
-        ss << ", z: " << z;
-        ss << "]";
-        return ss.str();
-    }
-};
-
 /// Inputs. True is pressed down, false is not pressed.
 struct Inputs {
     bool w{};
@@ -112,6 +96,12 @@ struct Inputs {
     bool d{};
     bool space{};
     bool ctrl{};
+
+    float x{}; // Mouse X coordinate
+    float y{}; // Mouse Y coordinate
+
+    float xRel{}; // Mouse X coordinate relative motion
+    float yRel{}; // Mouse Y coordinate relative motion
 
     std::string to_string() const
     {
@@ -127,12 +117,27 @@ struct Inputs {
     }
 };
 
+std::string to_str(glm::vec3 const& v)
+{
+    std::stringstream ss{};
+    ss << std::fixed << std::setprecision(2);
+    ss << "[x: " << v.x;
+    ss << ", y: " << v.y;
+    ss << ", z: " << v.z;
+    ss << "]";
+    return ss.str();
+}
+
 struct GameContext {
     std::vector<IEntity> entities{};
 
     EntityRendererManager entityRendererManager{};
 
-    Coord3D player_position{ 4, 3, 3 }; // Player position in world space.
+    float yaw{ -90.0 };
+    float pitch{};
+    glm::vec3 cameraPos{ 2, 1, 3 }; // Camera position in world space.
+    glm::vec3 cameraFront{ 0.0f, 0.0f, -1.0f };
+    glm::vec3 cameraUp{ 0.0f, 1.0f, 0.0f };
 
     Inputs prev_inputs{};
 
