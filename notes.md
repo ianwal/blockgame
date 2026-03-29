@@ -2,12 +2,44 @@
 
 ## Setup
 
+## Linux
+
 Install everything in ubuntu-requirements.txt.
 
 Init submodules:
 
 ```sh
 git submodule update --init --recursive
+```
+
+## Windows
+
+Install MSYS2.
+
+In MSYS2 UCRT64:
+
+```sh
+pacman -Syyu
+# Build dependencies
+pacman -S mingw-w64-ucrt-x86_64-gcc # Select all if prompted
+pacman -S mingw-w64-ucrt-x86_64-python mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-ninja git
+# Game dependencies
+pacman -S mingw-w64-ucrt-x86_64-freetype mingw-w64-ucrt-x86_64-libjpeg-turbo mingw-w64-x86_64-glew mingw-w64-ucrt-x86_64-harfbuzz mingw-w64-ucrt-x86_64-mesa
+```
+
+Init submodules:
+
+```sh
+# Fix github URLs to avoid generating SSH key
+git config --global url."https://github.com/".insteadOf "git@github.com:"
+git submodule update --init --recursive
+```
+
+Build:
+
+```sh
+cmake -DCMAKE_BUILD_TYPE=Debug -G Ninja -S . .build-win64
+cmake --build .build-win64 --parallel
 ```
 
 ## SDL3_ttf

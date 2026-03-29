@@ -177,8 +177,15 @@ find_package(GLEW)
 target_link_libraries(${EXECUTABLE_NAME} PRIVATE GLEW::GLEW)
 
 # Link OpenGL
-find_package(OpenGL)
-target_link_libraries(${EXECUTABLE_NAME} PRIVATE OpenGL::OpenGL)
+find_package(OpenGL REQUIRED)
+if(WIN32)
+    # pkgconf on MSYS2 doesn't find OpenGL::OpenGL for some reason.
+    set(OpenGL_GL_PREFERENCE GLVND)
+    target_link_libraries(${EXECUTABLE_NAME} PRIVATE OpenGL::GL)
+else()
+    target_link_libraries(${EXECUTABLE_NAME} PRIVATE OpenGL::OpenGL)
+endif()
+
 
 # Link GLM
 target_link_libraries(${EXECUTABLE_NAME} PRIVATE glm)
@@ -250,12 +257,21 @@ add_custom_command(
         ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/assets
 )
 
-# On Windows, copy SDL3.dll to the build directory
+# On Windows, copy the DLLs to the build directory
 if(WIN32)
-    add_custom_command(
-        TARGET mygame POST_BUILD
-        COMMAND "${CMAKE_COMMAND}" -E copy $<TARGET_FILE:SDL3::SDL3-shared> $<TARGET_FILE_DIR:mygame>
-        VERBATIM
+    set(MSYS2_BIN "C:/msys64/ucrt64/bin")
+
+    add_custom_command(TARGET ${EXECUTABLE_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${MSYS2_BIN}/libpng16-16.dll"
+            "${MSYS2_BIN}/libfreetype-6.dll"
+            "${MSYS2_BIN}/libharfbuzz-0.dll"
+            "${MSYS2_BIN}/libbrotlidec.dll"
+            "${MSYS2_BIN}/libglib-2.0-0.dll"
+            "${MSYS2_BIN}/libgraphite2.dll"
+            "${MSYS2_BIN}/libbrotlicommon.dll"
+            "${MSYS2_BIN}/libpcre2-8-0.dll"
+            $<TARGET_FILE_DIR:${EXECUTABLE_NAME}>
     )
 endif()
 
