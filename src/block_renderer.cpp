@@ -159,6 +159,7 @@ void BlockRenderer::render(AppContext& ctx, Block const& block)
 
     glDisable(GL_DEPTH_TEST);
     // glDisable(GL_CULL_FACE);
+    glBindVertexArray(0);
 }
 
 } // namespace alf

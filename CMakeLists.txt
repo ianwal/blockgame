@@ -252,13 +252,15 @@ set_target_properties(${EXECUTABLE_NAME} PROPERTIES
 )
 
 # Copy the assets folder into the executable folder.
+# Remove existing files so that if they're stale they will be replaced, e.g., shader files.
 add_custom_command(
     TARGET ${EXECUTABLE_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E rm -rf
+        ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/assets
     COMMAND ${CMAKE_COMMAND} -E copy_directory
         ${CMAKE_CURRENT_LIST_DIR}/assets
         ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/assets
 )
-
 # On Windows, copy the DLLs to the build directory
 if(WIN32)
     set(MSYS2_BIN "C:/msys64/ucrt64/bin")
