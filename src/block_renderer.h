@@ -18,7 +18,9 @@ public:
     static void render(AppContext& ctx, Block const& block);
 
 private:
+    static GLuint vao;
     static GLuint vertexbuffer;
+    static GLuint matrixId;
 };
 
 } // namespace alf

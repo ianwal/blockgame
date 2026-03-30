@@ -96,17 +96,18 @@ endif()
 
 target_sources(${EXECUTABLE_NAME}
 PRIVATE
-    src/app_context.cpp
     src/time.cpp
     src/shaders.cpp
     src/renderer.cpp
     src/main.cpp
     src/img.cpp
     src/font.cpp
+    src/crosshair_renderer.cpp
     src/common.cpp
     src/button.cpp
     src/block.cpp
     src/block_renderer.cpp
+    src/app_context.cpp
     src/iosLaunchScreen.storyboard
     src/Sample.appxManifest
 

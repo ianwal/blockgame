@@ -17,7 +17,9 @@
 namespace alf
 {
 
+GLuint BlockRenderer::vao;
 GLuint BlockRenderer::vertexbuffer;
+GLuint BlockRenderer::matrixId;
 
 // clang-format off
 static constexpr GLfloat g_vertex_buffer_data[] = {
@@ -69,6 +71,9 @@ static constexpr GLfloat g_vertex_buffer_data[] = {
 
 void BlockRenderer::init()
 {
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+
     // This will identify our vertex buffer
     // Generate 1 buffer, put the resulting identifier in vertexbuffer
     glGenBuffers(1, &vertexbuffer);
@@ -77,17 +82,38 @@ void BlockRenderer::init()
 
     // Give our vertices to OpenGL.
     glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
+
+    // stride = 5 floats (3 pos + 2 uv)
+    constexpr int stride = 5 * sizeof(GLfloat);
+
+    // Position
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, nullptr);
+
+    // UV
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, stride, (void*) (3 * sizeof(GLfloat)));
+    glBindVertexArray(0);
+
+    // Get a handle for the MVP uniform
+    matrixId = glGetUniformLocation(alf::ShaderManagerSingleton::get().get("cube"), "MVP");
 }
 
 void BlockRenderer::cleanup()
 {
+    glDeleteVertexArrays(1, &vao);
     glDeleteBuffers(1, &vertexbuffer);
 }
 
 void BlockRenderer::render(AppContext& ctx, Block const& block)
 {
-    glEnable(GL_DEPTH_TEST);
+    glBindVertexArray(vao);
+    // TODO: Back face culling seems to work but it's not necessary right now so it's disabled.
+    // glEnable(GL_CULL_FACE);
+    // glCullFace(GL_BACK);
 
+    glDepthFunc(GL_LESS);
+    glEnable(GL_DEPTH_TEST);
     glUseProgram(alf::ShaderManagerSingleton::get().get("cube"));
 
     int width{};
@@ -124,33 +150,15 @@ void BlockRenderer::render(AppContext& ctx, Block const& block)
     GLuint texId = glGetUniformLocation(alf::ShaderManagerSingleton::get().get("cube"), "tex");
     glUniform1i(texId, 0);
 
-    // Get a handle for the MVP uniform
-    // TODO: This only needs to be done during initialization, so it should be moved there.
-    GLuint matrixId = glGetUniformLocation(alf::ShaderManagerSingleton::get().get("cube"), "MVP");
-
     // Send the transformation to the currently bound shader in the MVP uniform
     // Each model will have a different MVP (well... a different M) so this will be done in the main rendering loop.
     glUniformMatrix4fv(matrixId, 1, GL_FALSE, &model_view_projection[0][0]);
 
-    // stride = 5 floats (3 pos + 2 uv)
-    constexpr int stride = 5 * sizeof(GLfloat);
-
-    // Position
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, nullptr);
-
-    // UV
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, stride, (void*) (3 * sizeof(GLfloat)));
-
     // Draw the triangles
     glDrawArrays(GL_TRIANGLES, 0, 12 * 6); // 12*6 indices starting at 0 -> 12 triangles -> 6 squares
 
-    // Cleanup
-    glDisableVertexAttribArray(0);
-    glDisableVertexAttribArray(1);
-
     glDisable(GL_DEPTH_TEST);
+    // glDisable(GL_CULL_FACE);
 }
 
 } // namespace alf

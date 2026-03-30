@@ -124,7 +124,8 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 
     alf::ShaderManagerSingleton::get()
         .load("vertex_shader", "assets/shaders/vertex_shader.glsl", "assets/shaders/vertex_shader.frag")
-        .load("cube", "assets/shaders/cube.glsl", "assets/shaders/cube.frag");
+        .load("cube", "assets/shaders/cube.glsl", "assets/shaders/cube.frag")
+        .load("crosshair", "assets/shaders/crosshair.glsl", "assets/shaders/crosshair.frag");
 
     alf::TextureResourceManagerSingleton::get()
         .load("logo", "assets/textures/logo.png")
@@ -250,9 +251,7 @@ SDL_AppResult SDL_AppIterate(void* appstate)
             app.game->input_manager.registerCallbackOnRelease(SDLK_F11,
                                                               [&app]() { toggleWindowFullscreen(app.window); });
 
-            app.game->input_manager.registerCallbackOnDown(SDLK_LSHIFT, [&app]() {
-                app.game->fastNoClipSpeed = true;
-            });
+            app.game->input_manager.registerCallbackOnDown(SDLK_LSHIFT, [&app]() { app.game->fastNoClipSpeed = true; });
 
             app.game->input_manager.registerCallbackOnRelease(SDLK_LSHIFT,
                                                               [&app]() { app.game->fastNoClipSpeed = false; });

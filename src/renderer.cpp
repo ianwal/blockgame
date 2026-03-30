@@ -3,6 +3,7 @@
 #include "src/block.h"
 #include "src/block_renderer.h"
 #include "src/button.h"
+#include "src/crosshair_renderer.h"
 #include "src/game.h"
 #include "src/shaders.h"
 #include "src/time.h"
@@ -49,12 +50,8 @@ GLuint Renderer::VertexArrayID;
 
 void Renderer::init()
 {
-    // Create Vertex Array Object and set as current.
-    GLuint VertexArrayID;
-    glGenVertexArrays(1, &VertexArrayID);
-    glBindVertexArray(VertexArrayID);
-
     BlockRenderer::init();
+    CrosshairRenderer::init();
 }
 
 void Renderer::cleanup()
@@ -104,12 +101,13 @@ void Renderer::render(AppContext& app_ctx)
 
     // SDL_GL_SetSwapInterval(1);
 
-    // Clear context
+    // Clear context, draw background
     glClearColor(0.25, 0.6, 1, 1);
 
     for (auto const& block : app_ctx.game->blocks) {
         BlockRenderer::render(app_ctx, block);
     }
+    CrosshairRenderer::render(app_ctx);
 
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
