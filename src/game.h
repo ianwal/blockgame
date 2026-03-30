@@ -3,6 +3,7 @@
 #include "src/block.h"
 #include "src/button.h"
 #include "src/event_handling.h"
+#include "src/input_manager.h"
 #include "src/time.h"
 #include <SDL3/SDL.h>
 #include <cassert>
@@ -101,7 +102,8 @@ struct Inputs {
     bool f11{};
     bool lshift{};
     bool space{};
-    bool ctrl{};
+    bool lctrl{};
+    bool esc{};
 
     float x{}; // Mouse X coordinate
     float y{}; // Mouse Y coordinate
@@ -117,7 +119,7 @@ struct Inputs {
         ss << ", s: " << s;
         ss << ", d: " << d;
         ss << ", sp: " << space;
-        ss << ", ctrl: " << ctrl;
+        ss << ", lctrl: " << lctrl;
         ss << "]";
         return ss.str();
     }
@@ -170,8 +172,15 @@ struct GameContext {
 
     Inputs prev_inputs{};
 
+    bool debug_window_on = false;
+
+    float moveSpeed{ 1.0f };
+
+    float fastNoClipSpeed = false;
+
     GuiObjects gui_objects{};
     std::unique_ptr<EventBuffer> input_event_buffer{ std::make_unique<EventBuffer>() };
+    InputManager input_manager{};
     std::uint64_t frame_num{};
     Timestamp previous_frame_time{};
 };

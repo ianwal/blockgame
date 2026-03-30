@@ -3,6 +3,7 @@
 #include "src/block_renderer.h"
 #include "src/button.h"
 #include "src/game.h"
+#include "src/input_manager.h"
 #include "src/renderer.h"
 #include "src/shaders.h"
 #include "src/time.h"
@@ -190,8 +191,7 @@ extern "C" SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
         case SDL_EVENT_QUIT: {
             app.app_quit = SDL_APP_SUCCESS;
         } break;
-        case SDL_EVENT_WINDOW_RESIZED:
-        {
+        case SDL_EVENT_WINDOW_RESIZED: {
             int w{};
             int h{};
             SDL_GetWindowSize(SDL_GetWindowFromID(event->window.windowID), &w, &h);
@@ -233,6 +233,41 @@ SDL_AppResult SDL_AppIterate(void* appstate)
             return true;
         }();
 
+        static bool gameInputManagerInitialized = false;
+        if (!gameInputManagerInitialized) {
+            app.game->input_manager.registerCallbackOnRelease(SDLK_F3, [&app]() {
+                if (app.game->debug_window_on) {
+                    app.game->debug_window_on = false;
+                    SDL_HideCursor();
+                    SDL_SetWindowRelativeMouseMode(app.window, true);
+                } else {
+                    app.game->debug_window_on = true;
+                    SDL_ShowCursor();
+                    SDL_SetWindowRelativeMouseMode(app.window, false);
+                }
+            });
+
+            app.game->input_manager.registerCallbackOnRelease(SDLK_F11,
+                                                              [&app]() { toggleWindowFullscreen(app.window); });
+
+            app.game->input_manager.registerCallbackOnDown(SDLK_LSHIFT, [&app]() {
+                app.game->fastNoClipSpeed = true;
+            });
+
+            app.game->input_manager.registerCallbackOnRelease(SDLK_LSHIFT,
+                                                              [&app]() { app.game->fastNoClipSpeed = false; });
+
+            app.game->input_manager.registerCallbackOnRelease(SDLK_ESCAPE, [&app]() {
+                // Quit the game.
+                std::quick_exit(0); // TODO: Just for debugging for instant exit.
+                SDL_Event quit_event{};
+                quit_event.type = SDL_EVENT_QUIT;
+                SDL_PushEvent(&quit_event);
+            });
+
+            gameInputManagerInitialized = true;
+        }
+
         // Assume nothing is changed, overwrite later.
         alf::Inputs curr_inputs = app.game->prev_inputs;
 
@@ -247,55 +282,105 @@ SDL_AppResult SDL_AppIterate(void* appstate)
             ++input_count;
             // SDL_Log("debug: Received event.\n Event type: %d", input.type);
 
-            if ((input.type == SDL_EVENT_KEY_UP) && (input.key.key == SDLK_ESCAPE)) {
-                // Quit the game.
-                std::quick_exit(0); // TODO: Just for debugging for instant exit.
-                SDL_Event quit_event{};
-                quit_event.type = SDL_EVENT_QUIT;
-                SDL_PushEvent(&quit_event);
+            if ((input.type == SDL_EVENT_KEY_DOWN) && (input.key.key == SDLK_ESCAPE)) {
+                if (!app.game->prev_inputs.esc) {
+                    app.game->input_manager.queueInputOnDown(SDLK_ESCAPE);
+                }
+                app.game->input_manager.queueInputOnHold(SDLK_ESCAPE);
+                curr_inputs.esc = true;
+            } else if ((input.type == SDL_EVENT_KEY_UP) && (input.key.key == SDLK_ESCAPE)) {
+                app.game->input_manager.queueInputOnRelease(SDLK_ESCAPE);
+                curr_inputs.esc = false;
             } else if ((input.type == SDL_EVENT_KEY_DOWN) && (input.key.key == SDLK_A)) {
+                if (!app.game->prev_inputs.a) {
+                    app.game->input_manager.queueInputOnDown(SDLK_A);
+                }
+                app.game->input_manager.queueInputOnHold(SDLK_A);
                 curr_inputs.a = true;
             } else if ((input.type == SDL_EVENT_KEY_UP) && (input.key.key == SDLK_A)) {
+                app.game->input_manager.queueInputOnRelease(SDLK_A);
                 curr_inputs.a = false;
             } else if ((input.type == SDL_EVENT_KEY_DOWN) && (input.key.key == SDLK_D)) {
+                if (!app.game->prev_inputs.d) {
+                    app.game->input_manager.queueInputOnDown(SDLK_D);
+                }
+                app.game->input_manager.queueInputOnHold(SDLK_D);
                 curr_inputs.d = true;
             } else if ((input.type == SDL_EVENT_KEY_UP) && (input.key.key == SDLK_D)) {
+                app.game->input_manager.queueInputOnRelease(SDLK_D);
                 curr_inputs.d = false;
             } else if ((input.type == SDL_EVENT_KEY_DOWN) && (input.key.key == SDLK_W)) {
+                if (!app.game->prev_inputs.w) {
+                    app.game->input_manager.queueInputOnDown(SDLK_W);
+                }
+                app.game->input_manager.queueInputOnHold(SDLK_W);
                 curr_inputs.w = true;
             } else if ((input.type == SDL_EVENT_KEY_UP) && (input.key.key == SDLK_W)) {
+                app.game->input_manager.queueInputOnRelease(SDLK_W);
                 curr_inputs.w = false;
             } else if ((input.type == SDL_EVENT_KEY_DOWN) && (input.key.key == SDLK_S)) {
+                if (!app.game->prev_inputs.s) {
+                    app.game->input_manager.queueInputOnDown(SDLK_S);
+                }
+                app.game->input_manager.queueInputOnHold(SDLK_S);
                 curr_inputs.s = true;
             } else if ((input.type == SDL_EVENT_KEY_UP) && (input.key.key == SDLK_S)) {
+                app.game->input_manager.queueInputOnRelease(SDLK_S);
                 curr_inputs.s = false;
             } else if ((input.type == SDL_EVENT_KEY_DOWN) && (input.key.key == SDLK_LCTRL)) {
-                curr_inputs.ctrl = true;
+                if (!app.game->prev_inputs.lctrl) {
+                    app.game->input_manager.queueInputOnDown(SDLK_LCTRL);
+                }
+                app.game->input_manager.queueInputOnHold(SDLK_LCTRL);
+                curr_inputs.lctrl = true;
             } else if ((input.type == SDL_EVENT_KEY_UP) && (input.key.key == SDLK_LCTRL)) {
-                curr_inputs.ctrl = false;
+                app.game->input_manager.queueInputOnRelease(SDLK_LCTRL);
+                curr_inputs.lctrl = false;
             } else if ((input.type == SDL_EVENT_KEY_DOWN) && (input.key.key == SDLK_SPACE)) {
+                if (!app.game->prev_inputs.space) {
+                    app.game->input_manager.queueInputOnDown(SDLK_SPACE);
+                }
+                app.game->input_manager.queueInputOnHold(SDLK_SPACE);
                 curr_inputs.space = true;
             } else if ((input.type == SDL_EVENT_KEY_UP) && (input.key.key == SDLK_SPACE)) {
+                app.game->input_manager.queueInputOnRelease(SDLK_SPACE);
                 curr_inputs.space = false;
             } else if ((input.type == SDL_EVENT_KEY_DOWN) && (input.key.key == SDLK_LSHIFT)) {
+                if (!app.game->prev_inputs.lshift) {
+                    app.game->input_manager.queueInputOnDown(SDLK_LSHIFT);
+                }
+                app.game->input_manager.queueInputOnHold(SDLK_LSHIFT);
                 curr_inputs.lshift = true;
             } else if ((input.type == SDL_EVENT_KEY_UP) && (input.key.key == SDLK_LSHIFT)) {
+                app.game->input_manager.queueInputOnRelease(SDLK_LSHIFT);
                 curr_inputs.lshift = false;
             } else if ((input.type == SDL_EVENT_KEY_DOWN) && (input.key.key == SDLK_Z)) {
+                if (!app.game->prev_inputs.z) {
+                    app.game->input_manager.queueInputOnDown(SDLK_Z);
+                }
+                app.game->input_manager.queueInputOnHold(SDLK_Z);
                 curr_inputs.z = true;
             } else if ((input.type == SDL_EVENT_KEY_UP) && (input.key.key == SDLK_Z)) {
+                app.game->input_manager.queueInputOnRelease(SDLK_Z);
                 curr_inputs.z = false;
             } else if ((input.type == SDL_EVENT_KEY_DOWN) && (input.key.key == SDLK_F3)) {
+                if (!app.game->prev_inputs.f3) {
+                    app.game->input_manager.queueInputOnDown(SDLK_F3);
+                }
+                app.game->input_manager.queueInputOnHold(SDLK_F3);
                 curr_inputs.f3 = true;
             } else if ((input.type == SDL_EVENT_KEY_UP) && (input.key.key == SDLK_F3)) {
-                SDL_HideCursor();
-                SDL_SetWindowRelativeMouseMode(app.window, true);
+                app.game->input_manager.queueInputOnRelease(SDLK_F3);
                 curr_inputs.f3 = false;
             } else if ((input.type == SDL_EVENT_KEY_DOWN) && (input.key.key == SDLK_F11)) {
+                if (!app.game->prev_inputs.f11) {
+                    app.game->input_manager.queueInputOnDown(SDLK_F11);
+                }
+                app.game->input_manager.queueInputOnHold(SDLK_F11);
                 curr_inputs.f11 = true;
             } else if ((input.type == SDL_EVENT_KEY_UP) && (input.key.key == SDLK_F11)) {
+                app.game->input_manager.queueInputOnRelease(SDLK_F11);
                 curr_inputs.f11 = false;
-                toggleWindowFullscreen(app.window);
             } else if ((input.type == SDL_EVENT_MOUSE_MOTION)) {
                 mouse_updated    = true;
                 curr_inputs.x    = input.motion.x;
@@ -305,51 +390,74 @@ SDL_AppResult SDL_AppIterate(void* appstate)
             } else {
             }
         }
-        bool const is_fullscreen = (SDL_GetWindowFlags(app.window) & SDL_WINDOW_FULLSCREEN) != 0;
 
-        // Process input.
-        constexpr float default_scaling_factor{ 0.01 };
-        float scaling_factor{ 0.1 };
+        // Process input queues.
+        app.game->input_manager.processQueues();
+
+        // Process game state.
+
+        // Movement speed and camera sensitivity.
+        float const moveSpeed = 0.1 * app.game->moveSpeed * (app.game->fastNoClipSpeed ? 2.0f : 1.0f);
         constexpr float sensitivity{ 1 };
 
-        if (curr_inputs.lshift == true) {
-            scaling_factor *= 2;
-        }
+        auto calculateNewYaw = [](float xRel, float yaw, float sensitivity) { return yaw + (xRel * sensitivity); };
 
+        auto calculateNewPitch = [](float yRel, float pitch, float sensitivity) {
+            return std::clamp(pitch - (yRel * sensitivity), -89.0f, 89.0f);
+        };
+
+        // Update camera
         if (mouse_updated) {
-            app.game->yaw += curr_inputs.xRel * sensitivity;
-            app.game->pitch -= curr_inputs.yRel * sensitivity;
-            app.game->pitch = std::clamp(app.game->pitch, -89.0f, 89.0f);
+            app.game->yaw   = calculateNewYaw(curr_inputs.xRel, app.game->yaw, sensitivity);
+            app.game->pitch = calculateNewPitch(curr_inputs.yRel, app.game->pitch, sensitivity);
         }
-        glm::vec3 direction{};
-        direction.x           = glm::cos(glm::radians(app.game->yaw)) * glm::cos(glm::radians(app.game->pitch));
-        direction.y           = glm::sin(glm::radians(app.game->pitch));
-        direction.z           = glm::sin(glm::radians(app.game->yaw)) * glm::cos(glm::radians(app.game->pitch));
-        app.game->cameraFront = glm::normalize(direction);
 
+        auto calculateCameraFront = [](float const yaw, float const pitch) {
+            glm::vec3 direction{};
+            direction.x = glm::cos(glm::radians(yaw)) * glm::cos(glm::radians(pitch));
+            direction.y = glm::sin(glm::radians(pitch));
+            direction.z = glm::sin(glm::radians(yaw)) * glm::cos(glm::radians(pitch));
+            return glm::normalize(direction);
+        };
+        app.game->cameraFront = calculateCameraFront(app.game->yaw, app.game->pitch);
+
+        auto moveLeft = [&app, &moveSpeed]() {
+            app.game->cameraPos -= glm::normalize(glm::cross(app.game->cameraFront, app.game->cameraUp)) * moveSpeed;
+        };
+
+        auto moveRight = [&app, &moveSpeed]() {
+            app.game->cameraPos += glm::normalize(glm::cross(app.game->cameraFront, app.game->cameraUp)) * moveSpeed;
+        };
+
+        auto moveForward = [&app, &moveSpeed]() { app.game->cameraPos += app.game->cameraFront * moveSpeed; };
+
+        auto moveBackward = [&app, &moveSpeed]() { app.game->cameraPos -= app.game->cameraFront * moveSpeed; };
+
+        auto moveUp = [&app, &moveSpeed]() { app.game->cameraPos.y += moveSpeed; };
+
+        auto moveDown = [&app, &moveSpeed]() { app.game->cameraPos.y -= moveSpeed; };
+
+        // Update positions
         if (curr_inputs.a == true) {
-            app.game->cameraPos -=
-                glm::normalize(glm::cross(app.game->cameraFront, app.game->cameraUp)) * scaling_factor;
+            moveLeft();
         }
         if (curr_inputs.d == true) {
-            app.game->cameraPos +=
-                glm::normalize(glm::cross(app.game->cameraFront, app.game->cameraUp)) * scaling_factor;
+            moveRight();
         }
         if (curr_inputs.w == true) {
-            app.game->cameraPos += app.game->cameraFront * scaling_factor;
+            moveForward();
         }
         if (curr_inputs.s == true) {
-            app.game->cameraPos -= app.game->cameraFront * scaling_factor;
+            moveBackward();
         }
-        if (curr_inputs.ctrl == true) {
-            app.game->cameraPos.y -= scaling_factor;
+        if (curr_inputs.lctrl == true) {
+            moveDown();
         }
         if (curr_inputs.space == true) {
-            app.game->cameraPos.y += scaling_factor;
+            moveUp();
         }
-        if (curr_inputs.f3 == true) {
-            SDL_ShowCursor();
-            SDL_SetWindowRelativeMouseMode(app.window, false);
+
+        if (app.game->debug_window_on) {
             ImGui::ShowDemoWindow();
         }
 
@@ -358,9 +466,9 @@ SDL_AppResult SDL_AppIterate(void* appstate)
         // Limit fps to 300
         auto const fps = alf::calculate_fps(previous_time, alf::get_time());
         // std::cout << std::to_string(fps) << '\n';
-        if (fps > 300) {
-            SDL_Delay(1);
-        }
+        // if (fps > 300) {
+        // SDL_Delay(1);
+        // }
         app.game->prev_inputs = curr_inputs;
     } catch (const std::exception& e) {
         SDL_Log("%s", e.what());
