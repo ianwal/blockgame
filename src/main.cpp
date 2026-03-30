@@ -28,6 +28,35 @@
 using alf::AppContext;
 using alf::Timestamp;
 
+namespace
+{
+
+// Must only be called in the main thread.
+bool isWindowFullscreen(SDL_Window* window)
+{
+    return (SDL_GetWindowFlags(window) & SDL_WINDOW_FULLSCREEN);
+}
+
+void setWindowFullscreen(SDL_Window* window, bool fullscreen)
+{
+    SDL_SetWindowFullscreen(window, fullscreen);
+    // Update the GL viewport after resizing, otherwise only the original window region will be rendered to.
+    int w{};
+    int h{};
+    SDL_GetWindowSize(window, &w, &h);
+    glViewport(0, 0, w, h);
+    SDL_Log("Changed window to: %s.", fullscreen ? "windowed" : "fullscreen");
+    SDL_Log("Window Size: %dx%d", w, h);
+    SDL_SyncWindow(window);
+}
+
+void toggleWindowFullscreen(SDL_Window* window)
+{
+    setWindowFullscreen(window, !isWindowFullscreen(window));
+}
+
+} // namespace
+
 std::chrono::nanoseconds calculate_frame_time(Timestamp previous_frame, Timestamp current_frame)
 {
     return current_frame - previous_frame;
@@ -259,6 +288,11 @@ SDL_AppResult SDL_AppIterate(void* appstate)
                 SDL_HideCursor();
                 SDL_SetWindowRelativeMouseMode(app.window, true);
                 curr_inputs.f3 = false;
+            } else if ((input.type == SDL_EVENT_KEY_DOWN) && (input.key.key == SDLK_F11)) {
+                curr_inputs.f11 = true;
+            } else if ((input.type == SDL_EVENT_KEY_UP) && (input.key.key == SDLK_F11)) {
+                curr_inputs.f11 = false;
+                toggleWindowFullscreen(app.window);
             } else if ((input.type == SDL_EVENT_MOUSE_MOTION)) {
                 mouse_updated    = true;
                 curr_inputs.x    = input.motion.x;
@@ -268,6 +302,7 @@ SDL_AppResult SDL_AppIterate(void* appstate)
             } else {
             }
         }
+        bool const is_fullscreen = (SDL_GetWindowFlags(app.window) & SDL_WINDOW_FULLSCREEN) != 0;
 
         // Process input.
         constexpr float default_scaling_factor{ 0.01 };

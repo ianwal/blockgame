@@ -98,6 +98,7 @@ struct Inputs {
     bool d{};
     bool z{};
     bool f3{};
+    bool f11{};
     bool lshift{};
     bool space{};
     bool ctrl{};
