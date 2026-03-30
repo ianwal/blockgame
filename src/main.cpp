@@ -40,13 +40,7 @@ bool isWindowFullscreen(SDL_Window* window)
 void setWindowFullscreen(SDL_Window* window, bool fullscreen)
 {
     SDL_SetWindowFullscreen(window, fullscreen);
-    // Update the GL viewport after resizing, otherwise only the original window region will be rendered to.
-    int w{};
-    int h{};
-    SDL_GetWindowSize(window, &w, &h);
-    glViewport(0, 0, w, h);
-    SDL_Log("Changed window to: %s.", fullscreen ? "windowed" : "fullscreen");
-    SDL_Log("Window Size: %dx%d", w, h);
+    SDL_Log("Changed window to %s", fullscreen ? "windowed" : "fullscreen");
     SDL_SyncWindow(window);
 }
 
@@ -195,6 +189,15 @@ extern "C" SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
         } break;
         case SDL_EVENT_QUIT: {
             app.app_quit = SDL_APP_SUCCESS;
+        } break;
+        case SDL_EVENT_WINDOW_RESIZED:
+        {
+            int w{};
+            int h{};
+            SDL_GetWindowSize(SDL_GetWindowFromID(event->window.windowID), &w, &h);
+            SDL_Log("Window size: %dx%d", w, h);
+            // Update the GL viewport after resizing, otherwise only the original window region will be rendered to.
+            glViewport(0, 0, w, h);
         } break;
         default: {
             // SDL_Log("DEFAULT EVENT\n");
