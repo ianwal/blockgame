@@ -2,6 +2,7 @@
 
 #include "src/app_context.h"
 #include "src/block.h"
+
 #include <GL/glew.h>
 
 namespace alf

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <SDL3/SDL.h>
+
 #include <mutex>
 #include <optional>
 #include <queue>

@@ -1,6 +1,8 @@
 #include "src/font.h"
+
 #include "src/common.h"
 
+#include <cassert>
 #include <memory>
 
 namespace alf

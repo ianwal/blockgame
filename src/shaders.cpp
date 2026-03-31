@@ -1,13 +1,14 @@
+#include "src/img.h"
+
 #include <GL/glew.h>
 #include <SDL3/SDL.h>
+
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <string>
 #include <string_view>
 #include <vector>
-
-#include "src/img.h"
 
 namespace alf
 {

@@ -3,7 +3,9 @@
 #include "src/common.h"
 #include "src/game.h"
 #include "src/time.h"
+
 #include <SDL3/SDL.h>
+
 #include <cassert>
 #include <cstdlib>
 

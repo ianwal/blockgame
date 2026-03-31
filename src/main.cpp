@@ -1,3 +1,6 @@
+#include "imgui.h"
+#include "imgui_impl_opengl3.h"
+#include "imgui_impl_sdl3.h"
 #include "src/actions.h"
 #include "src/app_context.h"
 #include "src/block.h"
@@ -8,28 +11,28 @@
 #include "src/renderer.h"
 #include "src/shaders.h"
 #include "src/time.h"
+
 #include <GL/glew.h>
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <SDL3_ttf/SDL_ttf.h>
+#include <glm/glm.hpp>
+#include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
+
 #include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <cstdlib>
-#include <glm/glm.hpp>
-#include <glm/vec3.hpp>
-#include <glm/vec4.hpp>
 #include <iostream>
 #include <string>
 #include <string_view>
 #include <vector>
 
+// clang-format off
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/string_cast.hpp>
-
-#include "imgui.h"
-#include "imgui_impl_opengl3.h"
-#include "imgui_impl_sdl3.h"
+// clang-format on
 
 using alf::AppContext;
 using alf::Timestamp;

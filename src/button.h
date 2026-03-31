@@ -3,9 +3,11 @@
 #include "src/common.h"
 #include "src/font.h"
 #include "src/shaders.h"
+
 #include <GL/glew.h>
 #include <SDL3/SDL.h>
 #include <SDL3_ttf/SDL_ttf.h>
+
 #include <cassert>
 #include <functional>
 #include <optional>

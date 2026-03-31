@@ -1,6 +1,7 @@
 #include "src/app_context.h"
 
 #include "src/common.h"
+
 #include <SDL3/SDL.h>
 
 #include <cassert>

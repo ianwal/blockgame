@@ -19,3 +19,14 @@ SpaceAfterCStyleCast: true
 PointerAlignment: Left
 Cpp11BracedListStyle: false
 AccessModifierOffset: -4
+IncludeBlocks: Regroup
+
+IncludeIsMainRegex: '([-_]test)?$'   # adjust regex to match your naming convention
+
+IncludeCategories:
+  - Regex:           '".*"'           # Local/project headers
+    Priority:        1
+  - Regex:           '^<.*\.(h|hpp)>' # C system headers
+    Priority:        2
+  - Regex:           '^<.*>'          # C++ system headers
+    Priority:        3

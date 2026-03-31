@@ -5,11 +5,13 @@
 #include "src/event_handling.h"
 #include "src/input_manager.h"
 #include "src/time.h"
+
 #include <SDL3/SDL.h>
+#include <glm/vec3.hpp>
+
 #include <cassert>
 #include <cstdint>
 #include <deque>
-#include <glm/vec3.hpp>
 #include <iomanip>
 #include <map>
 #include <memory>

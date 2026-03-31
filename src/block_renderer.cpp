@@ -1,13 +1,13 @@
 #include "src/block_renderer.h"
+
 #include "src/app_context.h"
 #include "src/block.h"
 #include "src/game.h"
 #include "src/shaders.h"
 #include "src/time.h"
+
 #include <GL/glew.h>
 #include <SDL3/SDL.h>
-#include <cassert>
-#include <cstdlib>
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/gtc/matrix_transform.hpp>
