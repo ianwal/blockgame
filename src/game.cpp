@@ -16,6 +16,33 @@
 namespace alf
 {
 
+GameContext::GameContext()
+{
+    // Generate some blocks.
+    SDL_Log("debug: Generating chunks...");
+    constexpr int chunk_size{ 8 };
+    constexpr int num_chunks{ 4 };
+    for (int chunk_index = 0; chunk_index < num_chunks; ++chunk_index) {
+        for (int i = 0; i < chunk_size; ++i) {
+            for (int j = 0; j < chunk_size; ++j) {
+                for (int k = 0; k < chunk_size; ++k) {
+                    Block block{};
+                    bool const isTopLayer = j == (chunk_size - 1);
+                    if (isTopLayer) {
+                        block.type = BlockType::BLOCK_GRASS;
+                    } else {
+                        block.type = BlockType::BLOCK_COBBLE;
+                        // block.type = static_cast<BlockType>(SDL_rand(2));
+                    }
+                    block.pos = glm::vec3{ (chunk_index * chunk_size) + i, j, k };
+                    blocks.push_back(block);
+                }
+            }
+        }
+    }
+    SDL_Log("debug: DONE generating chunks.");
+}
+
 void handleSwingAction(GameContext& game)
 {
     glm::vec3 normalizedCameraFront = glm::normalize(game.cameraFront);

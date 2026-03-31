@@ -24,6 +24,10 @@ GLuint getBlockTexture(BlockType type)
             name = "block.lucky";
         } break;
 
+        case BlockType::BLOCK_GRASS: {
+            name = "block.grass";
+        } break;
+
         default: {
             // Block type texture not added to lookup table. Add it.
             assert(false);

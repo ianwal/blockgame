@@ -137,6 +137,7 @@ extern "C" SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 
     alf::TextureResourceManagerSingleton::get()
         .load("block.cobble", "assets/textures/cobble.png")
+        .load("block.grass", "assets/textures/grass.png")
         .load("block.lucky", "assets/textures/lucky.png");
 
     alf::Renderer::init();
