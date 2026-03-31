@@ -397,18 +397,18 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 
         // Movement speed and camera sensitivity.
         float const moveSpeed = 0.1 * app.game->moveSpeed * (app.game->fastNoClipSpeed ? 2.0f : 1.0f);
-        constexpr float sensitivity{ 1 };
+        constexpr float mouseSensitivity{ 0.5 };
 
-        auto calculateNewYaw = [](float xRel, float yaw, float sensitivity) { return yaw + (xRel * sensitivity); };
+        auto calculateNewYaw = [](float xRel, float yaw, float mouseSensitivity) { return yaw + (xRel * mouseSensitivity); };
 
-        auto calculateNewPitch = [](float yRel, float pitch, float sensitivity) {
-            return std::clamp(pitch - (yRel * sensitivity), -89.0f, 89.0f);
+        auto calculateNewPitch = [](float yRel, float pitch, float mouseSensitivity) {
+            return std::clamp(pitch - (yRel * mouseSensitivity), -89.0f, 89.0f);
         };
 
         // Update camera
         if (mouse_updated) {
-            app.game->yaw   = calculateNewYaw(curr_inputs.xRel, app.game->yaw, sensitivity);
-            app.game->pitch = calculateNewPitch(curr_inputs.yRel, app.game->pitch, sensitivity);
+            app.game->yaw   = calculateNewYaw(curr_inputs.xRel, app.game->yaw, mouseSensitivity);
+            app.game->pitch = calculateNewPitch(curr_inputs.yRel, app.game->pitch, mouseSensitivity);
         }
 
         auto calculateCameraFront = [](float const yaw, float const pitch) {
