@@ -11,13 +11,11 @@ namespace alf
 {
 
 struct AppContext {
-    AppContext(SDL_Renderer* renderer, SDL_Window* window) : renderer{ renderer }, window{ window }
+    AppContext(SDL_Window* window) : window{ window }
     {
-        assert(this->renderer != nullptr);
         assert(this->window != nullptr);
     }
 
-    SDL_Renderer* renderer{};
     SDL_Window* window{};
     std::unique_ptr<GameContext> game{ std::make_unique<GameContext>() };
 
@@ -26,7 +24,6 @@ struct AppContext {
 
     ~AppContext()
     {
-        SDL_DestroyRenderer(renderer);
         SDL_DestroyWindow(window);
     }
 };

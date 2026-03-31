@@ -83,7 +83,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
     // Request OpenGL 3.3 Core Profile
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
 
     // create a window
     SDL_Window* window = SDL_CreateWindow("Window", 1280, 720, SDL_WINDOW_OPENGL);
@@ -113,11 +113,6 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
         std::cout << "OpenGL Version: " << version_name << std::endl;
     }
 
-    SDL_Renderer* renderer = SDL_CreateRenderer(window, nullptr);
-    if (!renderer) {
-        return SDL_Fail();
-    }
-
     alf::global_font_init();
 
     // Load assets
@@ -128,7 +123,6 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
         .load("crosshair", "assets/shaders/crosshair.glsl", "assets/shaders/crosshair.frag");
 
     alf::TextureResourceManagerSingleton::get()
-        .load("logo", "assets/textures/logo.png")
         .load("block.cobble", "assets/textures/cobble.png")
         .load("block.lucky", "assets/textures/lucky.png");
 
@@ -164,11 +158,9 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 
     // set up the application data
     *appstate = new AppContext{
-        renderer,
         window,
     };
 
-    SDL_SetRenderVSync(renderer, SDL_WINDOW_SURFACE_VSYNC_DISABLED);
     SDL_Log("Application started successfully!");
 
     return SDL_APP_CONTINUE;
@@ -399,7 +391,9 @@ SDL_AppResult SDL_AppIterate(void* appstate)
         float const moveSpeed = 0.1 * app.game->moveSpeed * (app.game->fastNoClipSpeed ? 2.0f : 1.0f);
         constexpr float mouseSensitivity{ 0.5 };
 
-        auto calculateNewYaw = [](float xRel, float yaw, float mouseSensitivity) { return yaw + (xRel * mouseSensitivity); };
+        auto calculateNewYaw = [](float xRel, float yaw, float mouseSensitivity) {
+            return yaw + (xRel * mouseSensitivity);
+        };
 
         auto calculateNewPitch = [](float yRel, float pitch, float mouseSensitivity) {
             return std::clamp(pitch - (yRel * mouseSensitivity), -89.0f, 89.0f);

@@ -145,7 +145,7 @@ void BlockRenderer::render(AppContext& ctx, Block const& block)
     glBindTexture(GL_TEXTURE_2D, getBlockTexture(block.type));
 
     // Note:
-    // Setting the texture here isn't necessary since the blocks only have one texture. But
+    // Setting the texture ID here isn't necessary since the blocks only have one texture. But
     // do it anyway.
     GLuint texId = glGetUniformLocation(alf::ShaderManagerSingleton::get().get("cube"), "tex");
     glUniform1i(texId, 0);

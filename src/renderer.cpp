@@ -46,8 +46,6 @@ std::int64_t calculate_fps(Timestamp previous_frame, Timestamp current_frame)
     return static_cast<std::int64_t>(fps);
 }
 
-GLuint Renderer::VertexArrayID;
-
 void Renderer::init()
 {
     BlockRenderer::init();
@@ -56,7 +54,6 @@ void Renderer::init()
 
 void Renderer::cleanup()
 {
-    glDeleteVertexArrays(1, &VertexArrayID);
 }
 
 void Renderer::render(AppContext& app_ctx)
@@ -102,11 +99,13 @@ void Renderer::render(AppContext& app_ctx)
     // SDL_GL_SetSwapInterval(1);
 
     // Clear context, draw background
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor(0.25, 0.6, 1, 1);
 
     for (auto const& block : app_ctx.game->blocks) {
         BlockRenderer::render(app_ctx, block);
     }
+
     CrosshairRenderer::render(app_ctx);
 
     ImGui::Render();
@@ -120,8 +119,6 @@ void Renderer::render(AppContext& app_ctx)
         std::cerr << "SDL_GL_SwapWindow() failure: " << SDL_GetError() << '\n';
         assert(false);
     }
-
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // SDL_Log("FPS: %ld Frame time: %ld ns", fps, calculate_frame_time(previous_time, current_time).count());
     // SDL_Log("%ld", app.game->frame_num);

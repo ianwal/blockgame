@@ -16,9 +16,6 @@ public:
     static void cleanup();
 
     static void render(AppContext& app_ctx);
-
-private:
-    static GLuint VertexArrayID;
 };
 
 std::int64_t calculate_fps(Timestamp previous_frame, Timestamp current_frame);

@@ -108,8 +108,6 @@ PRIVATE
     src/block.cpp
     src/block_renderer.cpp
     src/app_context.cpp
-    src/iosLaunchScreen.storyboard
-    src/Sample.appxManifest
 
     # imgui
     imgui/imgui_demo.cpp
