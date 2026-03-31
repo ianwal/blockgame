@@ -101,6 +101,7 @@ PRIVATE
     src/renderer.cpp
     src/main.cpp
     src/img.cpp
+    src/game.cpp
     src/font.cpp
     src/crosshair_renderer.cpp
     src/common.cpp

@@ -1,6 +1,6 @@
+#include "src/actions.h"
 #include "src/app_context.h"
 #include "src/block.h"
-#include "src/block_renderer.h"
 #include "src/button.h"
 #include "src/camera.h"
 #include "src/game.h"
@@ -20,9 +20,9 @@
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 #include <iostream>
-#include <limits>
 #include <string>
 #include <string_view>
+#include <vector>
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/string_cast.hpp>
@@ -34,6 +34,9 @@
 using alf::AppContext;
 using alf::Timestamp;
 
+namespace alf
+{
+
 namespace
 {
 
@@ -43,6 +46,7 @@ bool isWindowFullscreen(SDL_Window* window)
     return (SDL_GetWindowFlags(window) & SDL_WINDOW_FULLSCREEN);
 }
 
+// Must only be called in the main thread.
 void setWindowFullscreen(SDL_Window* window, bool fullscreen)
 {
     SDL_SetWindowFullscreen(window, fullscreen);
@@ -50,6 +54,7 @@ void setWindowFullscreen(SDL_Window* window, bool fullscreen)
     SDL_SyncWindow(window);
 }
 
+// Must only be called in the main thread.
 void toggleWindowFullscreen(SDL_Window* window)
 {
     setWindowFullscreen(window, !isWindowFullscreen(window));
@@ -62,13 +67,13 @@ std::chrono::nanoseconds calculate_frame_time(Timestamp previous_frame, Timestam
     return current_frame - previous_frame;
 }
 
-SDL_AppResult SDL_Fail()
+extern "C" SDL_AppResult SDL_Fail()
 {
     SDL_LogError(SDL_LOG_CATEGORY_CUSTOM, "Error %s", SDL_GetError());
     return SDL_APP_FAILURE;
 }
 
-SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
+extern "C" SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 {
     // init the library, here we make a window so we only need the Video capabilities.
     if (SDL_Init(SDL_INIT_VIDEO)) {
@@ -205,7 +210,7 @@ extern "C" SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
     return SDL_APP_CONTINUE;
 }
 
-SDL_AppResult SDL_AppIterate(void* appstate)
+extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
 {
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplSDL3_NewFrame();
@@ -231,6 +236,8 @@ SDL_AppResult SDL_AppIterate(void* appstate)
             return true;
         }();
 
+        std::vector<InputAction> pendingActions{};
+
         static bool gameInputManagerInitialized = false;
         if (!gameInputManagerInitialized) {
             app.game->input_manager.registerCallbackOnRelease(SDLK_F3, [&app]() {
@@ -250,44 +257,8 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 
             app.game->input_manager.registerCallbackOnDown(SDLK_LSHIFT, [&app]() { app.game->fastNoClipSpeed = true; });
 
-            app.game->input_manager.registerCallbackOnRelease(SDL_BUTTON_LEFT, [&app]() {
-                glm::vec3 normalizedCameraFront = glm::normalize(app.game->cameraFront);
-                constexpr float maxHitRange     = 5.f;
-                constexpr float step            = 0.05f;
-
-                bool hit = false;
-                [&]() {
-                    auto hitBlock  = app.game->blocks.end();
-                    float closestT = std::numeric_limits<float>::max();
-
-                    for (auto block_it = app.game->blocks.begin(); block_it != app.game->blocks.end(); ++block_it) {
-                        auto const& block = *block_it;
-
-                        // Optimization: This skips checking the logic if the block is beyond the max hitrange.
-                        if (glm::distance(app.game->cameraPos, block.pos) > maxHitRange + 1.f) {
-                            continue;
-                        }
-
-                        for (float t = 0; t < maxHitRange; t += 0.1f) {
-                            glm::vec3 ray = app.game->cameraPos + normalizedCameraFront * t;
-                            if (alf::isPointInCube(ray, block.pos)) {
-                                if (t < closestT) {
-                                    closestT = t;
-                                    hitBlock = block_it;
-                                }
-                                break;
-                            }
-                        }
-                    }
-
-                    if (hitBlock != app.game->blocks.end()) {
-                        app.game->blocks.erase(hitBlock);
-                    }
-                }();
-
-                // SDL_Log("Camera Pos: %s Angle: %s", glm::to_string(app.game->cameraPos).c_str(),
-                //         glm::to_string(app.game->cameraFront).c_str());
-            });
+            app.game->input_manager.registerCallbackOnRelease(
+                SDL_BUTTON_LEFT, [&app, &pendingActions]() { pendingActions.push_back(SwingAction{}); });
 
             app.game->input_manager.registerCallbackOnRelease(SDLK_LSHIFT,
                                                               [&app]() { app.game->fastNoClipSpeed = false; });
@@ -505,6 +476,14 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 
         // Game logic
 
+        for (auto&& action : pendingActions) {
+            std::visit(alf::overloaded{
+                           [&](alf::SwingAction&) { handleSwingAction(*app.game); },
+                           [&](alf::MoveAction& a) { /*handleMove(a.direction);*/ },
+                       },
+                       action);
+        }
+
         // Rendering
 
         alf::Renderer::render(app);
@@ -515,7 +494,10 @@ SDL_AppResult SDL_AppIterate(void* appstate)
         // if (fps > 300) {
         // SDL_Delay(1);
         // }
+
         app.game->prev_inputs = curr_inputs;
+
+        pendingActions.clear();
 
         ++app.game->frame_num;
     } catch (const std::exception& e) {
@@ -540,3 +522,5 @@ extern "C" void SDL_AppQuit(void* appstate, SDL_AppResult result)
     SDL_Quit();
     SDL_Log("Application quit successfully!");
 }
+
+} // namespace alf

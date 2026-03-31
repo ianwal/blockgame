@@ -187,4 +187,6 @@ struct GameContext {
     Timestamp previous_frame_time{};
 };
 
+void handleSwingAction(GameContext& game);
+
 } // namespace alf
