@@ -56,74 +56,29 @@ void Renderer::cleanup()
 {
 }
 
-void Renderer::render(AppContext& app_ctx)
+void Renderer::render(AppContext& ctx)
 {
-    auto& app = app_ctx;
-    // draw a color
-    auto const current_time = alf::get_time();
-    auto const time =
-        std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::nanoseconds{ current_time }).count() /
-        1000.f;
-    /*
-    auto const red   = (std::sin(time) + 1) / 2.0 * 255;
-    auto const green = (std::sin(time / 2) + 1) / 2.0 * 255;
-    auto const blue  = (std::sin(time) * 2 + 1) / 2.0 * 255;
-
-    SDL_Color const forecol{ 0, 0, 0, 255 };
-
-    SDL_SetRenderDrawColor(app.renderer, red, green, blue, SDL_ALPHA_OPAQUE);
-    SDL_RenderClear(app.renderer);
-
-    auto const previous_time = app.current_time;
-    auto const fps           = calculate_fps(previous_time, current_time);
-    app.current_time         = current_time;
-
-    std::string text{};
-    text = std::to_string(fps);
-
-    SDL_Surface* text_surface{ TTF_RenderUTF8_Solid(&get_font(), text.c_str(), forecol) };
-    SDL_Texture* text_texture{ SDL_CreateTextureFromSurface(app.renderer, text_surface) };
-    auto const text_width  = text_surface->w;
-    auto const text_height = text_surface->h;
-
-    SDL_FRect const renderQuad{ 0.0f, 0.0f, (float) text_width, (float) text_height };
-    SDL_RenderTexture(app.renderer, text_texture, nullptr, &renderQuad);
-    SDL_DestroySurface(text_surface);
-    SDL_DestroyTexture(text_texture);
-
-    app.game->gui_objects.render(*app.renderer);
-    */
-
-    // SDL_RenderPresent(app.renderer);
-
-    // SDL_GL_SetSwapInterval(1);
-
     // Clear context, draw background
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor(0.25, 0.6, 1, 1);
 
-    for (auto const& block : app_ctx.game->blocks) {
-        BlockRenderer::render(app_ctx, block);
+    for (auto const& block : ctx.game->blocks) {
+        BlockRenderer::render(ctx, block);
     }
 
-    CrosshairRenderer::render(app_ctx);
+    CrosshairRenderer::render(ctx);
 
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
     // Swap the OpenGL buffer to draw to the window.
-    auto swapWindowSuccess = SDL_GL_SwapWindow(app.window);
+    auto swapWindowSuccess = SDL_GL_SwapWindow(ctx.window);
     if (swapWindowSuccess) {
         // Success.
     } else {
-        std::cerr << "SDL_GL_SwapWindow() failure: " << SDL_GetError() << '\n';
+        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "SDL_GL_SwapWindow() failure: %s", SDL_GetError());
         assert(false);
     }
-
-    // SDL_Log("FPS: %ld Frame time: %ld ns", fps, calculate_frame_time(previous_time, current_time).count());
-    // SDL_Log("%ld", app.game->frame_num);
-    // std::cout << "Camera position: " << to_str(app.game->cameraPos) << '\n';
-    ++app.game->frame_num;
 }
 
 } // namespace alf

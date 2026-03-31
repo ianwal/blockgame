@@ -2,6 +2,7 @@
 #include "src/block.h"
 #include "src/block_renderer.h"
 #include "src/button.h"
+#include "src/camera.h"
 #include "src/game.h"
 #include "src/input_manager.h"
 #include "src/renderer.h"
@@ -19,8 +20,12 @@
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 #include <iostream>
+#include <limits>
 #include <string>
 #include <string_view>
+
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/string_cast.hpp>
 
 #include "imgui.h"
 #include "imgui_impl_opengl3.h"
@@ -245,6 +250,45 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 
             app.game->input_manager.registerCallbackOnDown(SDLK_LSHIFT, [&app]() { app.game->fastNoClipSpeed = true; });
 
+            app.game->input_manager.registerCallbackOnRelease(SDL_BUTTON_LEFT, [&app]() {
+                glm::vec3 normalizedCameraFront = glm::normalize(app.game->cameraFront);
+                constexpr float maxHitRange     = 5.f;
+                constexpr float step            = 0.05f;
+
+                bool hit = false;
+                [&]() {
+                    auto hitBlock  = app.game->blocks.end();
+                    float closestT = std::numeric_limits<float>::max();
+
+                    for (auto block_it = app.game->blocks.begin(); block_it != app.game->blocks.end(); ++block_it) {
+                        auto const& block = *block_it;
+
+                        // Optimization: This skips checking the logic if the block is beyond the max hitrange.
+                        if (glm::distance(app.game->cameraPos, block.pos) > maxHitRange + 1.f) {
+                            continue;
+                        }
+
+                        for (float t = 0; t < maxHitRange; t += 0.1f) {
+                            glm::vec3 ray = app.game->cameraPos + normalizedCameraFront * t;
+                            if (alf::isPointInCube(ray, block.pos)) {
+                                if (t < closestT) {
+                                    closestT = t;
+                                    hitBlock = block_it;
+                                }
+                                break;
+                            }
+                        }
+                    }
+
+                    if (hitBlock != app.game->blocks.end()) {
+                        app.game->blocks.erase(hitBlock);
+                    }
+                }();
+
+                // SDL_Log("Camera Pos: %s Angle: %s", glm::to_string(app.game->cameraPos).c_str(),
+                //         glm::to_string(app.game->cameraFront).c_str());
+            });
+
             app.game->input_manager.registerCallbackOnRelease(SDLK_LSHIFT,
                                                               [&app]() { app.game->fastNoClipSpeed = false; });
 
@@ -282,6 +326,18 @@ SDL_AppResult SDL_AppIterate(void* appstate)
             } else if ((input.type == SDL_EVENT_KEY_UP) && (input.key.key == SDLK_ESCAPE)) {
                 app.game->input_manager.queueInputOnRelease(SDLK_ESCAPE);
                 curr_inputs.esc = false;
+            } else if ((input.type == SDL_EVENT_MOUSE_BUTTON_DOWN) && (input.button.button == SDL_BUTTON_LEFT)) {
+                if (!app.game->prev_inputs.mouse1) {
+                    // TODO: This is not a mouse button, so converting to a SDL_Keycode is wrong. But it doesn't collide
+                    // any keycodes, so it's fine for now.
+                    app.game->input_manager.queueInputOnDown(SDL_BUTTON_LEFT);
+                }
+                // TODO: This doesn't work. Button/mouse event is different than keyboard events.
+                app.game->input_manager.queueInputOnHold(SDL_BUTTON_LEFT);
+                curr_inputs.mouse1 = true;
+            } else if ((input.type == SDL_EVENT_MOUSE_BUTTON_UP) && (input.button.button == SDL_BUTTON_LEFT)) {
+                app.game->input_manager.queueInputOnRelease(SDL_BUTTON_LEFT);
+                curr_inputs.mouse1 = false;
             } else if ((input.type == SDL_EVENT_KEY_DOWN) && (input.key.key == SDLK_A)) {
                 if (!app.game->prev_inputs.a) {
                     app.game->input_manager.queueInputOnDown(SDLK_A);
@@ -405,14 +461,7 @@ SDL_AppResult SDL_AppIterate(void* appstate)
             app.game->pitch = calculateNewPitch(curr_inputs.yRel, app.game->pitch, mouseSensitivity);
         }
 
-        auto calculateCameraFront = [](float const yaw, float const pitch) {
-            glm::vec3 direction{};
-            direction.x = glm::cos(glm::radians(yaw)) * glm::cos(glm::radians(pitch));
-            direction.y = glm::sin(glm::radians(pitch));
-            direction.z = glm::sin(glm::radians(yaw)) * glm::cos(glm::radians(pitch));
-            return glm::normalize(direction);
-        };
-        app.game->cameraFront = calculateCameraFront(app.game->yaw, app.game->pitch);
+        app.game->cameraFront = alf::cameraFront(app.game->yaw, app.game->pitch);
 
         auto moveLeft = [&app, &moveSpeed]() {
             app.game->cameraPos -= glm::normalize(glm::cross(app.game->cameraFront, app.game->cameraUp)) * moveSpeed;
@@ -454,6 +503,10 @@ SDL_AppResult SDL_AppIterate(void* appstate)
             ImGui::ShowDemoWindow();
         }
 
+        // Game logic
+
+        // Rendering
+
         alf::Renderer::render(app);
 
         // Limit fps to 300
@@ -463,6 +516,8 @@ SDL_AppResult SDL_AppIterate(void* appstate)
         // SDL_Delay(1);
         // }
         app.game->prev_inputs = curr_inputs;
+
+        ++app.game->frame_num;
     } catch (const std::exception& e) {
         SDL_Log("%s", e.what());
         app.app_quit = SDL_APP_FAILURE;

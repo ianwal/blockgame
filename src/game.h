@@ -93,6 +93,8 @@ private:
 
 /// Inputs. True is pressed down, false is not pressed.
 struct Inputs {
+    bool mouse1{};
+
     bool w{};
     bool a{};
     bool s{};
@@ -162,8 +164,8 @@ struct GameContext {
 
     EntityRendererManager entityRendererManager{};
 
-    float yaw{ -90.0 };
-    float pitch{};
+    float yaw{ -90.0f };
+    float pitch{ 0.0f };
     glm::vec3 cameraPos{ 0, 0, 0 }; // Camera position in world space.
     glm::vec3 cameraFront{ 0.0f, 0.0f, -1.0f };
     glm::vec3 cameraUp{ 0.0f, 1.0f, 0.0f };
