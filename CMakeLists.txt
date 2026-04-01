@@ -288,4 +288,9 @@ if(WIN32)
     )
 endif()
 
+# Add an icon to the exe
+if(WIN32)
+    target_sources(${EXECUTABLE_NAME} PRIVATE app.rc)
+endif()
+
 install(TARGETS ${EXECUTABLE_NAME} BUNDLE DESTINATION ./install)
