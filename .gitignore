@@ -75,3 +75,5 @@ build/
 venv/
 !.github/
 !.vscode/
+
+imgui.ini
