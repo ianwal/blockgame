@@ -123,10 +123,10 @@ void BlockRenderer::render(AppContext& ctx, Block const& block)
     height          = windowSize.height;
 
     float const fov                 = 90.0f;
-    float const near_clipping_plane = 0.1f;                  // Keep as big as possible or you'll get precision issues.
-    float const far_clipping_plane  = 100.0f;                // Keep as small as possible.
-    glm::vec3 cameraPos             = ctx.game->cameraPos;   // Camera position in world space.
-    glm::vec3 cameraFront           = ctx.game->cameraFront; // Front of the camera in world space.
+    float const near_clipping_plane = 0.1f;   // Keep as big as possible or you'll get precision issues.
+    float const far_clipping_plane  = 100.0f; // Keep as small as possible.
+    glm::vec3 cameraPos             = ctx.game->player.currentCamera->cameraPos; // Camera position in world space.
+    glm::vec3 cameraFront = ctx.game->player.currentCamera->cameraFront;         // Front of the camera in world space.
 
     glm::mat4 projection_mat =
         glm::perspective(glm::radians(fov), static_cast<float>(width) / static_cast<float>(height), near_clipping_plane,

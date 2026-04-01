@@ -26,4 +26,13 @@ constexpr bool isPointInCube(glm::vec3 point, glm::vec3 cubePos)
            point.y <= cubePos.y + 0.5f && point.z >= cubePos.z - 0.5f && point.z <= cubePos.z + 0.5f;
 }
 
+struct Camera {
+    glm::vec3 cameraPos{ 0.0f, 0.0f, 0.0f };    // Camera position in world space.
+    glm::vec3 cameraFront{ 0.0f, 0.0f, -1.0f }; // Camera front in world space.
+    glm::vec3 cameraUp{ 0.0f, 1.0f, 0.0f };     // Camera up in world space.
+
+    float yaw{ -90.0 };
+    float pitch{ 0.0f };
+};
+
 } // namespace alf

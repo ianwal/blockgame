@@ -446,24 +446,33 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
             return std::clamp(pitch - (yRel * mouseSensitivity), -89.0f, 89.0f);
         };
 
-        // Update camera
-        constexpr float mouseSensitivity{ 0.7 };
-        if (mouse_updated) {
-            app.game->yaw   = calculateNewYaw(curr_inputs.xRel, app.game->yaw, mouseSensitivity);
-            app.game->pitch = calculateNewPitch(curr_inputs.yRel, app.game->pitch, mouseSensitivity);
+        if (!game.debug_window_on) {
+            // Update camera
+            constexpr float mouseSensitivity{ 0.7 };
+            if (mouse_updated) {
+                game.player.currentCamera->yaw =
+                    calculateNewYaw(curr_inputs.xRel, game.player.currentCamera->yaw, mouseSensitivity);
+                game.player.currentCamera->pitch =
+                    calculateNewPitch(curr_inputs.yRel, game.player.currentCamera->pitch, mouseSensitivity);
+            }
+
+            // Note:
+            // The camera front must be calculated before movement because camera front is used in movement
+            // calculations.
+            game.player.currentCamera->cameraFront =
+                alf::cameraFront(game.player.currentCamera->yaw, game.player.currentCamera->pitch);
+
+            for (auto&& action : pendingActions) {
+                std::visit(alf::overloaded{
+                               [&](alf::SwingAction&) { handleSwingAction(game); },
+                               [&](alf::MoveAction& action) { handleMoveAction(game, action); },
+                           },
+                           action);
+            }
         }
 
-        // Note:
-        // The camera front must be calculated before movement because camera front is used in movement
-        // calculations.
-        app.game->cameraFront = alf::cameraFront(app.game->yaw, app.game->pitch);
-
-        for (auto&& action : pendingActions) {
-            std::visit(alf::overloaded{
-                           [&](alf::SwingAction&) { handleSwingAction(game); },
-                           [&](alf::MoveAction& action) { handleMoveAction(game, action); },
-                       },
-                       action);
+        if (game.debug_window_on) {
+            ImGui::ShowDemoWindow();
         }
 
         app.game->prev_inputs = curr_inputs;

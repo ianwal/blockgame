@@ -45,7 +45,10 @@ GameContext::GameContext()
 
 void handleSwingAction(GameContext& game)
 {
-    glm::vec3 normalizedCameraFront = glm::normalize(game.cameraFront);
+    // Use first person camera because swinging is done in first person.
+    auto& camera = game.player.fpCamera;
+
+    glm::vec3 normalizedCameraFront = glm::normalize(camera.cameraFront);
     constexpr float maxHitRange     = 5.f;
     constexpr float step            = 0.05f;
 
@@ -56,12 +59,12 @@ void handleSwingAction(GameContext& game)
         auto const& block = *block_it;
 
         // Optimization: This skips checking the logic if the block is beyond the max hitrange.
-        if (glm::distance(game.cameraPos, block.pos) > maxHitRange + 1.f) {
+        if (glm::distance(camera.cameraPos, block.pos) > maxHitRange + 1.f) {
             continue;
         }
 
         for (float t = 0; t < maxHitRange; t += 0.1f) {
-            glm::vec3 ray = game.cameraPos + (normalizedCameraFront * t);
+            glm::vec3 ray = camera.cameraPos + (normalizedCameraFront * t);
             if (isPointInCube(ray, block.pos)) {
                 if (t < closestT) {
                     closestT = t;
@@ -87,21 +90,30 @@ void handleMoveAction(GameContext& game, MoveAction const& action)
 
     float const moveSpeed = (0.1 * game.player.moveSpeedMultiplier) * (game.fastNoClipSpeed ? 2.0f : 1.0f);
 
-    auto moveLeft = [&game, &moveSpeed]() {
-        game.cameraPos -= glm::normalize(glm::cross(game.cameraFront, game.cameraUp)) * moveSpeed;
+    // Use first person camera because moving is done relative to the first person camera.
+    auto& currentCamera = game.player.fpCamera;
+
+    auto moveLeft = [&currentCamera, &moveSpeed]() {
+        currentCamera.cameraPos -=
+            glm::normalize(glm::cross(currentCamera.cameraFront, currentCamera.cameraUp)) * moveSpeed;
     };
 
-    auto moveRight = [&game, &moveSpeed]() {
-        game.cameraPos += glm::normalize(glm::cross(game.cameraFront, game.cameraUp)) * moveSpeed;
+    auto moveRight = [&currentCamera, &moveSpeed]() {
+        currentCamera.cameraPos +=
+            glm::normalize(glm::cross(currentCamera.cameraFront, currentCamera.cameraUp)) * moveSpeed;
     };
 
-    auto moveForward = [&game, &moveSpeed]() { game.cameraPos += game.cameraFront * moveSpeed; };
+    auto moveForward = [&currentCamera, &moveSpeed]() {
+        currentCamera.cameraPos += currentCamera.cameraFront * moveSpeed;
+    };
 
-    auto moveBackward = [&game, &moveSpeed]() { game.cameraPos -= game.cameraFront * moveSpeed; };
+    auto moveBackward = [&currentCamera, &moveSpeed]() {
+        currentCamera.cameraPos -= currentCamera.cameraFront * moveSpeed;
+    };
 
-    auto moveUp = [&game, &moveSpeed]() { game.cameraPos.y += moveSpeed; };
+    auto moveUp = [&currentCamera, &moveSpeed]() { currentCamera.cameraPos.y += moveSpeed; };
 
-    auto moveDown = [&game, &moveSpeed]() { game.cameraPos.y -= moveSpeed; };
+    auto moveDown = [&currentCamera, &moveSpeed]() { currentCamera.cameraPos.y -= moveSpeed; };
 
     switch (action.direction) {
         case MoveAction::Direction::LEFT: {

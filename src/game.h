@@ -3,12 +3,15 @@
 #include "src/actions.h"
 #include "src/block.h"
 #include "src/button.h"
+#include "src/camera.h"
 #include "src/event_handling.h"
+#include "src/game.h"
 #include "src/input_manager.h"
+#include "src/player.h"
 #include "src/time.h"
 
 #include <SDL3/SDL.h>
-#include <glm/vec3.hpp>
+#include <glm/glm.hpp>
 
 #include <cassert>
 #include <cstdint>
@@ -141,28 +144,12 @@ inline std::string to_str(glm::vec3 const& v)
     return ss.str();
 }
 
-struct Player {
-    float moveSpeedMultiplier{ 1.0 };
-};
-
-struct Camera {
-    glm::vec3 cameraPos{ 0, 0, 0 };             // Camera position in world space.
-    glm::vec3 cameraFront{ 0.0f, 0.0f, -1.0f }; // Camera front in world space.
-    glm::vec3 cameraUp{ 0.0f, 1.0f, 0.0f };     // Camera up in world space.
-};
-
 struct GameContext {
     GameContext();
 
     std::vector<IEntity> entities{};
 
     EntityRendererManager entityRendererManager{};
-
-    float yaw{ -90.0f };
-    float pitch{ 0.0f };
-    glm::vec3 cameraPos{ 0, 0, 0 }; // Camera position in world space.
-    glm::vec3 cameraFront{ 0.0f, 0.0f, -1.0f };
-    glm::vec3 cameraUp{ 0.0f, 1.0f, 0.0f };
 
     Player player{};
 
