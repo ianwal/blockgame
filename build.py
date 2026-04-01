@@ -99,7 +99,7 @@ def main():
             exe_path,
         ]
 
-        print("Running...")
+        print("Launching exe...\n")
         subprocess.run(
             qemu_cmd,
             check=True,

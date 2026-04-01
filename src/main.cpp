@@ -72,14 +72,17 @@ std::chrono::nanoseconds calculate_frame_time(Timestamp previous_frame, Timestam
 
 extern "C" SDL_AppResult SDL_Fail()
 {
-    SDL_LogError(SDL_LOG_CATEGORY_CUSTOM, "Error %s", SDL_GetError());
+    SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION, "SDL_Fail() - %s", SDL_GetError());
     return SDL_APP_FAILURE;
 }
 
 extern "C" SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 {
-    // init the library, here we make a window so we only need the Video capabilities.
-    if (SDL_Init(SDL_INIT_VIDEO)) {
+    SDL_SetLogPriorityPrefix(SDL_LOG_PRIORITY_DEBUG, "DEBUG: ");
+    SDL_SetLogPriorityPrefix(SDL_LOG_PRIORITY_INFO, "INFO: ");
+    SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_DEBUG);
+
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS)) {
         // Success.
     } else {
         return SDL_Fail();
@@ -104,6 +107,10 @@ extern "C" SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
         return SDL_Fail();
     }
 
+    SDL_SetWindowTitle(window, std::string{ std::string{ "Block Game | Build: " } + std::string{ __DATE__ } + " " +
+                                            std::string{ __TIME__ } }
+                                   .c_str());
+
     SDL_GLContext context = SDL_GL_CreateContext(window);
     if (!context) {
         return SDL_Fail();
@@ -114,16 +121,13 @@ extern "C" SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
         glewExperimental = GL_TRUE; // Fixes issues with some drivers
         GLenum err       = glewInit();
         if (err != GLEW_OK) {
-            std::cerr << "GLEW Init Error: " << glewGetErrorString(err) << std::endl;
+            SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION, "GLEW Init Error: %s", glewGetErrorString(err));
             return SDL_Fail();
         }
 
-        std::cout << "GLEW initialized successfully!" << std::endl;
-
-        const GLubyte* renderer_name = glGetString(GL_RENDERER);
-        const GLubyte* version_name  = glGetString(GL_VERSION);
-        std::cout << "Renderer: " << renderer_name << std::endl;
-        std::cout << "OpenGL Version: " << version_name << std::endl;
+        SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "GLEW initialized successfully!");
+        SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "OpenGL Renderer: %s", glGetString(GL_RENDERER));
+        SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "OpenGL Renderer Supported Version: %s", glGetString(GL_VERSION));
     }
 
     alf::global_font_init();

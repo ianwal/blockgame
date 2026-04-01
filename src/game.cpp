@@ -5,8 +5,6 @@
 
 #include <SDL3/SDL.h>
 #include <glm/glm.hpp>
-#include <glm/vec3.hpp>
-#include <glm/vec4.hpp>
 
 #include <limits>
 
@@ -19,7 +17,7 @@ namespace alf
 GameContext::GameContext()
 {
     // Generate some blocks.
-    SDL_Log("debug: Generating chunks...");
+    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Generating chunks...");
     constexpr int chunk_size{ 8 };
     constexpr int num_chunks{ 4 };
     for (int chunk_index = 0; chunk_index < num_chunks; ++chunk_index) {
@@ -40,7 +38,7 @@ GameContext::GameContext()
             }
         }
     }
-    SDL_Log("debug: DONE generating chunks.");
+    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "DONE generating chunks.");
 }
 
 void handleSwingAction(GameContext& game)

@@ -68,7 +68,7 @@ GLuint loadShader(std::string_view vertexPath, std::string_view fragmentPath)
     int InfoLogLength;
 
     // Compile Vertex Shader
-    std::cout << "Compiling shader: " << vertexPath << '\n';
+    SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Compiling shader: %s", std::string{ vertexPath }.c_str());
     char const* VertexSourcePointer = VertexShaderCode.c_str();
     glShaderSource(VertexShaderID, 1, &VertexSourcePointer, NULL);
     glCompileShader(VertexShaderID);
@@ -83,7 +83,7 @@ GLuint loadShader(std::string_view vertexPath, std::string_view fragmentPath)
     }
 
     // Compile Fragment Shader
-    std::cout << "Compiling shader: " << fragmentPath << '\n';
+    SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Compiling shader: %s", std::string{ fragmentPath }.c_str());
     char const* FragmentSourcePointer = FragmentShaderCode.c_str();
     glShaderSource(FragmentShaderID, 1, &FragmentSourcePointer, NULL);
     glCompileShader(FragmentShaderID);
@@ -98,7 +98,6 @@ GLuint loadShader(std::string_view vertexPath, std::string_view fragmentPath)
     }
 
     // Link the program
-    std::cout << "Linking program\n";
     GLuint ProgramID = glCreateProgram();
     glAttachShader(ProgramID, VertexShaderID);
     glAttachShader(ProgramID, FragmentShaderID);
@@ -130,8 +129,8 @@ GLuint loadTexture(std::string_view imagePath)
     unsigned char* data  = result.bytes.data();
 
     auto msg = std::string{ "Loaded image: " } + std::string{ imagePath } + " (" + std::to_string(width) + "x" +
-               std::to_string(height) + ")\n";
-    SDL_Log("debug: %s", msg.c_str());
+               std::to_string(height) + ")";
+    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "%s", msg.c_str());
 
     GLuint texture;
     glGenTextures(1, &texture);

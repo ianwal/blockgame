@@ -164,8 +164,9 @@ struct GameContext {
     GuiObjects gui_objects{};
     std::unique_ptr<EventBuffer> input_event_buffer{ std::make_unique<EventBuffer>() };
     InputManager input_manager{};
+    std::uint64_t tick{};
     std::uint64_t frame_num{};
-    Timestamp previous_frame_time{};
+    Timestamp prevTickTimestamp{};
 };
 
 void handleSwingAction(GameContext& game);
