@@ -6,13 +6,13 @@
     "name": "C++ Launch",
     "configurations": [
         {
-            "name": "(gdb) Launch",
+            "name": "Debug (win64)",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/sdl-min",
+            "program": "${workspaceFolder}/.build-win64/RelWithDebInfo/blockgame.exe",
             "args": [],
             "stopAtEntry": false,
-            "cwd": "${fileDirname}",
+            "cwd": "${workspaceFolder}/.build-win64/RelWithDebInfo",
             "environment": [],
             "externalConsole": false,
             "MIMode": "gdb",

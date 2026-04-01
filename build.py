@@ -88,7 +88,7 @@ def main():
     subprocess.run(["cmake", "--build", f"{build_dir}", "--parallel"], check=True)
 
     # Print the filesize
-    exe_path = build_dir / args.build_type / "sdl-min"
+    exe_path = build_dir / args.build_type / "blockgame"
     if args.arch != "win64": # stat() Fails on mingw64 because the path is the C:\ path not the /c/ path
         size_bytes = exe_path.stat().st_size
         size_kb = math.ceil(size_bytes / 1024)

@@ -9,7 +9,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>")
 set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}" CACHE INTERNAL "")
 
 # Declare the project
-project(sdl-min LANGUAGES CXX)
+project(blockgame LANGUAGES CXX)
 set (CMAKE_CXX_STANDARD 20)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -265,7 +265,7 @@ if(WIN32)
     set(MSYS2_BIN "C:/msys64/ucrt64/bin")
 
     # Manually add the required DLLs.
-    # These can be found with ldd, e.g., ldd .build-win64/Debug/sdl-min.exe | grep ucrt64
+    # These can be found with ldd, e.g., ldd .build-win64/Debug/blockgame.exe | grep ucrt64
     add_custom_command(TARGET ${EXECUTABLE_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
             "${MSYS2_BIN}/glew32.dll"
