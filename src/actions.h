@@ -12,7 +12,16 @@ struct SwingAction {
 };
 
 struct MoveAction {
-    glm::vec3 direction{};
+    enum class Direction : std::uint8_t {
+        LEFT = 0,
+        RIGHT,
+        UP,
+        DOWN,
+        FORWARD,
+        BACKWARD,
+    };
+
+    Direction direction{};
 };
 
 using InputAction = std::variant<SwingAction, MoveAction>;

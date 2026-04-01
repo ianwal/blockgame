@@ -1,5 +1,6 @@
 #pragma once
 
+#include "src/actions.h"
 #include "src/block.h"
 #include "src/button.h"
 #include "src/event_handling.h"
@@ -140,6 +141,16 @@ inline std::string to_str(glm::vec3 const& v)
     return ss.str();
 }
 
+struct Player {
+    float moveSpeedMultiplier{ 1.0 };
+};
+
+struct Camera {
+    glm::vec3 cameraPos{ 0, 0, 0 };             // Camera position in world space.
+    glm::vec3 cameraFront{ 0.0f, 0.0f, -1.0f }; // Camera front in world space.
+    glm::vec3 cameraUp{ 0.0f, 1.0f, 0.0f };     // Camera up in world space.
+};
+
 struct GameContext {
     GameContext();
 
@@ -153,13 +164,13 @@ struct GameContext {
     glm::vec3 cameraFront{ 0.0f, 0.0f, -1.0f };
     glm::vec3 cameraUp{ 0.0f, 1.0f, 0.0f };
 
+    Player player{};
+
     std::vector<Block> blocks{};
 
     Inputs prev_inputs{};
 
     bool debug_window_on = false;
-
-    float moveSpeed{ 1.0f };
 
     float fastNoClipSpeed = false;
 
@@ -171,5 +182,7 @@ struct GameContext {
 };
 
 void handleSwingAction(GameContext& game);
+
+void handleMoveAction(GameContext& game, MoveAction const& action);
 
 } // namespace alf

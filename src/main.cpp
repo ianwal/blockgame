@@ -221,6 +221,7 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
     ImGui::NewFrame();
 
     auto& app                = *static_cast<AppContext*>(appstate);
+    auto& game               = *app.game;
     auto const previous_time = app.current_time;
     app.current_time         = alf::get_time();
     assert(app.current_time.count() > 0);
@@ -259,13 +260,13 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
             app.game->input_manager.registerCallbackOnRelease(SDLK_F11,
                                                               [&app]() { toggleWindowFullscreen(app.window); });
 
-            app.game->input_manager.registerCallbackOnDown(SDLK_LSHIFT, [&app]() { app.game->fastNoClipSpeed = true; });
-
-            app.game->input_manager.registerCallbackOnRelease(
-                SDL_BUTTON_LEFT, [&app, &pendingActions]() { pendingActions.push_back(SwingAction{}); });
+            app.game->input_manager.registerCallbackOnHold(SDLK_LSHIFT, [&app]() { app.game->fastNoClipSpeed = true; });
 
             app.game->input_manager.registerCallbackOnRelease(SDLK_LSHIFT,
                                                               [&app]() { app.game->fastNoClipSpeed = false; });
+
+            app.game->input_manager.registerCallbackOnRelease(
+                SDL_BUTTON_LEFT, [&app, &pendingActions]() { pendingActions.push_back(SwingAction{}); });
 
             app.game->input_manager.registerCallbackOnRelease(SDLK_ESCAPE, [&app]() {
                 // Quit the game.
@@ -413,14 +414,29 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
             }
         }
 
-        // Process input queues.
+        // Process input
         app.game->input_manager.processQueues();
 
-        // Process game state.
+        if (curr_inputs.a == true) {
+            pendingActions.push_back(MoveAction{ MoveAction::Direction::LEFT });
+        }
+        if (curr_inputs.d == true) {
+            pendingActions.push_back(MoveAction{ MoveAction::Direction::RIGHT });
+        }
+        if (curr_inputs.w == true) {
+            pendingActions.push_back(MoveAction{ MoveAction::Direction::FORWARD });
+        }
+        if (curr_inputs.s == true) {
+            pendingActions.push_back(MoveAction{ MoveAction::Direction::BACKWARD });
+        }
+        if (curr_inputs.lctrl == true) {
+            pendingActions.push_back(MoveAction{ MoveAction::Direction::DOWN });
+        }
+        if (curr_inputs.space == true) {
+            pendingActions.push_back(MoveAction{ MoveAction::Direction::UP });
+        }
 
-        // Movement speed and camera sensitivity.
-        float const moveSpeed = 0.1 * app.game->moveSpeed * (app.game->fastNoClipSpeed ? 2.0f : 1.0f);
-        constexpr float mouseSensitivity{ 0.5 };
+        // Process game state
 
         auto calculateNewYaw = [](float xRel, float yaw, float mouseSensitivity) {
             return yaw + (xRel * mouseSensitivity);
@@ -431,62 +447,27 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
         };
 
         // Update camera
+        constexpr float mouseSensitivity{ 0.7 };
         if (mouse_updated) {
             app.game->yaw   = calculateNewYaw(curr_inputs.xRel, app.game->yaw, mouseSensitivity);
             app.game->pitch = calculateNewPitch(curr_inputs.yRel, app.game->pitch, mouseSensitivity);
         }
 
+        // Note:
+        // The camera front must be calculated before movement because camera front is used in movement
+        // calculations.
         app.game->cameraFront = alf::cameraFront(app.game->yaw, app.game->pitch);
-
-        auto moveLeft = [&app, &moveSpeed]() {
-            app.game->cameraPos -= glm::normalize(glm::cross(app.game->cameraFront, app.game->cameraUp)) * moveSpeed;
-        };
-
-        auto moveRight = [&app, &moveSpeed]() {
-            app.game->cameraPos += glm::normalize(glm::cross(app.game->cameraFront, app.game->cameraUp)) * moveSpeed;
-        };
-
-        auto moveForward = [&app, &moveSpeed]() { app.game->cameraPos += app.game->cameraFront * moveSpeed; };
-
-        auto moveBackward = [&app, &moveSpeed]() { app.game->cameraPos -= app.game->cameraFront * moveSpeed; };
-
-        auto moveUp = [&app, &moveSpeed]() { app.game->cameraPos.y += moveSpeed; };
-
-        auto moveDown = [&app, &moveSpeed]() { app.game->cameraPos.y -= moveSpeed; };
-
-        // Update positions
-        if (curr_inputs.a == true) {
-            moveLeft();
-        }
-        if (curr_inputs.d == true) {
-            moveRight();
-        }
-        if (curr_inputs.w == true) {
-            moveForward();
-        }
-        if (curr_inputs.s == true) {
-            moveBackward();
-        }
-        if (curr_inputs.lctrl == true) {
-            moveDown();
-        }
-        if (curr_inputs.space == true) {
-            moveUp();
-        }
-
-        if (app.game->debug_window_on) {
-            ImGui::ShowDemoWindow();
-        }
-
-        // Game logic
 
         for (auto&& action : pendingActions) {
             std::visit(alf::overloaded{
-                           [&](alf::SwingAction&) { handleSwingAction(*app.game); },
-                           [&](alf::MoveAction& a) { /*handleMove(a.direction);*/ },
+                           [&](alf::SwingAction&) { handleSwingAction(game); },
+                           [&](alf::MoveAction& action) { handleMoveAction(game, action); },
                        },
                        action);
         }
+
+        app.game->prev_inputs = curr_inputs;
+        pendingActions.clear();
 
         // Rendering
 
@@ -498,10 +479,6 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
         // if (fps > 300) {
         // SDL_Delay(1);
         // }
-
-        app.game->prev_inputs = curr_inputs;
-
-        pendingActions.clear();
 
         ++app.game->frame_num;
     } catch (const std::exception& e) {

@@ -77,7 +77,52 @@ void handleSwingAction(GameContext& game)
     }
 
     // SDL_Log("Camera Pos: %s Angle: %s", glm::to_string(app.game->cameraPos).c_str(),
-    //         glm::to_string(app.game->cameraFront).c_str());
+    //         glm::to_string(game.cameraFront).c_str());
+}
+
+void handleMoveAction(GameContext& game, MoveAction const& action)
+{
+    // SDL_Log("Frame: %s Move Dir: %s", std::to_string(game.frame_num).c_str(),
+    // std::to_string(static_cast<int>(action.direction)).c_str());
+
+    float const moveSpeed = (0.1 * game.player.moveSpeedMultiplier) * (game.fastNoClipSpeed ? 2.0f : 1.0f);
+
+    auto moveLeft = [&game, &moveSpeed]() {
+        game.cameraPos -= glm::normalize(glm::cross(game.cameraFront, game.cameraUp)) * moveSpeed;
+    };
+
+    auto moveRight = [&game, &moveSpeed]() {
+        game.cameraPos += glm::normalize(glm::cross(game.cameraFront, game.cameraUp)) * moveSpeed;
+    };
+
+    auto moveForward = [&game, &moveSpeed]() { game.cameraPos += game.cameraFront * moveSpeed; };
+
+    auto moveBackward = [&game, &moveSpeed]() { game.cameraPos -= game.cameraFront * moveSpeed; };
+
+    auto moveUp = [&game, &moveSpeed]() { game.cameraPos.y += moveSpeed; };
+
+    auto moveDown = [&game, &moveSpeed]() { game.cameraPos.y -= moveSpeed; };
+
+    switch (action.direction) {
+        case MoveAction::Direction::LEFT: {
+            moveLeft();
+        } break;
+        case MoveAction::Direction::RIGHT: {
+            moveRight();
+        } break;
+        case MoveAction::Direction::UP: {
+            moveUp();
+        } break;
+        case MoveAction::Direction::DOWN: {
+            moveDown();
+        } break;
+        case MoveAction::Direction::FORWARD: {
+            moveForward();
+        } break;
+        case MoveAction::Direction::BACKWARD: {
+            moveBackward();
+        } break;
+    }
 }
 
 } // namespace alf
