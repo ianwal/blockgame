@@ -107,6 +107,7 @@ struct Inputs {
     bool s{};
     bool d{};
     bool z{};
+    bool q{};
     bool f3{};
     bool f11{};
     bool lshift{};
@@ -172,6 +173,8 @@ struct GameContext {
     std::uint64_t frame_num{};
     Timestamp prevTickTimestamp{};
 };
+
+GameContext createGameContext();
 
 void handleSwingAction(GameContext& game);
 

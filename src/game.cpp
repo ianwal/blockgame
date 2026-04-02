@@ -6,6 +6,7 @@
 #include <SDL3/SDL.h>
 #include <glm/glm.hpp>
 
+#include <algorithm>
 #include <limits>
 
 #define GLM_ENABLE_EXPERIMENTAL
@@ -18,27 +19,32 @@ GameContext::GameContext()
 {
     // Generate some blocks.
     SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Generating chunks...");
-    constexpr int chunk_size{ 8 };
-    constexpr int num_chunks{ 4 };
-    for (int chunk_index = 0; chunk_index < num_chunks; ++chunk_index) {
-        for (int i = 0; i < chunk_size; ++i) {
-            for (int j = 0; j < chunk_size; ++j) {
-                for (int k = 0; k < chunk_size; ++k) {
-                    Block block{};
-                    bool const isTopLayer = j == (chunk_size - 1);
-                    if (isTopLayer) {
-                        block.type = BlockType::BLOCK_GRASS;
-                    } else {
-                        block.type = BlockType::BLOCK_COBBLE;
-                        // block.type = static_cast<BlockType>(SDL_rand(2));
+    constexpr int chunk_size{ 4 };
+    constexpr int num_chunks{ 16 };
+    for (int chunk_index_x = 0; chunk_index_x < (num_chunks / 2); ++chunk_index_x) {
+        for (int chunk_index_z = 0; chunk_index_z < (num_chunks / 2); ++chunk_index_z) {
+            for (int i = 0; i < chunk_size; ++i) {
+                for (int j = 0; j < chunk_size; ++j) {
+                    for (int k = 0; k < chunk_size; ++k) {
+                        Block block{};
+                        bool const isTopLayer = j == (chunk_size - 1);
+                        if (isTopLayer) {
+                            block.type = BlockType::BLOCK_GRASS;
+                        } else {
+                            block.type = BlockType::BLOCK_COBBLE;
+                            // block.type = static_cast<BlockType>(SDL_rand(2));
+                        }
+                        block.pos = glm::vec3{ (chunk_index_x * chunk_size) + i, j, (chunk_index_z * chunk_size) + k };
+                        blocks.push_back(block);
                     }
-                    block.pos = glm::vec3{ (chunk_index * chunk_size) + i, j, k };
-                    blocks.push_back(block);
                 }
             }
         }
     }
     SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "DONE generating chunks.");
+
+    // Move the player
+    player.updatePos(glm::vec3{ 15, 5, 10 });
 }
 
 void handleSwingAction(GameContext& game)
@@ -86,7 +92,7 @@ void handleMoveAction(GameContext& game, MoveAction const& action)
     // SDL_Log("Tick: %s Move Dir: %s", std::to_string(game.tick).c_str(),
     //         std::to_string(static_cast<int>(action.direction)).c_str());
 
-    float const moveSpeed = (1.0 * game.player.moveSpeedMultiplier) * (game.fastNoClipSpeed ? 2.0f : 1.0f);
+    float const moveSpeed = (1.0 * game.player.getMoveSpeedMultiplier()) * (game.fastNoClipSpeed ? 2.0f : 1.0f);
 
     // Use first person camera because moving is done relative to the first person camera.
     auto& currentCamera = game.player.fpCamera;

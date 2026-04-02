@@ -269,6 +269,12 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
             app.game->input_manager.registerCallbackOnRelease(SDLK_LSHIFT,
                                                               [&app]() { app.game->fastNoClipSpeed = false; });
 
+            app.game->input_manager.registerCallbackOnRelease(SDLK_Q, [&app]() {
+                // Debug
+                SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Player Pos: %s",
+                             glm::to_string(app.game->player.getPos(1.0)).c_str());
+            });
+
             app.game->input_manager.registerCallbackOnRelease(
                 SDL_BUTTON_LEFT, [&app, &pendingActions]() { pendingActions.push_back(SwingAction{}); });
 
@@ -390,6 +396,15 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
             } else if ((input.type == SDL_EVENT_KEY_UP) && (input.key.key == SDLK_Z)) {
                 app.game->input_manager.queueInputOnRelease(SDLK_Z);
                 curr_inputs.z = false;
+            } else if ((input.type == SDL_EVENT_KEY_DOWN) && (input.key.key == SDLK_Q)) {
+                if (!app.game->prev_inputs.q) {
+                    app.game->input_manager.queueInputOnDown(SDLK_Q);
+                }
+                app.game->input_manager.queueInputOnHold(SDLK_Q);
+                curr_inputs.q = true;
+            } else if ((input.type == SDL_EVENT_KEY_UP) && (input.key.key == SDLK_Q)) {
+                app.game->input_manager.queueInputOnRelease(SDLK_Q);
+                curr_inputs.q = false;
             } else if ((input.type == SDL_EVENT_KEY_DOWN) && (input.key.key == SDLK_F3)) {
                 if (!app.game->prev_inputs.f3) {
                     app.game->input_manager.queueInputOnDown(SDLK_F3);

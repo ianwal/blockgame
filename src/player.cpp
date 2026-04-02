@@ -19,4 +19,14 @@ void Player::updatePos(glm::vec3 newPos)
     fpCamera.updatePos(newPos);
 }
 
+float Player::getMoveSpeedMultiplier() const
+{
+    return moveSpeedMultiplier;
+}
+
+void Player::setMoveSpeedMultiplier(float moveSpeedMultiplier)
+{
+    this->moveSpeedMultiplier = moveSpeedMultiplier;
+}
+
 } // namespace alf
