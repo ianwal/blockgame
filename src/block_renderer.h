@@ -16,7 +16,7 @@ public:
 
     static void cleanup();
 
-    static void render(AppContext& ctx, Block const& block);
+    static void render(AppContext& ctx, Block const& block, float partialTick);
 
 private:
     static GLuint vao;

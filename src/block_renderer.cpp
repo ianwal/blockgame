@@ -105,7 +105,7 @@ void BlockRenderer::cleanup()
     glDeleteBuffers(1, &vertexbuffer);
 }
 
-void BlockRenderer::render(AppContext& ctx, Block const& block)
+void BlockRenderer::render(AppContext& ctx, Block const& block, float partialTick)
 {
     glBindVertexArray(vao);
     // TODO: Back face culling seems to work but it's not necessary right now so it's disabled.
@@ -125,8 +125,9 @@ void BlockRenderer::render(AppContext& ctx, Block const& block)
     float const fov                 = 90.0f;
     float const near_clipping_plane = 0.1f;   // Keep as big as possible or you'll get precision issues.
     float const far_clipping_plane  = 100.0f; // Keep as small as possible.
-    glm::vec3 cameraPos             = ctx.game->player.currentCamera->cameraPos; // Camera position in world space.
-    glm::vec3 cameraFront = ctx.game->player.currentCamera->cameraFront;         // Front of the camera in world space.
+    glm::vec3 cameraPos = ctx.game->player.currentCamera->getPos(partialTick); // Camera position in world space.
+    glm::vec3 cameraFront =
+        ctx.game->player.currentCamera->getFront(partialTick); // Front of the camera in world space.
 
     glm::mat4 projection_mat =
         glm::perspective(glm::radians(fov), static_cast<float>(width) / static_cast<float>(height), near_clipping_plane,

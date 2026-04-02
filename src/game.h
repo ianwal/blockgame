@@ -22,6 +22,7 @@
 #include <sstream>
 #include <string>
 #include <variant>
+#include <vector>
 
 namespace alf
 {
@@ -161,9 +162,12 @@ struct GameContext {
 
     float fastNoClipSpeed = false;
 
+    bool noclip = true;
+
     GuiObjects gui_objects{};
     std::unique_ptr<EventBuffer> input_event_buffer{ std::make_unique<EventBuffer>() };
     InputManager input_manager{};
+    std::vector<InputAction> pendingActions{};
     std::uint64_t tick{};
     std::uint64_t frame_num{};
     Timestamp prevTickTimestamp{};

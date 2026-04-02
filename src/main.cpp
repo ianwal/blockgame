@@ -230,6 +230,8 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
     app.current_time         = alf::get_time();
     assert(app.current_time.count() > 0);
 
+    auto& pendingActions = game.pendingActions;
+
     try {
         static bool added_button = [&app]() {
             added_button             = true;
@@ -244,8 +246,6 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
             app.game->gui_objects.add(std::move(text_button));
             return true;
         }();
-
-        std::vector<InputAction> pendingActions{};
 
         static bool gameInputManagerInitialized = false;
         if (!gameInputManagerInitialized) {
@@ -454,37 +454,88 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
             // Update camera
             constexpr float mouseSensitivity{ 0.7 };
             if (mouse_updated) {
-                game.player.currentCamera->yaw =
-                    calculateNewYaw(curr_inputs.xRel, game.player.currentCamera->yaw, mouseSensitivity);
-                game.player.currentCamera->pitch =
-                    calculateNewPitch(curr_inputs.yRel, game.player.currentCamera->pitch, mouseSensitivity);
+                game.player.currentCamera->setYaw(
+                    calculateNewYaw(curr_inputs.xRel, game.player.currentCamera->getYaw(), mouseSensitivity));
+                game.player.currentCamera->setPitch(
+                    calculateNewPitch(curr_inputs.yRel, game.player.currentCamera->getPitch(), mouseSensitivity));
             }
 
             // Note:
             // The camera front must be calculated before movement because camera front is used in movement
             // calculations.
-            game.player.currentCamera->cameraFront =
-                alf::cameraFront(game.player.currentCamera->yaw, game.player.currentCamera->pitch);
-
-            for (auto&& action : pendingActions) {
-                std::visit(alf::overloaded{
-                               [&](alf::SwingAction&) { handleSwingAction(game); },
-                               [&](alf::MoveAction& action) { handleMoveAction(game, action); },
-                           },
-                           action);
-            }
+            game.player.currentCamera->updateFront(
+                alf::cameraFront(game.player.currentCamera->getYaw(), game.player.currentCamera->getPitch()));
         }
 
         if (game.debug_window_on) {
             ImGui::ShowDemoWindow();
         }
 
+        std::chrono::nanoseconds timeSinceLastTick = alf::get_time() - app.game->prevTickTimestamp;
+
+        auto const timeBetweenTicks = std::chrono::milliseconds{ 25 }; // 40 ticks per second
+
+        if ((app.game->prevTickTimestamp != std::chrono::nanoseconds{ 0 })) {
+            if (timeSinceLastTick >= (timeBetweenTicks * 1.5)) {
+                SDL_LogWarn(
+                    SDL_LOG_CATEGORY_APPLICATION, "Time since last tick was long: %sms",
+                    std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(timeSinceLastTick).count())
+                        .c_str());
+            }
+        }
+
+        bool swung = false;
+        bool moved = false;
+
+        // TODO: Process multiple ticks if behind.
+        // 20 ticks / second == 50 ms between ticks
+        if (timeSinceLastTick >= timeBetweenTicks) {
+
+            game.player.currentCamera->updatePos(game.player.currentCamera->getPos(1.0));
+
+            // Process game logic.
+            if (!game.debug_window_on) {
+                for (auto&& action : pendingActions) {
+                    std::visit(alf::overloaded{
+                                   [&](alf::SwingAction&) {
+                                       if (!swung) {
+                                           handleSwingAction(game);
+                                           swung = true;
+                                       }
+                                   },
+                                   [&](alf::MoveAction& action) {
+                                       if (!moved) {
+                                           handleMoveAction(game, action);
+                                           moved = true;
+                                       }
+                                   },
+                               },
+                               action);
+                }
+            }
+
+            pendingActions.clear();
+
+            app.game->prevTickTimestamp = alf::get_time();
+            ++app.game->tick;
+        }
+
         app.game->prev_inputs = curr_inputs;
-        pendingActions.clear();
 
         // Rendering
 
-        alf::Renderer::render(app);
+        // Ratio of progress to the next tick.
+        timeSinceLastTick = alf::get_time() - app.game->prevTickTimestamp;
+        float progressToNextTick =
+            static_cast<float>(std::chrono::duration_cast<std::chrono::milliseconds>(timeSinceLastTick).count()) /
+            static_cast<float>(timeBetweenTicks.count());
+        // Clamp to [0.0, 1.0] to be safe.
+        progressToNextTick = std::clamp(progressToNextTick, 0.0f, 1.0f);
+
+        // SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Progress to next tick: %s%",
+        //             std::to_string(progressToNextTick).c_str());
+
+        alf::Renderer::render(app, progressToNextTick);
 
         // Limit fps to 300
         auto const fps = alf::calculate_fps(previous_time, alf::get_time());

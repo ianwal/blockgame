@@ -15,7 +15,7 @@ public:
 
     static void cleanup();
 
-    static void render(AppContext& ctx);
+    static void render(AppContext& ctx, float partialTick);
 };
 
 std::int64_t calculate_fps(Timestamp previous_frame, Timestamp current_frame);

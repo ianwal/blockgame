@@ -46,7 +46,7 @@ void handleSwingAction(GameContext& game)
     // Use first person camera because swinging is done in first person.
     auto& camera = game.player.fpCamera;
 
-    glm::vec3 normalizedCameraFront = glm::normalize(camera.cameraFront);
+    glm::vec3 normalizedCameraFront = glm::normalize(camera.getFront(1.0));
     constexpr float maxHitRange     = 5.f;
     constexpr float step            = 0.05f;
 
@@ -57,12 +57,12 @@ void handleSwingAction(GameContext& game)
         auto const& block = *block_it;
 
         // Optimization: This skips checking the logic if the block is beyond the max hitrange.
-        if (glm::distance(camera.cameraPos, block.pos) > maxHitRange + 1.f) {
+        if (glm::distance(camera.getPos(1.0), block.pos) > maxHitRange + 1.f) {
             continue;
         }
 
         for (float t = 0; t < maxHitRange; t += 0.1f) {
-            glm::vec3 ray = camera.cameraPos + (normalizedCameraFront * t);
+            glm::vec3 ray = camera.getPos(1.0) + (normalizedCameraFront * t);
             if (isPointInCube(ray, block.pos)) {
                 if (t < closestT) {
                     closestT = t;
@@ -83,55 +83,66 @@ void handleSwingAction(GameContext& game)
 
 void handleMoveAction(GameContext& game, MoveAction const& action)
 {
-    // SDL_Log("Frame: %s Move Dir: %s", std::to_string(game.frame_num).c_str(),
-    // std::to_string(static_cast<int>(action.direction)).c_str());
+    // SDL_Log("Tick: %s Move Dir: %s", std::to_string(game.tick).c_str(),
+    //         std::to_string(static_cast<int>(action.direction)).c_str());
 
-    float const moveSpeed = (0.1 * game.player.moveSpeedMultiplier) * (game.fastNoClipSpeed ? 2.0f : 1.0f);
+    float const moveSpeed = (1.0 * game.player.moveSpeedMultiplier) * (game.fastNoClipSpeed ? 2.0f : 1.0f);
 
     // Use first person camera because moving is done relative to the first person camera.
     auto& currentCamera = game.player.fpCamera;
 
-    auto moveLeft = [&currentCamera, &moveSpeed]() {
-        currentCamera.cameraPos -=
-            glm::normalize(glm::cross(currentCamera.cameraFront, currentCamera.cameraUp)) * moveSpeed;
-    };
+    if (game.noclip) {
+        auto moveLeft = [&currentCamera, &moveSpeed]() {
+            currentCamera.updatePos(currentCamera.getPos(1.0) -
+                                    glm::normalize(glm::cross(currentCamera.getFront(1.0), currentCamera.getUp())) *
+                                        moveSpeed);
+        };
 
-    auto moveRight = [&currentCamera, &moveSpeed]() {
-        currentCamera.cameraPos +=
-            glm::normalize(glm::cross(currentCamera.cameraFront, currentCamera.cameraUp)) * moveSpeed;
-    };
+        auto moveRight = [&currentCamera, &moveSpeed]() {
+            currentCamera.updatePos(currentCamera.getPos(1.0) +
+                                    glm::normalize(glm::cross(currentCamera.getFront(1.0), currentCamera.getUp())) *
+                                        moveSpeed);
+        };
 
-    auto moveForward = [&currentCamera, &moveSpeed]() {
-        currentCamera.cameraPos += currentCamera.cameraFront * moveSpeed;
-    };
+        auto moveForward = [&currentCamera, &moveSpeed]() {
+            currentCamera.updatePos(currentCamera.getPos(1.0) + (currentCamera.getFront(1.0) * moveSpeed));
+        };
 
-    auto moveBackward = [&currentCamera, &moveSpeed]() {
-        currentCamera.cameraPos -= currentCamera.cameraFront * moveSpeed;
-    };
+        auto moveBackward = [&currentCamera, &moveSpeed]() {
+            currentCamera.updatePos(currentCamera.getPos(1.0) - (currentCamera.getFront(1.0) * moveSpeed));
+        };
 
-    auto moveUp = [&currentCamera, &moveSpeed]() { currentCamera.cameraPos.y += moveSpeed; };
+        auto moveUp = [&currentCamera, &moveSpeed]() {
+            currentCamera.updatePos(currentCamera.getPos(1.0) + glm::vec3{ 0, moveSpeed, 0 });
+        };
 
-    auto moveDown = [&currentCamera, &moveSpeed]() { currentCamera.cameraPos.y -= moveSpeed; };
+        auto moveDown = [&currentCamera, &moveSpeed]() {
+            currentCamera.updatePos(currentCamera.getPos(1.0) - glm::vec3{ 0, moveSpeed, 0 });
+        };
 
-    switch (action.direction) {
-        case MoveAction::Direction::LEFT: {
-            moveLeft();
-        } break;
-        case MoveAction::Direction::RIGHT: {
-            moveRight();
-        } break;
-        case MoveAction::Direction::UP: {
-            moveUp();
-        } break;
-        case MoveAction::Direction::DOWN: {
-            moveDown();
-        } break;
-        case MoveAction::Direction::FORWARD: {
-            moveForward();
-        } break;
-        case MoveAction::Direction::BACKWARD: {
-            moveBackward();
-        } break;
+        switch (action.direction) {
+            case MoveAction::Direction::LEFT: {
+                moveLeft();
+            } break;
+            case MoveAction::Direction::RIGHT: {
+                moveRight();
+            } break;
+            case MoveAction::Direction::UP: {
+                moveUp();
+            } break;
+            case MoveAction::Direction::DOWN: {
+                moveDown();
+            } break;
+            case MoveAction::Direction::FORWARD: {
+                moveForward();
+            } break;
+            case MoveAction::Direction::BACKWARD: {
+                moveBackward();
+            } break;
+        }
+
+    } else {
+        // TODO
     }
 }
 

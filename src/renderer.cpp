@@ -58,14 +58,14 @@ void Renderer::cleanup()
 {
 }
 
-void Renderer::render(AppContext& ctx)
+void Renderer::render(AppContext& ctx, float partialTick)
 {
     // Clear context, draw background
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor(0.25, 0.6, 1, 1);
 
     for (auto const& block : ctx.game->blocks) {
-        BlockRenderer::render(ctx, block);
+        BlockRenderer::render(ctx, block, partialTick);
     }
 
     CrosshairRenderer::render(ctx);
