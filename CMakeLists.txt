@@ -99,6 +99,7 @@ PRIVATE
     src/time.cpp
     src/shaders.cpp
     src/renderer.cpp
+    src/player.cpp
     src/main.cpp
     src/img.cpp
     src/game.cpp

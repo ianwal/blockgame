@@ -491,7 +491,7 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
         // 20 ticks / second == 50 ms between ticks
         if (timeSinceLastTick >= timeBetweenTicks) {
 
-            game.player.currentCamera->updatePos(game.player.currentCamera->getPos(1.0));
+            game.player.updatePos(game.player.getPos(1.0));
 
             // Process game logic.
             if (!game.debug_window_on) {

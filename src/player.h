@@ -1,5 +1,7 @@
 #pragma once
 
+#include "src/camera.h"
+
 #include <glm/glm.hpp>
 
 namespace alf
@@ -19,6 +21,9 @@ public:
 
     glm::vec3 getPos(float partialTick) const;
 
+    void updatePos(glm::vec3 newPos);
+
+private:
     glm::vec3 prevPos{}; ///< Position on the previous tick.
     glm::vec3 pos{};
     glm::vec3 vel{};

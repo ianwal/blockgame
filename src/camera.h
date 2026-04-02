@@ -1,17 +1,11 @@
 #pragma once
 
+#include "src/utils.h"
+
 #include <glm/glm.hpp>
 
 namespace alf
 {
-
-constexpr glm::vec3 lerp(glm::vec3 prev, glm::vec3 current, float t)
-{
-    float x = prev.x + ((current.x - prev.x) * t);
-    float y = prev.y + ((current.y - prev.y) * t);
-    float z = prev.z + ((current.z - prev.z) * t);
-    return glm::vec3{ x, y, z };
-}
 
 /// @brief Get the camera front vector from the yaw and pitch.
 inline glm::vec3 cameraFront(float yaw, float pitch)

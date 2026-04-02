@@ -90,34 +90,35 @@ void handleMoveAction(GameContext& game, MoveAction const& action)
 
     // Use first person camera because moving is done relative to the first person camera.
     auto& currentCamera = game.player.fpCamera;
+    auto& player        = game.player;
 
     if (game.noclip) {
-        auto moveLeft = [&currentCamera, &moveSpeed]() {
-            currentCamera.updatePos(currentCamera.getPos(1.0) -
-                                    glm::normalize(glm::cross(currentCamera.getFront(1.0), currentCamera.getUp())) *
-                                        moveSpeed);
+        auto moveLeft = [&player, &currentCamera, &moveSpeed]() {
+            player.updatePos(player.getPos(1.0) -
+                             glm::normalize(glm::cross(currentCamera.getFront(1.0), currentCamera.getUp())) *
+                                 moveSpeed);
         };
 
-        auto moveRight = [&currentCamera, &moveSpeed]() {
-            currentCamera.updatePos(currentCamera.getPos(1.0) +
-                                    glm::normalize(glm::cross(currentCamera.getFront(1.0), currentCamera.getUp())) *
-                                        moveSpeed);
+        auto moveRight = [&player, &currentCamera, &moveSpeed]() {
+            player.updatePos(player.getPos(1.0) +
+                             glm::normalize(glm::cross(currentCamera.getFront(1.0), currentCamera.getUp())) *
+                                 moveSpeed);
         };
 
-        auto moveForward = [&currentCamera, &moveSpeed]() {
-            currentCamera.updatePos(currentCamera.getPos(1.0) + (currentCamera.getFront(1.0) * moveSpeed));
+        auto moveForward = [&player, &currentCamera, &moveSpeed]() {
+            player.updatePos(player.getPos(1.0) + (currentCamera.getFront(1.0) * moveSpeed));
         };
 
-        auto moveBackward = [&currentCamera, &moveSpeed]() {
-            currentCamera.updatePos(currentCamera.getPos(1.0) - (currentCamera.getFront(1.0) * moveSpeed));
+        auto moveBackward = [&player, &currentCamera, &moveSpeed]() {
+            player.updatePos(player.getPos(1.0) - (currentCamera.getFront(1.0) * moveSpeed));
         };
 
-        auto moveUp = [&currentCamera, &moveSpeed]() {
-            currentCamera.updatePos(currentCamera.getPos(1.0) + glm::vec3{ 0, moveSpeed, 0 });
+        auto moveUp = [&player, &currentCamera, &moveSpeed]() {
+            player.updatePos(player.getPos(1.0) + glm::vec3{ 0, moveSpeed, 0 });
         };
 
-        auto moveDown = [&currentCamera, &moveSpeed]() {
-            currentCamera.updatePos(currentCamera.getPos(1.0) - glm::vec3{ 0, moveSpeed, 0 });
+        auto moveDown = [&player, &currentCamera, &moveSpeed]() {
+            player.updatePos(player.getPos(1.0) - glm::vec3{ 0, moveSpeed, 0 });
         };
 
         switch (action.direction) {
