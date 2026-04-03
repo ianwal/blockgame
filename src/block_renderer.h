@@ -18,11 +18,14 @@ public:
 
     static void render(AppContext& ctx, Block const& block, float partialTick);
 
+    static void render(AppContext& ctx, std::vector<Block> const& blocks, float partialTick);
+
 private:
     static GLuint vao;
     static GLuint vertexbuffer;
     static GLuint shaderId;
     static GLuint matrixId;
+    static GLuint vbo;
 };
 
 } // namespace alf

@@ -132,6 +132,9 @@ extern "C" SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
         logInfo("OpenGL Renderer Supported Version: {}", reinterpret_cast<char const*>(glGetString(GL_VERSION)));
     }
 
+    // Disable vsync
+    SDL_GL_SetSwapInterval(0);
+
     alf::global_font_init();
 
     // Load assets
@@ -557,6 +560,13 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
         }
 
         ++app.game->frame_num;
+
+        // Limit fps to 300
+        auto const fps = alf::calculate_fps(previous_time, alf::get_time());
+        // std::cout << std::to_string(fps) << '\n';
+        if (fps > 300) {
+            SDL_Delay(1);
+        }
     } catch (const std::exception& e) {
         logInfo("{}", e.what());
         app.app_quit = SDL_APP_FAILURE;

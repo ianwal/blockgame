@@ -21,20 +21,21 @@ GameContext::GameContext()
 {
     // Generate some blocks.
     logDebug("Generating chunks...");
-    constexpr int chunk_size{ 4 };
+    constexpr int chunk_size{ 8 };
     constexpr int num_chunks{ 16 };
     for (int chunk_index_x = 0; chunk_index_x < (num_chunks / 2); ++chunk_index_x) {
         for (int chunk_index_z = 0; chunk_index_z < (num_chunks / 2); ++chunk_index_z) {
             for (int i = 0; i < chunk_size; ++i) {
-                for (int j = 0; j < chunk_size; ++j) {
+                for (int j = 0; j < 128; ++j) {
                     for (int k = 0; k < chunk_size; ++k) {
                         Block block{};
-                        bool const isTopLayer = j == (chunk_size - 1);
-                        if (isTopLayer) {
+                        if (j >= 66 && j < 68) {
                             block.type = BlockType::BLOCK_GRASS;
+                        } else if (j >= 68) {
+                            block.type == BlockType::BLOCK_AIR;
                         } else {
                             block.type = BlockType::BLOCK_COBBLE;
-                            // block.type = static_cast<BlockType>(SDL_rand(2));
+                            // block.type = static_cast<BlockType>(SDL_rand(4));
                         }
                         block.pos = glm::vec3{ (chunk_index_x * chunk_size) + i, j, (chunk_index_z * chunk_size) + k };
                         blocks.push_back(block);

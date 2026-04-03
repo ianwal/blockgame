@@ -23,6 +23,7 @@ GLuint BlockRenderer::vao;
 GLuint BlockRenderer::vertexbuffer;
 GLuint BlockRenderer::shaderId;
 GLuint BlockRenderer::matrixId;
+GLuint BlockRenderer::vbo;
 
 // clang-format off
 static constexpr GLfloat g_vertex_buffer_data[] = {
@@ -75,34 +76,33 @@ static constexpr GLfloat g_vertex_buffer_data[] = {
 void BlockRenderer::init()
 {
     glGenVertexArrays(1, &vao);
+    glGenBuffers(1, &vertexbuffer); // cube geometry
+    glGenBuffers(1, &vbo);          // instance positions
+
     glBindVertexArray(vao);
 
-    // This will identify our vertex buffer
-    // Generate 1 buffer, put the resulting identifier in vertexbuffer
-    glGenBuffers(1, &vertexbuffer);
-    // The following commands will talk about our 'vertexbuffer' buffer
+    // cube verts -> vertexbuffer
     glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-
-    // Give our vertices to OpenGL.
     glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
-
-    // stride = 5 floats (3 pos + 2 uv)
     constexpr int stride = 5 * sizeof(GLfloat);
-
-    // Position
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, nullptr);
-
-    // UV
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, stride, (void*) (3 * sizeof(GLfloat)));
+
+    // instance positions -> vbo
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, 4096 * sizeof(glm::vec3), nullptr, GL_DYNAMIC_DRAW);
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*) 0);
+    glVertexAttribDivisor(2, 1);
+
     glBindVertexArray(0);
 
-    // Get a handle for the VP uniform
     shaderId          = alf::ShaderManagerSingleton::get().get("cube");
     GLuint blockIndex = glGetUniformBlockIndex(shaderId, "Matrices");
     glUniformBlockBinding(shaderId, blockIndex, 0);
-    matrixId = glGetUniformLocation(shaderId, "model");
+    glUniform1i(glGetUniformLocation(shaderId, "tex"), 0);
 }
 
 void BlockRenderer::cleanup()
@@ -113,6 +113,7 @@ void BlockRenderer::cleanup()
 
 void BlockRenderer::render(AppContext& ctx, Block const& block, float partialTick)
 {
+    /*
     ZoneScopedN("SingleBlockRender");
     if (block.type == BlockType::BLOCK_AIR) {
         return;
@@ -144,11 +145,41 @@ void BlockRenderer::render(AppContext& ctx, Block const& block, float partialTic
     glUniformMatrix4fv(matrixId, 1, GL_FALSE, glm::value_ptr(model));
 
     // Draw the triangles
-    glDrawArrays(GL_TRIANGLES, 0, 12 * 6); // 12*6 indices starting at 0 -> 12 triangles -> 6 squares
+    glDrawArrays(GL_TRIANGLES, 0, 6*6); // 3 vertices per triangle, 2 triangles per face, 6 faces
 
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
     glBindVertexArray(0);
+    */
+}
+
+void BlockRenderer::render(AppContext& ctx, std::vector<Block> const& blocks, float partialTick)
+{
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+    glDepthFunc(GL_LESS);
+
+    std::map<BlockType, std::vector<glm::vec3>> byType{};
+    for (auto const& block : blocks) {
+        if (block.type == BlockType::BLOCK_AIR) {
+            continue;
+        }
+        byType[block.type].push_back(glm::vec3(block.pos));
+    }
+
+    glUseProgram(shaderId);
+    glBindVertexArray(vao);
+    for (auto& [type, positions] : byType) {
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, getBlockTexture(type));
+        glBindBuffer(GL_ARRAY_BUFFER, vbo);
+        glBufferData(GL_ARRAY_BUFFER, positions.size() * sizeof(glm::vec3), positions.data(), GL_DYNAMIC_DRAW);
+        glDrawArraysInstanced(GL_TRIANGLES, 0, 36, positions.size());
+    }
+
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_CULL_FACE);
 }
 
 } // namespace alf

@@ -100,9 +100,7 @@ void Renderer::render(AppContext& ctx, float partialTick)
 
     {
         ZoneScopedN("BlockRenderer");
-        for (auto const& block : ctx.game->blocks) {
-            BlockRenderer::render(ctx, block, partialTick);
-        }
+        BlockRenderer::render(ctx, ctx.game->blocks, partialTick);
     }
 
     CrosshairRenderer::render(ctx);

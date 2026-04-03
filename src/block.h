@@ -9,10 +9,12 @@ namespace alf
 {
 
 enum class BlockType : std::uint32_t {
-    BLOCK_AIR = 0, // Placeholder, not really a block.
+    BLOCK_AIR = 0, ///< Placeholder, not really a block.
     BLOCK_COBBLE,
     BLOCK_GRASS,
     BLOCK_LUCKY,
+
+    NUM_BLOCK_TYPES, ///< Meta
 };
 
 struct Block {

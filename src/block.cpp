@@ -1,5 +1,6 @@
 #include "src/block.h"
 
+#include "src/logger.h"
 #include "src/shaders.h"
 
 #include <GL/glew.h>
@@ -28,8 +29,13 @@ GLuint getBlockTexture(BlockType type)
             name = "block.grass";
         } break;
 
+        case BlockType::BLOCK_AIR: {
+            name = "block.air";
+        } break;
+
         default: {
             // Block type texture not added to lookup table. Add it.
+            logError("{} failed. Block type has no texture: {}", __func__, static_cast<int>(type));
             assert(false);
         } break;
     };
