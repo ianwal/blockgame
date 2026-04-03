@@ -8,6 +8,7 @@
 
 #include <GL/glew.h>
 #include <SDL3/SDL.h>
+#include <glm/ext.hpp>
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -95,8 +96,11 @@ void BlockRenderer::init()
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, stride, (void*) (3 * sizeof(GLfloat)));
     glBindVertexArray(0);
 
-    // Get a handle for the MVP uniform
-    matrixId = glGetUniformLocation(alf::ShaderManagerSingleton::get().get("cube"), "MVP");
+    // Get a handle for the VP uniform
+    GLuint shaderID   = alf::ShaderManagerSingleton::get().get("cube");
+    GLuint blockIndex = glGetUniformBlockIndex(shaderID, "Matrices");
+    glUniformBlockBinding(shaderID, blockIndex, 0);
+    matrixId = glGetUniformLocation(shaderID, "model");
 }
 
 void BlockRenderer::cleanup()
@@ -107,6 +111,13 @@ void BlockRenderer::cleanup()
 
 void BlockRenderer::render(AppContext& ctx, Block const& block, float partialTick)
 {
+    if (block.type == BlockType::BLOCK_AIR) {
+        return;
+    }
+
+    glm::mat4 model =
+        glm::translate(glm::mat4(1.0f), glm::vec3((float) block.pos.x, (float) block.pos.y, (float) block.pos.z));
+
     glBindVertexArray(vao);
     // TODO: Back face culling seems to work but it's not necessary right now so it's disabled.
     // glEnable(GL_CULL_FACE);
@@ -115,31 +126,6 @@ void BlockRenderer::render(AppContext& ctx, Block const& block, float partialTic
     glDepthFunc(GL_LESS);
     glEnable(GL_DEPTH_TEST);
     glUseProgram(alf::ShaderManagerSingleton::get().get("cube"));
-
-    int width{};
-    int height{};
-    auto windowSize = getWindowSize(ctx);
-    width           = windowSize.width;
-    height          = windowSize.height;
-
-    float const fov                 = 90.0f;
-    float const near_clipping_plane = 0.1f;   // Keep as big as possible or you'll get precision issues.
-    float const far_clipping_plane  = 100.0f; // Keep as small as possible.
-    glm::vec3 cameraPos = ctx.game->player.currentCamera->getPos(partialTick); // Camera position in world space.
-    glm::vec3 cameraFront =
-        ctx.game->player.currentCamera->getFront(partialTick); // Front of the camera in world space.
-
-    glm::mat4 projection_mat =
-        glm::perspective(glm::radians(fov), static_cast<float>(width) / static_cast<float>(height), near_clipping_plane,
-                         far_clipping_plane);
-    glm::mat4 view_mat = glm::lookAt(cameraPos,               // Camera is at this coordinate in world space
-                                     cameraPos + cameraFront, // Camera looks at this coordinate.
-                                     glm::vec3(0, 1, 0) // Camera head is up (0, -1, 0) would be looking upside-down)
-    );
-
-    glm::mat4 model_mat = glm::mat4(1.0f); // identity matrix so model will be at the origin
-    model_mat = glm::translate(model_mat, glm::vec3((float) block.pos.x, (float) block.pos.y, (float) block.pos.z));
-    glm::mat4 model_view_projection = projection_mat * view_mat * model_mat;
 
     // Texture
     glActiveTexture(GL_TEXTURE0);
@@ -151,9 +137,8 @@ void BlockRenderer::render(AppContext& ctx, Block const& block, float partialTic
     GLuint texId = glGetUniformLocation(alf::ShaderManagerSingleton::get().get("cube"), "tex");
     glUniform1i(texId, 0);
 
-    // Send the transformation to the currently bound shader in the MVP uniform
-    // Each model will have a different MVP (well... a different M) so this will be done in the main rendering loop.
-    glUniformMatrix4fv(matrixId, 1, GL_FALSE, &model_view_projection[0][0]);
+    // Send the transformation to the currently bound shader.
+    glUniformMatrix4fv(matrixId, 1, GL_FALSE, glm::value_ptr(model));
 
     // Draw the triangles
     glDrawArrays(GL_TRIANGLES, 0, 12 * 6); // 12*6 indices starting at 0 -> 12 triangles -> 6 squares

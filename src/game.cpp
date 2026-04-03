@@ -63,6 +63,9 @@ void handleSwingAction(GameContext& game)
 
     for (auto block_it = game.blocks.begin(); block_it != game.blocks.end(); ++block_it) {
         auto const& block = *block_it;
+        if (block.type == BlockType::BLOCK_AIR) {
+            continue;
+        }
 
         // Optimization: This skips checking the logic if the block is beyond the max hitrange.
         if (glm::distance(camera.getPos(1.0), block.pos) > maxHitRange + 1.f) {

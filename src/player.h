@@ -17,6 +17,8 @@ public:
     /// Current viewport camera. Will never be nullptr. Use this for rendering.
     Camera* currentCamera = &fpCamera;
 
+    void tick();
+
     glm::vec3 getPos(float partialTick) const;
 
     void updatePos(glm::vec3 newPos);
@@ -31,6 +33,8 @@ private:
     glm::vec3 vel{};         ///< Velocity.
 
     float moveSpeedMultiplier{ 1.0 };
+
+    bool noclip{ true };
 };
 
 } // namespace alf

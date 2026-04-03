@@ -16,6 +16,9 @@ public:
     static void cleanup();
 
     static void render(AppContext& ctx, float partialTick);
+
+private:
+    static GLuint viewProjectionUboID;
 };
 
 std::int64_t calculate_fps(Timestamp previous_frame, Timestamp current_frame);

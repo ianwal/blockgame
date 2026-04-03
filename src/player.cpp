@@ -7,6 +7,15 @@
 namespace alf
 {
 
+void Player::tick()
+{
+    if (noclip) {
+
+    } else {
+        // TODO: Check collision
+    }
+}
+
 glm::vec3 Player::getPos(float partialTick) const
 {
     return lerp(prevPos, pos, partialTick);
