@@ -14,12 +14,14 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>
+#include <tracy/Tracy.hpp>
 
 namespace alf
 {
 
 GLuint BlockRenderer::vao;
 GLuint BlockRenderer::vertexbuffer;
+GLuint BlockRenderer::shaderId;
 GLuint BlockRenderer::matrixId;
 
 // clang-format off
@@ -97,10 +99,10 @@ void BlockRenderer::init()
     glBindVertexArray(0);
 
     // Get a handle for the VP uniform
-    GLuint shaderID   = alf::ShaderManagerSingleton::get().get("cube");
-    GLuint blockIndex = glGetUniformBlockIndex(shaderID, "Matrices");
-    glUniformBlockBinding(shaderID, blockIndex, 0);
-    matrixId = glGetUniformLocation(shaderID, "model");
+    shaderId          = alf::ShaderManagerSingleton::get().get("cube");
+    GLuint blockIndex = glGetUniformBlockIndex(shaderId, "Matrices");
+    glUniformBlockBinding(shaderId, blockIndex, 0);
+    matrixId = glGetUniformLocation(shaderId, "model");
 }
 
 void BlockRenderer::cleanup()
@@ -111,6 +113,7 @@ void BlockRenderer::cleanup()
 
 void BlockRenderer::render(AppContext& ctx, Block const& block, float partialTick)
 {
+    ZoneScopedN("SingleBlockRender");
     if (block.type == BlockType::BLOCK_AIR) {
         return;
     }
@@ -120,12 +123,12 @@ void BlockRenderer::render(AppContext& ctx, Block const& block, float partialTic
 
     glBindVertexArray(vao);
     // TODO: Back face culling seems to work but it's not necessary right now so it's disabled.
-    // glEnable(GL_CULL_FACE);
-    // glCullFace(GL_BACK);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
 
     glDepthFunc(GL_LESS);
     glEnable(GL_DEPTH_TEST);
-    glUseProgram(alf::ShaderManagerSingleton::get().get("cube"));
+    glUseProgram(shaderId);
 
     // Texture
     glActiveTexture(GL_TEXTURE0);
@@ -134,7 +137,7 @@ void BlockRenderer::render(AppContext& ctx, Block const& block, float partialTic
     // Note:
     // Setting the texture ID here isn't necessary since the blocks only have one texture. But
     // do it anyway.
-    GLuint texId = glGetUniformLocation(alf::ShaderManagerSingleton::get().get("cube"), "tex");
+    GLuint texId = glGetUniformLocation(shaderId, "tex");
     glUniform1i(texId, 0);
 
     // Send the transformation to the currently bound shader.
@@ -144,7 +147,7 @@ void BlockRenderer::render(AppContext& ctx, Block const& block, float partialTic
     glDrawArrays(GL_TRIANGLES, 0, 12 * 6); // 12*6 indices starting at 0 -> 12 triangles -> 6 squares
 
     glDisable(GL_DEPTH_TEST);
-    // glDisable(GL_CULL_FACE);
+    glDisable(GL_CULL_FACE);
     glBindVertexArray(0);
 }
 

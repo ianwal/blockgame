@@ -21,6 +21,7 @@ public:
 private:
     static GLuint vao;
     static GLuint vertexbuffer;
+    static GLuint shaderId;
     static GLuint matrixId;
 };
 

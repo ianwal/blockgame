@@ -20,6 +20,7 @@
 #include <glm/glm.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
+#include <tracy/Tracy.hpp>
 
 #include <algorithm>
 #include <cassert>
@@ -221,6 +222,7 @@ extern "C" SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
 
 extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
 {
+    ZoneScopedN("AppIterate");
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplSDL3_NewFrame();
     ImGui::NewFrame();
@@ -500,37 +502,40 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
         bool swung = false;
         bool moved = false;
 
-        // TODO: Process multiple ticks if behind.
-        // 20 ticks / second == 50 ms between ticks
-        if (timeSinceLastTick >= timeBetweenTicks) {
-            ++app.game->tick;
+        {
+            ZoneScopedN("GameLogic");
+            // TODO: Process multiple ticks if behind.
+            // 20 ticks / second == 50 ms between ticks
+            if (timeSinceLastTick >= timeBetweenTicks) {
+                ++app.game->tick;
 
-            game.player.updatePos(game.player.getPos(1.0));
+                game.player.updatePos(game.player.getPos(1.0));
 
-            // Process game logic.
-            if (!game.debug_window_on) {
-                for (auto&& action : pendingActions) {
-                    std::visit(alf::overloaded{
-                                   [&](alf::SwingAction&) {
-                                       if (!swung) {
-                                           handleSwingAction(game);
-                                           swung = true;
-                                       }
+                // Process game logic.
+                if (!game.debug_window_on) {
+                    for (auto&& action : pendingActions) {
+                        std::visit(alf::overloaded{
+                                       [&](alf::SwingAction&) {
+                                           if (!swung) {
+                                               handleSwingAction(game);
+                                               swung = true;
+                                           }
+                                       },
+                                       [&](alf::MoveAction& action) {
+                                           if (!moved) {
+                                               handleMoveAction(game, action);
+                                               moved = true;
+                                           }
+                                       },
                                    },
-                                   [&](alf::MoveAction& action) {
-                                       if (!moved) {
-                                           handleMoveAction(game, action);
-                                           moved = true;
-                                       }
-                                   },
-                               },
-                               action);
+                                   action);
+                    }
                 }
+
+                pendingActions.clear();
+
+                app.game->prevTickTimestamp = alf::get_time();
             }
-
-            pendingActions.clear();
-
-            app.game->prevTickTimestamp = alf::get_time();
         }
 
         app.game->prev_inputs = curr_inputs;
@@ -546,8 +551,10 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
         progressToNextTick = std::clamp(progressToNextTick, 0.0f, 1.0f);
 
         // logDebug("Progress to next tick: {:2.2f}%", progressToNextTick);
-
-        alf::Renderer::render(app, progressToNextTick);
+        {
+            ZoneScopedN("Render");
+            alf::Renderer::render(app, progressToNextTick);
+        }
 
         ++app.game->frame_num;
     } catch (const std::exception& e) {

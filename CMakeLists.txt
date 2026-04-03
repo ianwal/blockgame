@@ -85,6 +85,16 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(glm)
 
+FetchContent_Declare(
+    tracy
+    GIT_REPOSITORY https://github.com/wolfpld/tracy.git
+    GIT_TAG v0.13.1
+    GIT_SHALLOW TRUE
+    GIT_PROGRESS TRUE
+)
+
+FetchContent_MakeAvailable(tracy)
+
 # Create an executable or a shared library based on the platform and add our sources to it
 if (ANDROID)
 	# The SDL java code is hardcoded to load libmain.so on android, so we need to change EXECUTABLE_NAME
@@ -200,6 +210,11 @@ target_link_libraries(${EXECUTABLE_NAME} PRIVATE PNG::PNG)
 target_compile_definitions(${EXECUTABLE_NAME} PRIVATE cimg_use_png)
 # Do not include display for cImg (would require linking against x11)
 target_compile_definitions(${EXECUTABLE_NAME} PRIVATE cimg_display=0)
+
+add_compile_definitions(TRACY_NO_ETW)
+target_compile_definitions(${EXECUTABLE_NAME} PRIVATE TRACY_ENABLE)
+target_link_libraries(TracyClient PRIVATE tdh ws2_32 dbghelp secur32)
+target_link_libraries(${EXECUTABLE_NAME} PUBLIC TracyClient)
 
 # FOR ACTUAL GAME SRC THAT IS NOT SDL:
 # We need this directory, and users of the library will need it too.

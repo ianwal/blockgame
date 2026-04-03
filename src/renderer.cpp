@@ -22,6 +22,7 @@
 #include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
+#include <tracy/Tracy.hpp>
 
 #include <algorithm>
 #include <cassert>
@@ -97,8 +98,11 @@ void Renderer::render(AppContext& ctx, float partialTick)
     glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), glm::value_ptr(projection));
     glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), glm::value_ptr(view));
 
-    for (auto const& block : ctx.game->blocks) {
-        BlockRenderer::render(ctx, block, partialTick);
+    {
+        ZoneScopedN("BlockRenderer");
+        for (auto const& block : ctx.game->blocks) {
+            BlockRenderer::render(ctx, block, partialTick);
+        }
     }
 
     CrosshairRenderer::render(ctx);
