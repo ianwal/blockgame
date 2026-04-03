@@ -10,7 +10,7 @@ set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}" CACHE INTERNAL "")
 
 # Declare the project
 project(blockgame LANGUAGES CXX)
-set (CMAKE_CXX_STANDARD 20)
+set (CMAKE_CXX_STANDARD 23)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Sanitizer build type options.
@@ -137,7 +137,7 @@ elseif(APPLE)
     target_sources("${EXECUTABLE_NAME}" PRIVATE "src/logo.png")
 endif()
 
-target_compile_features(${EXECUTABLE_NAME} PUBLIC cxx_std_20)
+target_compile_features(${EXECUTABLE_NAME} PUBLIC cxx_std_23)
 
 if(CMAKE_SYSTEM_NAME MATCHES Emscripten)
 	set(CMAKE_EXECUTABLE_SUFFIX ".html" CACHE INTERNAL "")

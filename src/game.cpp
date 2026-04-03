@@ -2,12 +2,14 @@
 
 #include "src/block.h"
 #include "src/camera.h"
+#include "src/logger.h"
 
 #include <SDL3/SDL.h>
 #include <glm/glm.hpp>
 
 #include <algorithm>
 #include <limits>
+#include <utility>
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/string_cast.hpp>
@@ -18,7 +20,7 @@ namespace alf
 GameContext::GameContext()
 {
     // Generate some blocks.
-    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Generating chunks...");
+    logDebug("Generating chunks...");
     constexpr int chunk_size{ 4 };
     constexpr int num_chunks{ 16 };
     for (int chunk_index_x = 0; chunk_index_x < (num_chunks / 2); ++chunk_index_x) {
@@ -41,7 +43,7 @@ GameContext::GameContext()
             }
         }
     }
-    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "DONE generating chunks.");
+    logDebug("DONE generating chunks.");
 
     // Move the player
     player.updatePos(glm::vec3{ 15, 5, 10 });
@@ -82,15 +84,11 @@ void handleSwingAction(GameContext& game)
     if (hitBlock != game.blocks.end()) {
         game.blocks.erase(hitBlock);
     }
-
-    // SDL_Log("Camera Pos: %s Angle: %s", glm::to_string(app.game->cameraPos).c_str(),
-    //         glm::to_string(game.cameraFront).c_str());
 }
 
 void handleMoveAction(GameContext& game, MoveAction const& action)
 {
-    // SDL_Log("Tick: %s Move Dir: %s", std::to_string(game.tick).c_str(),
-    //         std::to_string(static_cast<int>(action.direction)).c_str());
+    // logDebug("Tick {} Move Dir: {}", game.tick, std::to_underlying(action.direction));
 
     float const moveSpeed = (1.0 * game.player.getMoveSpeedMultiplier()) * (game.fastNoClipSpeed ? 2.0f : 1.0f);
 

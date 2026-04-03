@@ -1,4 +1,5 @@
 #include "src/img.h"
+#include "src/logger.h"
 
 #include <GL/glew.h>
 #include <SDL3/SDL.h>
@@ -20,7 +21,7 @@ void CheckShaderCompilation(GLuint shader, const char* type)
     glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
     if (!success) {
         glGetShaderInfoLog(shader, 1024, NULL, infoLog);
-        std::cerr << "Shader Compilation Error (" << type << "): " << infoLog << std::endl;
+        logError("Shader Compilation Error ({}): {}", type, infoLog);
     }
 }
 
@@ -31,7 +32,7 @@ void CheckShaderLinking(GLuint program)
     glGetProgramiv(program, GL_LINK_STATUS, &success);
     if (!success) {
         glGetProgramInfoLog(program, 1024, NULL, infoLog);
-        std::cerr << "Shader Linking Error: " << infoLog << std::endl;
+        logError("Shader Linking Error: {}", infoLog);
     }
 }
 
@@ -50,7 +51,9 @@ GLuint loadShader(std::string_view vertexPath, std::string_view fragmentPath)
         VertexShaderCode = sstr.str();
         VertexShaderStream.close();
     } else {
-        std::cerr << "Impossible to open " << vertexPath << " Are you in the right directory?\n";
+        logError("Failed to open shader file {}. Is the game exe in the right directory? Do the shaders exist and are "
+                 "they in the right directory?",
+                 vertexPath);
         return 0;
     }
 
@@ -68,7 +71,7 @@ GLuint loadShader(std::string_view vertexPath, std::string_view fragmentPath)
     int InfoLogLength;
 
     // Compile Vertex Shader
-    SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Compiling shader: %s", std::string{ vertexPath }.c_str());
+    logDebug("Compiling shader: {}", vertexPath);
     char const* VertexSourcePointer = VertexShaderCode.c_str();
     glShaderSource(VertexShaderID, 1, &VertexSourcePointer, NULL);
     glCompileShader(VertexShaderID);
@@ -83,7 +86,7 @@ GLuint loadShader(std::string_view vertexPath, std::string_view fragmentPath)
     }
 
     // Compile Fragment Shader
-    SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Compiling shader: %s", std::string{ fragmentPath }.c_str());
+    logDebug("Compiling shader: {}", fragmentPath);
     char const* FragmentSourcePointer = FragmentShaderCode.c_str();
     glShaderSource(FragmentShaderID, 1, &FragmentSourcePointer, NULL);
     glCompileShader(FragmentShaderID);
@@ -128,9 +131,7 @@ GLuint loadTexture(std::string_view imagePath)
     std::uint32_t height = result.height;
     unsigned char* data  = result.bytes.data();
 
-    auto msg = std::string{ "Loaded image: " } + std::string{ imagePath } + " (" + std::to_string(width) + "x" +
-               std::to_string(height) + ")";
-    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "%s", msg.c_str());
+    logDebug("Loaded image: {} ({}x{})", imagePath, width, height);
 
     GLuint texture;
     glGenTextures(1, &texture);

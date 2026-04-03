@@ -8,6 +8,7 @@
 #include "src/camera.h"
 #include "src/game.h"
 #include "src/input_manager.h"
+#include "src/logger.h"
 #include "src/renderer.h"
 #include "src/shaders.h"
 #include "src/time.h"
@@ -53,7 +54,7 @@ bool isWindowFullscreen(SDL_Window* window)
 void setWindowFullscreen(SDL_Window* window, bool fullscreen)
 {
     SDL_SetWindowFullscreen(window, fullscreen);
-    SDL_Log("Changed window to %s", fullscreen ? "windowed" : "fullscreen");
+    logInfo("Changed window to: {}", fullscreen ? "windowed" : "fullscreen");
     SDL_SyncWindow(window);
 }
 
@@ -72,7 +73,7 @@ std::chrono::nanoseconds calculate_frame_time(Timestamp previous_frame, Timestam
 
 extern "C" SDL_AppResult SDL_Fail()
 {
-    SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION, "SDL_Fail() - %s", SDL_GetError());
+    logCritical("SDL_Fail(): {}", SDL_GetError());
     return SDL_APP_FAILURE;
 }
 
@@ -121,13 +122,13 @@ extern "C" SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
         glewExperimental = GL_TRUE; // Fixes issues with some drivers
         GLenum err       = glewInit();
         if (err != GLEW_OK) {
-            SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION, "GLEW Init Error: %s", glewGetErrorString(err));
+            logCritical("GLEW Init Error: {}", reinterpret_cast<char const*>(glewGetErrorString(err)));
             return SDL_Fail();
         }
 
-        SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "GLEW initialized successfully!");
-        SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "OpenGL Renderer: %s", glGetString(GL_RENDERER));
-        SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "OpenGL Renderer Supported Version: %s", glGetString(GL_VERSION));
+        logInfo("GLEW initialized successfully");
+        logInfo("OpenGL Renderer: {}", reinterpret_cast<char const*>(glGetString(GL_RENDERER)));
+        logInfo("OpenGL Renderer Supported Version: {}", reinterpret_cast<char const*>(glGetString(GL_VERSION)));
     }
 
     alf::global_font_init();
@@ -167,10 +168,10 @@ extern "C" SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
         int width, height, bbwidth, bbheight;
         SDL_GetWindowSize(window, &width, &height);
         SDL_GetWindowSizeInPixels(window, &bbwidth, &bbheight);
-        SDL_Log("Window size: %ix%i", width, height);
-        SDL_Log("Backbuffer size: %ix%i", bbwidth, bbheight);
+        logInfo("Window size: {}x{}", width, height);
+        logInfo("Backbuffer size: {}x{}", bbwidth, bbheight);
         if (width != bbwidth) {
-            SDL_Log("This is a highdpi environment.");
+            logInfo("highdpi environment detected.");
         }
     }
 
@@ -179,7 +180,7 @@ extern "C" SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
         window,
     };
 
-    SDL_Log("Application started successfully!");
+    logInfo("Application started successfully!");
 
     return SDL_APP_CONTINUE;
 }
@@ -206,12 +207,12 @@ extern "C" SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
             int w{};
             int h{};
             SDL_GetWindowSize(SDL_GetWindowFromID(event->window.windowID), &w, &h);
-            SDL_Log("Window size: %dx%d", w, h);
+            logInfo("Window size: {}x{}", w, h);
             // Update the GL viewport after resizing, otherwise only the original window region will be rendered to.
             glViewport(0, 0, w, h);
         } break;
         default: {
-            // SDL_Log("DEFAULT EVENT\n");
+            // logWarn("Unknown SDL event: {}", ev.type);
         } break;
     }
 
@@ -235,7 +236,7 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
     try {
         static bool added_button = [&app]() {
             added_button             = true;
-            auto const test_callback = []() { SDL_Log("Button pressed!"); };
+            auto const test_callback = []() { logInfo("Button pressed!"); };
             alf::Button button{ test_callback };
             SDL_FRect rect{ 100, 100, 100, 100 };
             alf::VisibleButton visible_button{ button, rect };
@@ -271,8 +272,7 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
 
             app.game->input_manager.registerCallbackOnRelease(SDLK_Q, [&app]() {
                 // Debug
-                SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Player Pos: %s",
-                             glm::to_string(app.game->player.getPos(1.0)).c_str());
+                logDebug("Player Pos: {}", glm::to_string(app.game->player.getPos(1.0)));
             });
 
             app.game->input_manager.registerCallbackOnRelease(
@@ -301,7 +301,7 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
             auto& text_button      = std::get<alf::TextButton>(app.game->gui_objects.objects[1]);
             text_button.update_text_str(std::to_string(input_count));
             ++input_count;
-            // SDL_Log("debug: Received event.\n Event type: %d", input.type);
+            // logDebug("Received event. Event type: {}", input.type);
 
             if ((input.type == SDL_EVENT_KEY_DOWN) && (input.key.key == SDLK_ESCAPE)) {
                 if (!app.game->prev_inputs.esc) {
@@ -492,10 +492,8 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
 
         if ((app.game->prevTickTimestamp != std::chrono::nanoseconds{ 0 })) {
             if (timeSinceLastTick >= (timeBetweenTicks * 1.5)) {
-                SDL_LogWarn(
-                    SDL_LOG_CATEGORY_APPLICATION, "Time since last tick was long: %sms",
-                    std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(timeSinceLastTick).count())
-                        .c_str());
+                logWarn("Time since last tick was long: {}",
+                        std::chrono::duration_cast<std::chrono::milliseconds>(timeSinceLastTick));
             }
         }
 
@@ -505,6 +503,7 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
         // TODO: Process multiple ticks if behind.
         // 20 ticks / second == 50 ms between ticks
         if (timeSinceLastTick >= timeBetweenTicks) {
+            ++app.game->tick;
 
             game.player.updatePos(game.player.getPos(1.0));
 
@@ -532,7 +531,6 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
             pendingActions.clear();
 
             app.game->prevTickTimestamp = alf::get_time();
-            ++app.game->tick;
         }
 
         app.game->prev_inputs = curr_inputs;
@@ -547,21 +545,13 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
         // Clamp to [0.0, 1.0] to be safe.
         progressToNextTick = std::clamp(progressToNextTick, 0.0f, 1.0f);
 
-        // SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Progress to next tick: %s%",
-        //             std::to_string(progressToNextTick).c_str());
+        // logDebug("Progress to next tick: {:2.2f}%", progressToNextTick);
 
         alf::Renderer::render(app, progressToNextTick);
 
-        // Limit fps to 300
-        auto const fps = alf::calculate_fps(previous_time, alf::get_time());
-        // std::cout << std::to_string(fps) << '\n';
-        // if (fps > 300) {
-        // SDL_Delay(1);
-        // }
-
         ++app.game->frame_num;
     } catch (const std::exception& e) {
-        SDL_Log("%s", e.what());
+        logInfo("{}", e.what());
         app.app_quit = SDL_APP_FAILURE;
     }
 
@@ -570,6 +560,7 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
 
 extern "C" void SDL_AppQuit(void* appstate, SDL_AppResult result)
 {
+    logInfo("Application quitting...");
     auto* app = static_cast<AppContext*>(appstate);
     delete app;
 
@@ -580,7 +571,7 @@ extern "C" void SDL_AppQuit(void* appstate, SDL_AppResult result)
     alf::destroy_global_font();
 
     SDL_Quit();
-    SDL_Log("Application quit successfully!");
+    logInfo("Application quit.");
 }
 
 } // namespace alf

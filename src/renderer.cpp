@@ -8,6 +8,7 @@
 #include "src/button.h"
 #include "src/crosshair_renderer.h"
 #include "src/game.h"
+#include "src/logger.h"
 #include "src/shaders.h"
 #include "src/time.h"
 
@@ -78,7 +79,7 @@ void Renderer::render(AppContext& ctx, float partialTick)
     if (swapWindowSuccess) {
         // Success.
     } else {
-        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "SDL_GL_SwapWindow() failure: %s", SDL_GetError());
+        logError("SDL_GL_SwapWindow() failure: {}", SDL_GetError());
         assert(false);
     }
 }
