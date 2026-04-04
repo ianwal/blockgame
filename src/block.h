@@ -12,6 +12,7 @@ enum class BlockType : std::uint32_t {
     BLOCK_AIR = 0, ///< Placeholder, not really a block.
     BLOCK_COBBLE,
     BLOCK_GRASS,
+    BLOCK_DIRT,
     BLOCK_LUCKY,
 
     NUM_BLOCK_TYPES, ///< Meta

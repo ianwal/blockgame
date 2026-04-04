@@ -29,7 +29,12 @@ GLuint getBlockTexture(BlockType type)
             name = "block.grass";
         } break;
 
+        case BlockType::BLOCK_DIRT: {
+            name = "block.dirt";
+        } break;
+
         case BlockType::BLOCK_AIR: {
+            assert(false);
             name = "block.air";
         } break;
 

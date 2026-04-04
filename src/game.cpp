@@ -29,13 +29,15 @@ GameContext::GameContext()
                 for (int j = 0; j < 128; ++j) {
                     for (int k = 0; k < chunk_size; ++k) {
                         Block block{};
-                        if (j >= 66 && j < 68) {
+                        int const surface_y = 66;
+                        if (j == surface_y) {
                             block.type = BlockType::BLOCK_GRASS;
-                        } else if (j >= 68) {
+                        } else if (j > surface_y) {
                             block.type == BlockType::BLOCK_AIR;
+                        } else if (j < surface_y && j >= (surface_y - 5)) {
+                            block.type = BlockType::BLOCK_DIRT;
                         } else {
                             block.type = BlockType::BLOCK_COBBLE;
-                            // block.type = static_cast<BlockType>(SDL_rand(4));
                         }
                         block.pos = glm::vec3{ (chunk_index_x * chunk_size) + i, j, (chunk_index_z * chunk_size) + k };
                         blocks.push_back(block);
@@ -47,7 +49,7 @@ GameContext::GameContext()
     logDebug("DONE generating chunks.");
 
     // Move the player
-    player.updatePos(glm::vec3{ 15, 5, 10 });
+    player.updatePos(glm::vec3{ 30, 68, 10 });
 }
 
 void handleSwingAction(GameContext& game)
