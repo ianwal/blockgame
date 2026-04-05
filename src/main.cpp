@@ -264,6 +264,10 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
         static bool gameInputManagerInitialized = false;
         if (!gameInputManagerInitialized) {
             app.game->input_manager.registerCallbackOnRelease(SDLK_F3, [&app]() {
+                app.game->f3_window_on = !app.game->f3_window_on;
+            });
+
+            app.game->input_manager.registerCallbackOnRelease(SDLK_F4, [&app]() {
                 if (app.game->debug_window_on) {
                     app.game->debug_window_on = false;
                     SDL_HideCursor();
@@ -427,6 +431,15 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
             } else if ((input.type == SDL_EVENT_KEY_UP) && (input.key.key == SDLK_F3)) {
                 app.game->input_manager.queueInputOnRelease(SDLK_F3);
                 curr_inputs.f3 = false;
+            } else if ((input.type == SDL_EVENT_KEY_DOWN) && (input.key.key == SDLK_F4)) {
+                if (!app.game->prev_inputs.f4) {
+                    app.game->input_manager.queueInputOnDown(SDLK_F4);
+                }
+                app.game->input_manager.queueInputOnHold(SDLK_F4);
+                curr_inputs.f4 = true;
+            } else if ((input.type == SDL_EVENT_KEY_UP) && (input.key.key == SDLK_F4)) {
+                app.game->input_manager.queueInputOnRelease(SDLK_F4);
+                curr_inputs.f4 = false;
             } else if ((input.type == SDL_EVENT_KEY_DOWN) && (input.key.key == SDLK_F11)) {
                 if (!app.game->prev_inputs.f11) {
                     app.game->input_manager.queueInputOnDown(SDLK_F11);
@@ -493,6 +506,10 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
             // calculations.
             game.player.currentCamera->updateFront(
                 bg::cameraFront(game.player.currentCamera->getYaw(), game.player.currentCamera->getPitch()));
+        }
+
+        if (game.f3_window_on) {
+            ImGui::ShowMetricsWindow();
         }
 
         if (game.debug_window_on) {

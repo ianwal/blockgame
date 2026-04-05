@@ -110,6 +110,7 @@ struct Inputs {
     bool z{};
     bool q{};
     bool f3{};
+    bool f4{};
     bool f11{};
     bool lshift{};
     bool space{};
@@ -158,6 +159,7 @@ struct GameContext {
 
     Inputs prev_inputs{};
 
+    bool f3_window_on = false;
     bool debug_window_on = false;
 
     float fastNoClipSpeed = false;
