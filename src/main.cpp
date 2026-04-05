@@ -561,6 +561,8 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
                     }
                 }
 
+                game.player.tick();
+
                 pendingActions.clear();
 
                 app.game->prevTickTimestamp = bg::get_time();
@@ -592,9 +594,8 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
                 auto const chunkManagerStats = game.chunkManager.getStats();
                 ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / imguiIO.Framerate,
                             imguiIO.Framerate);
-                ImGui::Text(
-                    "%s",
-                    std::format("Player Pos: {}", glm::to_string(game.player.getPos(partialTick)).c_str()).c_str());
+                ImGui::Text("%s", std::format("Pos: {}", glm::to_string(game.player.getPos(partialTick))).c_str());
+                ImGui::Text("%s", std::format("Velocity: {}", glm::to_string(game.player.getVelocity())).c_str());
                 ImGui::Text("%s", std::format("Loaded Chunk Count: {}", chunkManagerStats.loadedChunkCount).c_str());
                 ImGui::End();
             }
