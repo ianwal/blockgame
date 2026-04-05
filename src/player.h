@@ -21,6 +21,8 @@ public:
 
     glm::vec3 getPos(float partialTick) const;
 
+    void setVelocity(glm::vec3 newVel);
+
     glm::vec3 getVelocity() const;
 
     void updatePos(glm::vec3 newPos);

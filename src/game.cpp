@@ -67,7 +67,7 @@ void handleMoveAction(GameContext& game, MoveAction const& action)
 {
     // logDebug("Tick {} Move Dir: {}", game.tick, std::to_underlying(action.direction));
 
-    float const moveSpeed = (1.0 * game.player.getMoveSpeedMultiplier()) * (game.fastNoClipSpeed ? 2.0f : 1.0f);
+    float const moveSpeed = (0.2 * game.player.getMoveSpeedMultiplier()) * (game.fastNoClipSpeed ? 2.0f : 1.0f);
 
     // Use first person camera because moving is done relative to the first person camera.
     auto& currentCamera = game.player.fpCamera;
@@ -75,31 +75,42 @@ void handleMoveAction(GameContext& game, MoveAction const& action)
 
     if (game.noclip) {
         auto moveLeft = [&player, &currentCamera, &moveSpeed]() {
-            player.updatePos(player.getPos(1.0) -
-                             glm::normalize(glm::cross(currentCamera.getFront(1.0), currentCamera.getUp())) *
-                                 moveSpeed);
+            // Add velocity in the direction.
+            glm::vec3 const dir = glm::normalize(glm::cross(currentCamera.getFront(1.0), currentCamera.getUp()));
+            glm::vec3 const newVelocity = (player.getVelocity() - (moveSpeed * dir));
+            player.setVelocity(newVelocity);
         };
 
         auto moveRight = [&player, &currentCamera, &moveSpeed]() {
-            player.updatePos(player.getPos(1.0) +
-                             glm::normalize(glm::cross(currentCamera.getFront(1.0), currentCamera.getUp())) *
-                                 moveSpeed);
+            // Add velocity in the direction.
+            glm::vec3 const dir = glm::normalize(glm::cross(currentCamera.getFront(1.0), currentCamera.getUp()));
+            glm::vec3 const newVelocity = (player.getVelocity() + (moveSpeed * dir));
+            player.setVelocity(newVelocity);
         };
 
         auto moveForward = [&player, &currentCamera, &moveSpeed]() {
-            player.updatePos(player.getPos(1.0) + (currentCamera.getFront(1.0) * moveSpeed));
+            // Add velocity in the direction.
+            glm::vec3 const dir         = currentCamera.getFront(1.0);
+            glm::vec3 const newVelocity = (player.getVelocity() + (moveSpeed * dir));
+            player.setVelocity(newVelocity);
         };
 
         auto moveBackward = [&player, &currentCamera, &moveSpeed]() {
-            player.updatePos(player.getPos(1.0) - (currentCamera.getFront(1.0) * moveSpeed));
+            glm::vec3 const dir         = currentCamera.getFront(1.0);
+            glm::vec3 const newVelocity = (player.getVelocity() - (moveSpeed * dir));
+            player.setVelocity(newVelocity);
         };
 
         auto moveUp = [&player, &currentCamera, &moveSpeed]() {
-            player.updatePos(player.getPos(1.0) + glm::vec3{ 0, moveSpeed, 0 });
+            glm::vec3 const dir         = glm::vec3{ 0, 1, 0 };
+            glm::vec3 const newVelocity = (player.getVelocity() + (moveSpeed * dir));
+            player.setVelocity(newVelocity);
         };
 
         auto moveDown = [&player, &currentCamera, &moveSpeed]() {
-            player.updatePos(player.getPos(1.0) - glm::vec3{ 0, moveSpeed, 0 });
+            glm::vec3 const dir         = glm::vec3{ 0, -1, 0 };
+            glm::vec3 const newVelocity = (player.getVelocity() + (moveSpeed * dir));
+            player.setVelocity(newVelocity);
         };
 
         switch (action.direction) {

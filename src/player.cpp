@@ -1,5 +1,6 @@
 #include "src/player.h"
 
+#include "src/logger.h"
 #include "src/utils.h"
 
 #include <glm/glm.hpp>
@@ -11,19 +12,42 @@ namespace bg
 
 void Player::tick()
 {
+    constexpr float maxVelocity       = 1.0f;
+    constexpr float minVelocityToZero = 0.02; // Velocity threshold that is rounded to zero.
+    vel                               = clampLength(vel, maxVelocity);
+
+    auto newPos = pos + vel; // time is already factored in because it's constant between ticks.
+    updatePos(newPos);
+
     if (noclip) {
+
+        // Air resistance
+        if (!isZeroVector(vel)) {
+
+            // Get the direction player is moving towards currently.
+            glm::vec3 velDir = glm::normalize(vel);
+
+            // Reduce velocity a bit.
+            vel -= (velDir * 0.1f);
+        }
+
     } else {
-        // TODO: Check collision
+        // Add gravity
+        glm::vec3 const gravityDir = glm::vec3{ 0.0f, -1.0f, 0.0f };
+        constexpr float gravityScale{ 0.5 };
+        static_assert(gravityScale > minVelocityToZero);
+        vel += gravityDir * gravityScale;
+    }
 
-        // Gravity
-        auto newPos = pos + vel;
-        updatePos(newPos);
+    // TODO: Check collision
 
-        // Compute new velocity from gravity.
-        constexpr float maxVelocity = 1.0f; // Max velocity per component of the velocity vector.
-        vel += glm::vec3{ 0.0, -0.02, 0.0 };
-        vel = glm::vec3{ std::clamp(vel.x, -maxVelocity, maxVelocity), std::clamp(vel.y, -maxVelocity, maxVelocity),
-                         std::clamp(vel.z, -maxVelocity, maxVelocity) };
+    vel = clampLength(vel, maxVelocity);
+
+    // Round velocity to zero if near zero.
+    if (!isZeroVector(vel)) {
+        if (glm::length(vel) < 0.02) {
+            vel = glm::vec3{ 0.0f, 0.0f, 0.0f };
+        }
     }
 }
 
@@ -35,6 +59,11 @@ glm::vec3 Player::getPos(float partialTick) const
 glm::vec3 Player::getVelocity() const
 {
     return vel;
+}
+
+void Player::setVelocity(glm::vec3 newVel)
+{
+    vel = newVel;
 }
 
 void Player::updatePos(glm::vec3 newPos)

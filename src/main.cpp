@@ -590,13 +590,17 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
             auto& imguiIO = ImGui::GetIO();
             if (game.f3_window_on) {
                 imguiIO.NavActive = false;
-                ImGui::Begin("F3 Menu");
+                ImGui::Begin("F3 Menu", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
                 auto const chunkManagerStats = game.chunkManager.getStats();
-                ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / imguiIO.Framerate,
-                            imguiIO.Framerate);
+                // clang-format off
+                ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / imguiIO.Framerate, imguiIO.Framerate);
                 ImGui::Text("%s", std::format("Pos: {}", glm::to_string(game.player.getPos(partialTick))).c_str());
+                ImGui::Text("%s", std::format("Angle: {}", glm::to_string(game.player.currentCamera->getFront(partialTick))).c_str());
+                ImGui::Text("%s", std::format("Angle (degrees): {}", glm::to_string(game.player.currentCamera->getFront(partialTick))).c_str());
                 ImGui::Text("%s", std::format("Velocity: {}", glm::to_string(game.player.getVelocity())).c_str());
+                ImGui::Text("%s", std::format("Velocity Magnitude: {}", glm::length(game.player.getVelocity())).c_str());
                 ImGui::Text("%s", std::format("Loaded Chunk Count: {}", chunkManagerStats.loadedChunkCount).c_str());
+                // clang-format on
                 ImGui::End();
             }
 
