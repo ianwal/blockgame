@@ -12,6 +12,7 @@ set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}" CACHE INTERNAL "")
 project(blockgame LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_COLOR_DIAGNOSTICS ON)
 
 # Sanitizer build type options.
 # This allows you to build with address/thread sanitizer by using
@@ -122,6 +123,7 @@ PRIVATE
     src/button.cpp
     src/block.cpp
     src/block_renderer.cpp
+    src/assertr.cpp
     src/app_context.cpp
 
     # imgui
@@ -162,10 +164,11 @@ if(WINDOWS_STORE)
     target_compile_options(${EXECUTABLE_NAME} PUBLIC "/EHsc")
 endif()
 
-# Add color to GCC compiler logs.
-if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    target_compile_options(${EXECUTABLE_NAME} PUBLIC -fdiagnostics-color=auto)
-endif()
+target_compile_options(${EXECUTABLE_NAME} PRIVATE
+    -Wall
+    -Wextra
+    -Wpedantic
+)
 
 set(SDL_X11_XCURSOR OFF CACHE BOOL "" FORCE)
 set(SDL_X11_XINPUT OFF CACHE BOOL "" FORCE)

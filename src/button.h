@@ -1,5 +1,6 @@
 #pragma once
 
+#include "src/assertr.h"
 #include "src/common.h"
 #include "src/font.h"
 #include "src/shaders.h"
@@ -22,9 +23,7 @@ SDL_Point get_center_in_rect(SDL_FRect frect);
 
 using ButtonCallbackFn = std::function<void(void)>;
 
-class Button
-{
-public:
+struct Button {
     explicit Button(ButtonCallbackFn callback_fn) : m_callback_fn{ std::move(callback_fn) }
     {
     }
@@ -46,9 +45,9 @@ public:
         }
     }
 
-    SDL_Point m_pos;
-    Dim2d m_dim;
-    std::optional<ButtonCallbackFn> m_callback_fn;
+    SDL_Point m_pos{};
+    Dim2d m_dim{};
+    std::optional<ButtonCallbackFn> m_callback_fn{};
 };
 
 class VisibleButton
@@ -63,7 +62,7 @@ public:
         SDL_SetRenderDrawColor(&renderer, 100, 255, 255, SDL_ALPHA_OPAQUE);
         SDL_RenderRect(&renderer, &rect);
         auto const result = SDL_RenderFillRect(&renderer, &rect);
-        assert(result);
+        assertr(result);
     }
 
     Button button;
@@ -114,7 +113,7 @@ public:
     }
 
     TextButton(Text text, VisibleButton visible_button, SDL_Point pos)
-        : text{ std::move(text) }, visible_button{ std::move(visible_button) }
+        : text{ std::move(text) }, visible_button{ std::move(visible_button) }, pos{ pos }
     {
     }
 

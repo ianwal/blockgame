@@ -10,6 +10,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <vector>
 
 namespace bg
 {
@@ -21,7 +22,7 @@ class ChunkRenderer;
 inline constexpr std::int32_t chunkSize{ 16 };
 
 /// Y size of chunks.
-inline constexpr std::int32_t chunkHeight{ 32 };
+inline constexpr std::int32_t chunkHeight{ 128 };
 
 /// Position of the chunk. The chunk goes all the way from the world floor to ceiling, so y is not needed.
 /// The {x, z} combination is the unique identifier of the chunk in the world.
@@ -58,12 +59,22 @@ ChunkPos getChunkPos(glm::vec3 const& worldPos);
 /// Get the world position of a block from the provided chunk position and block offset from the chunk position.
 glm::vec3 getWorldPos(ChunkPos const& chunkPos, glm::vec3 blockOffset);
 
+struct ChunkManagerStats {
+    std::uint32_t loadedChunkCount{};
+};
+
 class ChunkManager
 {
 public:
     ChunkManager() = default;
 
     void updateChunks(glm::vec3 const& worldPos, std::int32_t chunkLoadRadius, std::uint64_t seed);
+
+    std::vector<Block const*> getNearbyBlocks(glm::vec3 const& worldPos, float radius) const;
+
+    bool removeBlock(Block const* block);
+
+    ChunkManagerStats getStats() const;
 
 private:
     struct Chunk {

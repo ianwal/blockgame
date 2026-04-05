@@ -1,6 +1,7 @@
 #pragma once
 
 #include "src/actions.h"
+#include "src/assertr.h"
 #include "src/block.h"
 #include "src/button.h"
 #include "src/camera.h"
@@ -84,14 +85,14 @@ public:
 
     void addRenderer(IEntity::EntityType entityType, std::unique_ptr<IEntityRenderer> renderer)
     {
-        assert(!mEntityRendererMap.contains(entityType));
+        assertr(!mEntityRendererMap.contains(entityType));
         mEntityRendererMap[entityType] = std::move(renderer);
     }
 
     void renderEntity(IEntity const& entity) const
     {
         auto it = mEntityRendererMap.find(entity.getEntityType());
-        assert(it != mEntityRendererMap.end());
+        assertr(it != mEntityRendererMap.end());
         it->second->render({});
     }
 
@@ -168,7 +169,7 @@ struct GameContext {
 
     ChunkManager chunkManager{};
 
-    std::int32_t chunkLoadRadius{ 8 };
+    std::int32_t chunkLoadRadius{ 5 };
     std::int32_t chunkRenderDistance = chunkLoadRadius;
 
     GuiObjects gui_objects{};

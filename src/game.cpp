@@ -19,33 +19,30 @@ namespace bg
 
 GameContext::GameContext()
 {
-    // Generate some blocks.
     // Move the player
-    player.updatePos(glm::vec3{ 0, 68, 0 });
+    player.updatePos(glm::vec3{ 0, 45, 0 });
 }
 
 void handleSwingAction(GameContext& game)
 {
-    // TODO: Fix.
-    /*
     // Use first person camera because swinging is done in first person.
     auto& camera = game.player.fpCamera;
 
     glm::vec3 normalizedCameraFront = glm::normalize(camera.getFront(1.0));
     constexpr float maxHitRange     = 5.f;
-    constexpr float step            = 0.05f;
 
-    auto hitBlock  = game.blocks.end();
-    float closestT = std::numeric_limits<float>::max();
+    auto blockCandidates = game.chunkManager.getNearbyBlocks(camera.getPos(1.0), maxHitRange);
+    auto hitBlock        = blockCandidates.end();
+    float closestT       = std::numeric_limits<float>::max();
 
-    for (auto block_it = game.blocks.begin(); block_it != game.blocks.end(); ++block_it) {
-        auto const& block = *block_it;
+    for (auto block_it = blockCandidates.begin(); block_it != blockCandidates.end(); ++block_it) {
+        auto const& block = **block_it;
         if (block.type == BlockType::BLOCK_AIR) {
             continue;
         }
 
         // Optimization: This skips checking the logic if the block is beyond the max hitrange.
-        if (glm::distance(camera.getPos(1.0), block.pos) > maxHitRange + 1.f) {
+        if (glm::distance(camera.getPos(1.0), block.pos) > (maxHitRange + 1.f)) {
             continue;
         }
 
@@ -61,10 +58,9 @@ void handleSwingAction(GameContext& game)
         }
     }
 
-    if (hitBlock != game.blocks.end()) {
-        game.blocks.erase(hitBlock);
+    if (hitBlock != blockCandidates.end()) {
+        game.chunkManager.removeBlock(*hitBlock);
     }
-    */
 }
 
 void handleMoveAction(GameContext& game, MoveAction const& action)

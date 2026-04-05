@@ -121,16 +121,26 @@ void ChunkRenderer::render(AppContext& ctx, ChunkManager const& chunkManager, fl
     glCullFace(GL_BACK);
     glDepthFunc(GL_LESS);
 
-    std::map<BlockType, std::vector<glm::vec3>> byType{};
+    // OPTIMIZATION:
+    // Avoid allocations across render calls by clearing the positions each time instead of destroying them.
+    static std::map<BlockType, std::vector<glm::vec3>> byType{};
+    for (auto& [type, positions] : byType) {
+        positions.clear();
+    }
 
+    // Note: I don't know why, but rendering a chunk at a time is ~30fps faster than rendering all chunks at once.
+    ChunkPos const playerChunkPos = getChunkPos(ctx.game->player.getPos(partialTick));
+    glm::vec2 const playerChunkPosVec{ playerChunkPos.x, playerChunkPos.z };
+    glUseProgram(shaderId);
+    glBindVertexArray(vao);
+    glActiveTexture(GL_TEXTURE0);
     for (auto const& [chunkPos, chunk] : chunkManager.loadedChunks) {
-        {
-            // Only render chunks within a certain radius.
-            ChunkPos const playerChunkPos = getChunkPos(ctx.game->player.getPos(partialTick));
-            if (glm::distance(glm::vec2{ chunkPos.x, chunkPos.z }, glm::vec2{ playerChunkPos.x, playerChunkPos.z }) >
-                ctx.game->chunkRenderDistance) {
-                continue;
-            }
+        for (auto& [type, positions] : byType) {
+            positions.clear();
+        }
+        // Only render chunks within the render distance.
+        if (glm::distance(glm::vec2{ chunkPos.x, chunkPos.z }, playerChunkPosVec) > ctx.game->chunkRenderDistance) {
+            continue;
         }
 
         for (auto const& block : chunk->blocks) {
@@ -139,16 +149,13 @@ void ChunkRenderer::render(AppContext& ctx, ChunkManager const& chunkManager, fl
             }
             byType[block.type].push_back(glm::vec3(block.pos));
         }
-    }
 
-    glUseProgram(shaderId);
-    glBindVertexArray(vao);
-    for (auto& [type, positions] : byType) {
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, getBlockTexture(type));
-        glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glBufferData(GL_ARRAY_BUFFER, positions.size() * sizeof(glm::vec3), positions.data(), GL_DYNAMIC_DRAW);
-        glDrawArraysInstanced(GL_TRIANGLES, 0, 36, positions.size());
+        for (auto& [type, positions] : byType) {
+            glBindTexture(GL_TEXTURE_2D, getBlockTexture(type));
+            glBindBuffer(GL_ARRAY_BUFFER, vbo);
+            glBufferData(GL_ARRAY_BUFFER, positions.size() * sizeof(glm::vec3), positions.data(), GL_DYNAMIC_DRAW);
+            glDrawArraysInstanced(GL_TRIANGLES, 0, 36, positions.size());
+        }
     }
 
     glDisable(GL_DEPTH_TEST);

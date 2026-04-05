@@ -1,14 +1,19 @@
 #include "src/chunk.h"
 
+#include "src/block.h"
 #include "src/logger.h"
 
 #include <glm/glm.hpp>
 
+#include <algorithm>
+#include <cassert>
+#include <cmath>
 #include <cstdint>
 #include <format>
 #include <map>
 #include <string>
 #include <utility>
+#include <vector>
 
 namespace bg
 {
@@ -21,8 +26,8 @@ std::string to_string(ChunkPos const& chunkPos)
 ChunkPos getChunkPos(glm::vec3 const& worldPos)
 {
     ChunkPos chunkPos{};
-    chunkPos.x = static_cast<std::int32_t>(worldPos.x) / chunkSize;
-    chunkPos.z = static_cast<std::int32_t>(worldPos.z) / chunkSize;
+    chunkPos.x = static_cast<std::int32_t>(std::floor(worldPos.x / chunkSize));
+    chunkPos.z = static_cast<std::int32_t>(std::floor(worldPos.z / chunkSize));
     return chunkPos;
 }
 
@@ -34,6 +39,8 @@ glm::vec3 getWorldPos(ChunkPos const& chunkPos, glm::vec3 blockOffset)
 
 void ChunkManager::updateChunks(glm::vec3 const& worldPos, std::int32_t const chunkLoadRadius, std::uint64_t const seed)
 {
+    static_cast<void>(seed); // TODO: Use seed for chunk gen.
+
     loadedChunks.clear();
     ChunkPos startChunkPos = getChunkPos(worldPos);
     for (std::int32_t targetChunkXOffset = -chunkLoadRadius; targetChunkXOffset < chunkLoadRadius;
@@ -48,20 +55,17 @@ void ChunkManager::updateChunks(glm::vec3 const& worldPos, std::int32_t const ch
                 // Generate chunk
                 // logDebug("Generating chunk: {}", to_string(targetChunkPos));
 
-                // If chunk is not loaded, generate it. Chunks are never unloaded currently because unloading checks
-                // would require saving them somewhere. They could be unloaded and saved to a vector to avoid iterating
-                // over and ignoring them. Minecraft also saves them to disk to save progress.
-                // TODO: At some point chunks should be unloaded.
+                // If chunk is not loaded, generate it.
                 auto chunk = std::make_unique<Chunk>();
                 for (int i = 0; i < chunkSize; ++i) {
                     for (int j = 0; j < chunkHeight; ++j) {
                         for (int k = 0; k < chunkSize; ++k) {
                             Block block{};
-                            int const surface_y = chunkHeight / 2;
+                            int const surface_y = chunkHeight / 3;
                             if (j == surface_y) {
                                 block.type = BlockType::BLOCK_GRASS;
                             } else if (j > surface_y) {
-                                block.type == BlockType::BLOCK_AIR;
+                                block.type = BlockType::BLOCK_AIR;
                             } else if (j < surface_y && j >= (surface_y - 5)) {
                                 block.type = BlockType::BLOCK_DIRT;
                             } else {
@@ -76,6 +80,61 @@ void ChunkManager::updateChunks(glm::vec3 const& worldPos, std::int32_t const ch
             }
         }
     }
+}
+
+std::vector<Block const*> ChunkManager::getNearbyBlocks(glm::vec3 const& worldPos, float const radius) const
+{
+    std::vector<Block const*> result{};
+
+    glm::vec3 const minPos = worldPos - radius;
+    glm::vec3 const maxPos = worldPos + radius;
+
+    ChunkPos const minChunk = getChunkPos(minPos);
+    ChunkPos const maxChunk = getChunkPos(maxPos);
+
+    for (std::int32_t cx = minChunk.x; cx <= maxChunk.x; ++cx) {
+        for (std::int32_t cz = minChunk.z; cz <= maxChunk.z; ++cz) {
+            ChunkPos const chunkPos{ cx, cz };
+            auto it = loadedChunks.find(chunkPos);
+            if (it == loadedChunks.end()) {
+                continue;
+            }
+            for (Block const& block : it->second->blocks) {
+                if (glm::length(block.pos - worldPos) < radius) {
+                    result.push_back(&block);
+                }
+            }
+        }
+    }
+
+    return result;
+}
+
+bool ChunkManager::removeBlock(Block const* block)
+{
+    // Get the chunk that the block is in
+    ChunkPos chunkPos = getChunkPos(block->pos);
+    auto chunkIt      = loadedChunks.find(chunkPos);
+    if (chunkIt == loadedChunks.end()) {
+        logWarn("Tried to remove block but block was not found in loaded chunks.");
+        return false;
+    }
+
+    auto& chunkBlocks = chunkIt->second->blocks;
+    auto it           = std::find_if(chunkBlocks.begin(), chunkBlocks.end(),
+                                     [block](Block const& targetBlock) { return &targetBlock == block; });
+    if (it != chunkBlocks.end()) {
+        chunkBlocks.erase(it);
+    } else {
+        logWarn("Tried to remove block but block was not found in the target chunk.");
+    }
+
+    return true;
+}
+
+ChunkManagerStats ChunkManager::getStats() const
+{
+    return ChunkManagerStats{ static_cast<std::uint32_t>(loadedChunks.size()) };
 }
 
 } // namespace bg

@@ -3,9 +3,11 @@
 #include "imgui_impl_sdl3.h"
 #include "src/actions.h"
 #include "src/app_context.h"
+#include "src/assertr.h"
 #include "src/block.h"
 #include "src/button.h"
 #include "src/camera.h"
+#include "src/chunk.h"
 #include "src/game.h"
 #include "src/input_manager.h"
 #include "src/logger.h"
@@ -84,6 +86,9 @@ extern "C" SDL_AppResult SDL_Fail()
 
 extern "C" SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 {
+    static_cast<void>(argc);
+    static_cast<void>(argv);
+
     SDL_SetLogPriorityPrefix(SDL_LOG_PRIORITY_DEBUG, "DEBUG: ");
     SDL_SetLogPriorityPrefix(SDL_LOG_PRIORITY_INFO, "INFO: ");
     SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_DEBUG);
@@ -242,13 +247,12 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
     auto& game               = *app.game;
     auto const previous_time = app.current_time;
     app.current_time         = bg::get_time();
-    assert(app.current_time.count() > 0);
+    assertr(app.current_time.count() > 0);
 
     auto& pendingActions = game.pendingActions;
 
     try {
-        static bool added_button = [&app]() {
-            added_button             = true;
+        [[maybe_unused]] static bool _ = [&app]() {
             auto const test_callback = []() { logInfo("Button pressed!"); };
             bg::Button button{ test_callback };
             SDL_FRect rect{ 100, 100, 100, 100 };
@@ -507,14 +511,6 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
                 bg::cameraFront(game.player.currentCamera->getYaw(), game.player.currentCamera->getPitch()));
         }
 
-        if (game.f3_window_on) {
-            ImGui::ShowMetricsWindow();
-        }
-
-        if (game.debug_window_on) {
-            ImGui::ShowDemoWindow();
-        }
-
         std::chrono::nanoseconds timeSinceLastTick = bg::get_time() - app.game->prevTickTimestamp;
 
         auto const timeBetweenTicks = std::chrono::milliseconds{ 25 }; // 40 ticks per second
@@ -577,25 +573,46 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
 
         // Ratio of progress to the next tick.
         timeSinceLastTick = bg::get_time() - app.game->prevTickTimestamp;
-        float progressToNextTick =
+        float partialTick =
             static_cast<float>(std::chrono::duration_cast<std::chrono::milliseconds>(timeSinceLastTick).count()) /
             static_cast<float>(timeBetweenTicks.count());
         // Clamp to [0.0, 1.0] to be safe.
-        progressToNextTick = std::clamp(progressToNextTick, 0.0f, 1.0f);
+        partialTick = std::clamp(partialTick, 0.0f, 1.0f);
 
-        // logDebug("Progress to next tick: {:2.2f}%", progressToNextTick);
+        // logDebug("Progress to next tick: {:2.2f}%", partialTick);
         {
 #ifdef BLOCKGAME_ENABLE_TRACY
             ZoneScopedN("Render");
 #endif
-            bg::Renderer::render(app, progressToNextTick);
+
+            auto& imguiIO = ImGui::GetIO();
+            if (game.f3_window_on) {
+                imguiIO.NavActive = false;
+                ImGui::Begin("F3 Menu");
+                auto const chunkManagerStats = game.chunkManager.getStats();
+                ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / imguiIO.Framerate,
+                            imguiIO.Framerate);
+                ImGui::Text(
+                    "%s",
+                    std::format("Player Pos: {}", glm::to_string(game.player.getPos(partialTick)).c_str()).c_str());
+                ImGui::Text("%s", std::format("Loaded Chunk Count: {}", chunkManagerStats.loadedChunkCount).c_str());
+                ImGui::End();
+            }
+
+            if (game.debug_window_on) {
+                imguiIO.NavActive = true;
+                ImGui::ShowDemoWindow();
+            } else {
+                imguiIO.NavActive = false;
+            }
+
+            bg::Renderer::render(app, partialTick);
         }
 
         ++app.game->frame_num;
 
         // Limit fps to 300
         auto const fps = bg::calculate_fps(previous_time, bg::get_time());
-        // std::cout << std::to_string(fps) << '\n';
         if (fps > 300) {
             SDL_Delay(1);
         }
@@ -609,6 +626,8 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
 
 extern "C" void SDL_AppQuit(void* appstate, SDL_AppResult result)
 {
+    static_cast<void>(result);
+
     logInfo("Application quitting...");
     auto* app = static_cast<AppContext*>(appstate);
     delete app;
