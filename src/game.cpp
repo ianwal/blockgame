@@ -20,40 +20,14 @@ namespace bg
 GameContext::GameContext()
 {
     // Generate some blocks.
-    logDebug("Generating chunks...");
-    constexpr int chunk_size{ 8 };
-    constexpr int num_chunks{ 16 };
-    for (int chunk_index_x = 0; chunk_index_x < (num_chunks / 2); ++chunk_index_x) {
-        for (int chunk_index_z = 0; chunk_index_z < (num_chunks / 2); ++chunk_index_z) {
-            for (int i = 0; i < chunk_size; ++i) {
-                for (int j = 0; j < 128; ++j) {
-                    for (int k = 0; k < chunk_size; ++k) {
-                        Block block{};
-                        int const surface_y = 66;
-                        if (j == surface_y) {
-                            block.type = BlockType::BLOCK_GRASS;
-                        } else if (j > surface_y) {
-                            block.type == BlockType::BLOCK_AIR;
-                        } else if (j < surface_y && j >= (surface_y - 5)) {
-                            block.type = BlockType::BLOCK_DIRT;
-                        } else {
-                            block.type = BlockType::BLOCK_COBBLE;
-                        }
-                        block.pos = glm::vec3{ (chunk_index_x * chunk_size) + i, j, (chunk_index_z * chunk_size) + k };
-                        blocks.push_back(block);
-                    }
-                }
-            }
-        }
-    }
-    logDebug("DONE generating chunks.");
-
     // Move the player
-    player.updatePos(glm::vec3{ 30, 68, 10 });
+    player.updatePos(glm::vec3{ 0, 68, 0 });
 }
 
 void handleSwingAction(GameContext& game)
 {
+    // TODO: Fix.
+    /*
     // Use first person camera because swinging is done in first person.
     auto& camera = game.player.fpCamera;
 
@@ -90,6 +64,7 @@ void handleSwingAction(GameContext& game)
     if (hitBlock != game.blocks.end()) {
         game.blocks.erase(hitBlock);
     }
+    */
 }
 
 void handleMoveAction(GameContext& game, MoveAction const& action)

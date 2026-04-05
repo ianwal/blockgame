@@ -6,6 +6,7 @@
 #include "src/block.h"
 #include "src/block_renderer.h"
 #include "src/button.h"
+#include "src/chunkrenderer.h"
 #include "src/crosshair_renderer.h"
 #include "src/game.h"
 #include "src/logger.h"
@@ -64,13 +65,17 @@ void Renderer::init()
     glBufferData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4), nullptr, GL_DYNAMIC_DRAW);
     glBindBufferBase(GL_UNIFORM_BUFFER, 0, viewProjectionUboID); // bind to slot 0
 
-    BlockRenderer::init();
+    // BlockRenderer::init();
+    ChunkRenderer::init();
     CrosshairRenderer::init();
 }
 
 void Renderer::cleanup()
 {
     glDeleteBuffers(1, &viewProjectionUboID);
+    // BlockRenderer::cleanup();
+    ChunkRenderer::cleanup();
+    CrosshairRenderer::cleanup();
 }
 
 void Renderer::render(AppContext& ctx, float partialTick)
@@ -103,9 +108,9 @@ void Renderer::render(AppContext& ctx, float partialTick)
 
     {
 #ifdef BLOCKGAME_ENABLE_TRACY
-        ZoneScopedN("BlockRenderer");
+        ZoneScopedN("ChunkRenderer");
 #endif
-        BlockRenderer::render(ctx, ctx.game->blocks, partialTick);
+        ChunkRenderer::render(ctx, ctx.game->chunkManager, partialTick);
     }
 
     CrosshairRenderer::render(ctx);

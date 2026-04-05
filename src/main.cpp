@@ -524,6 +524,11 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
 
                 game.player.updatePos(game.player.getPos(1.0));
 
+                // Load chunks, generating as needed.
+                constexpr std::int32_t chunkLoadRadius = 8;
+                constexpr std::uint64_t worldSeed      = 123;
+                game.chunkManager.loadChunks(game.player.getPos(1.0), 4, worldSeed);
+
                 // Process game logic.
                 if (!game.debug_window_on) {
                     for (auto&& action : pendingActions) {

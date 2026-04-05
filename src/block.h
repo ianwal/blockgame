@@ -8,7 +8,7 @@
 namespace bg
 {
 
-enum class BlockType : std::uint32_t {
+enum class BlockType : std::uint16_t {
     BLOCK_AIR = 0, ///< Placeholder, not really a block.
     BLOCK_COBBLE,
     BLOCK_GRASS,
@@ -19,8 +19,8 @@ enum class BlockType : std::uint32_t {
 };
 
 struct Block {
-    BlockType type{};
     glm::vec3 pos{};
+    BlockType type{};
 };
 
 GLuint getBlockTexture(BlockType type);

@@ -10,7 +10,7 @@ set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}" CACHE INTERNAL "")
 
 # Declare the project
 project(blockgame LANGUAGES CXX)
-set (CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Sanitizer build type options.
@@ -117,6 +117,8 @@ PRIVATE
     src/font.cpp
     src/crosshair_renderer.cpp
     src/common.cpp
+    src/chunkrenderer.cpp
+    src/chunk.cpp
     src/button.cpp
     src/block.cpp
     src/block_renderer.cpp
@@ -158,6 +160,11 @@ endif()
 # if using a C++ version older than C++20, you also need /ZW
 if(WINDOWS_STORE)
     target_compile_options(${EXECUTABLE_NAME} PUBLIC "/EHsc")
+endif()
+
+# Add color to GCC compiler logs.
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(${EXECUTABLE_NAME} PUBLIC -fdiagnostics-color=auto)
 endif()
 
 set(SDL_X11_XCURSOR OFF CACHE BOOL "" FORCE)

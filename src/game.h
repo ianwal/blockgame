@@ -4,6 +4,7 @@
 #include "src/block.h"
 #include "src/button.h"
 #include "src/camera.h"
+#include "src/chunk.h"
 #include "src/event_handling.h"
 #include "src/game.h"
 #include "src/input_manager.h"
@@ -155,8 +156,6 @@ struct GameContext {
 
     Player player{};
 
-    std::vector<Block> blocks{};
-
     Inputs prev_inputs{};
 
     bool debug_window_on = false;
@@ -164,6 +163,8 @@ struct GameContext {
     float fastNoClipSpeed = false;
 
     bool noclip = true;
+
+    ChunkManager chunkManager{};
 
     GuiObjects gui_objects{};
     std::unique_ptr<EventBuffer> input_event_buffer{ std::make_unique<EventBuffer>() };
