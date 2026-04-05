@@ -55,23 +55,34 @@ void ChunkManager::updateChunks(glm::vec3 const& worldPos, std::int32_t const ch
                 // Generate chunk
                 // logDebug("Generating chunk: {}", to_string(targetChunkPos));
 
+                float const freq = 0.2;
                 // If chunk is not loaded, generate it.
                 auto chunk = std::make_unique<Chunk>();
                 for (int i = 0; i < chunkSize; ++i) {
                     for (int j = 0; j < chunkHeight; ++j) {
                         for (int k = 0; k < chunkSize; ++k) {
                             Block block{};
-                            int const surface_y = chunkHeight / 3;
-                            if (j == surface_y) {
-                                block.type = BlockType::BLOCK_GRASS;
-                            } else if (j > surface_y) {
-                                block.type = BlockType::BLOCK_AIR;
-                            } else if (j < surface_y && j >= (surface_y - 5)) {
-                                block.type = BlockType::BLOCK_DIRT;
-                            } else {
-                                block.type = BlockType::BLOCK_COBBLE;
+                            block.pos        = getWorldPos(targetChunkPos, glm::vec3{ i, j, k });
+                            float sumOffsetX = 0;
+                            float sumOffsetZ = 0;
+                            for (int octave = 1; octave < 3; ++octave) {
+                                float octaveScaled = octave * 4;
+                                sumOffsetX += (std::sin(((octaveScaled) *block.pos.x * freq) / (octaveScaled * 4)));
+                                sumOffsetZ += (std::sin(((octaveScaled) *block.pos.z * freq) / (octaveScaled * 4)));
                             }
-                            block.pos = getWorldPos(targetChunkPos, glm::vec3{ i, j, k });
+                            float surfaceY = 50 + ((sumOffsetX + sumOffsetZ) * 3);
+
+                            if (block.pos.y < surfaceY) {
+                                if ((block.pos.y < surfaceY - 1.0) && (block.pos.y > surfaceY - 2.0)) {
+                                    block.type = BlockType::BLOCK_DIRT;
+                                } else if (block.pos.y < (surfaceY - 5.0)) {
+                                    block.type = BlockType::BLOCK_COBBLE;
+                                } else {
+                                    block.type = BlockType::BLOCK_GRASS;
+                                }
+                            } else {
+                                block.type = BlockType::BLOCK_AIR;
+                            }
                             chunk->blocks.push_back(block);
                         }
                     }

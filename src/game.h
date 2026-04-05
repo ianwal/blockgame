@@ -169,7 +169,7 @@ struct GameContext {
 
     ChunkManager chunkManager{};
 
-    std::int32_t chunkLoadRadius{ 5 };
+    std::int32_t chunkLoadRadius{ 6 };
     std::int32_t chunkRenderDistance = chunkLoadRadius;
 
     GuiObjects gui_objects{};
