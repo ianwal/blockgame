@@ -1,6 +1,6 @@
 #include "src/button.h"
 
-namespace alf
+namespace bg
 {
 
 namespace
@@ -56,4 +56,4 @@ void Text::render(SDL_Renderer& renderer) const
     render_text(renderer, *this);
 }
 
-} // namespace alf
+} // namespace bg

@@ -3,7 +3,7 @@
 #include <SDL3/SDL.h>
 #include <SDL3_ttf/SDL_ttf.h>
 
-namespace alf
+namespace bg
 {
 
 // CALL ONCE AT START OF PROGRAM.
@@ -22,4 +22,4 @@ struct Font {
     TTF_Font* font{};
 };
 
-} // namespace alf
+} // namespace bg

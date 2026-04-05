@@ -14,7 +14,7 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/string_cast.hpp>
 
-namespace alf
+namespace bg
 {
 
 GameContext::GameContext()
@@ -157,4 +157,4 @@ void handleMoveAction(GameContext& game, MoveAction const& action)
     }
 }
 
-} // namespace alf
+} // namespace bg

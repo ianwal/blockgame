@@ -6,7 +6,7 @@
 
 #include <cassert>
 
-namespace alf
+namespace bg
 {
 
 Dim2d getWindowSize(AppContext& ctx)
@@ -17,4 +17,4 @@ Dim2d getWindowSize(AppContext& ctx)
     return dim;
 }
 
-} // namespace alf
+} // namespace bg

@@ -24,12 +24,12 @@
 #include <variant>
 #include <vector>
 
-namespace alf
+namespace bg
 {
 
 using Render_layer_t = std::uint8_t;
 
-using Gui_object_var_t = std::variant<alf::VisibleButton, alf::TextButton, alf::Text>;
+using Gui_object_var_t = std::variant<bg::VisibleButton, bg::TextButton, bg::Text>;
 
 struct GuiObjects {
     void add(Gui_object_var_t&& obj)
@@ -180,4 +180,4 @@ void handleSwingAction(GameContext& game);
 
 void handleMoveAction(GameContext& game, MoveAction const& action);
 
-} // namespace alf
+} // namespace bg

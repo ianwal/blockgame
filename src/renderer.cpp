@@ -22,7 +22,10 @@
 #include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
+
+#ifdef BLOCKGAME_ENABLE_TRACY
 #include <tracy/Tracy.hpp>
+#endif
 
 #include <algorithm>
 #include <cassert>
@@ -32,7 +35,7 @@
 #include <string>
 #include <string_view>
 
-namespace alf
+namespace bg
 {
 
 std::int64_t calculate_fps(Timestamp previous_frame, Timestamp current_frame)
@@ -99,7 +102,9 @@ void Renderer::render(AppContext& ctx, float partialTick)
     glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), glm::value_ptr(view));
 
     {
+#ifdef BLOCKGAME_ENABLE_TRACY
         ZoneScopedN("BlockRenderer");
+#endif
         BlockRenderer::render(ctx, ctx.game->blocks, partialTick);
     }
 
@@ -118,4 +123,4 @@ void Renderer::render(AppContext& ctx, float partialTick)
     }
 }
 
-} // namespace alf
+} // namespace bg

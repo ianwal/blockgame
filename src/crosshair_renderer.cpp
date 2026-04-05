@@ -19,7 +19,7 @@
 #include <climits>
 #include <cstdlib>
 
-namespace alf
+namespace bg
 {
 
 GLuint CrosshairRenderer::vao;
@@ -47,7 +47,7 @@ void CrosshairRenderer::init()
 
     glBindVertexArray(0);
 
-    matrixId = glGetUniformLocation(alf::ShaderManagerSingleton::get().get("crosshair"), "projection");
+    matrixId = glGetUniformLocation(bg::ShaderManagerSingleton::get().get("crosshair"), "projection");
 }
 
 void CrosshairRenderer::cleanup()
@@ -79,7 +79,7 @@ void CrosshairRenderer::render(AppContext& ctx)
     // Orthographic projection matrix to turn normalized device coordinates (NDC) -> Screen Space Coordinates
     glm::mat4 proj =
         glm::ortho(0.f, static_cast<float>(windowSize.width), static_cast<float>(windowSize.height), 0.f, -1.f, 1.f);
-    glUseProgram(alf::ShaderManagerSingleton::get().get("crosshair"));
+    glUseProgram(bg::ShaderManagerSingleton::get().get("crosshair"));
     glUniformMatrix4fv(matrixId, 1, GL_FALSE, glm::value_ptr(proj));
 
     glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
@@ -94,4 +94,4 @@ void CrosshairRenderer::render(AppContext& ctx)
     glBindVertexArray(0);
 }
 
-} // namespace alf
+} // namespace bg

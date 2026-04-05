@@ -5,7 +5,7 @@
 
 #include <GL/glew.h>
 
-namespace alf
+namespace bg
 {
 
 class CrosshairRenderer
@@ -24,4 +24,4 @@ private:
     static GLuint matrixId;
 };
 
-} // namespace alf
+} // namespace bg

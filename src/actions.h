@@ -5,7 +5,7 @@
 
 #include <variant>
 
-namespace alf
+namespace bg
 {
 
 struct SwingAction {
@@ -31,4 +31,4 @@ struct overloaded : Ts... {
     using Ts::operator()...;
 };
 
-} // namespace alf
+} // namespace bg

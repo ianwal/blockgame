@@ -2,7 +2,7 @@
 
 #include <glm/glm.hpp>
 
-namespace alf
+namespace bg
 {
 
 constexpr glm::vec3 lerp(glm::vec3 prev, glm::vec3 current, float t)
@@ -13,4 +13,4 @@ constexpr glm::vec3 lerp(glm::vec3 prev, glm::vec3 current, float t)
     return glm::vec3{ x, y, z };
 }
 
-} // namespace alf
+} // namespace bg

@@ -1,6 +1,6 @@
 #pragma once
 
-namespace alf
+namespace bg
 {
 
 /// Dimension 2D.
@@ -17,4 +17,4 @@ struct Dim2d {
 
 constexpr auto const font_file{ FONTS_DIR FONT_FILE_NAME };
 
-} // namespace alf
+} // namespace bg

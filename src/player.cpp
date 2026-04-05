@@ -4,7 +4,7 @@
 
 #include <glm/glm.hpp>
 
-namespace alf
+namespace bg
 {
 
 void Player::tick()
@@ -38,4 +38,4 @@ void Player::setMoveSpeedMultiplier(float moveSpeedMultiplier)
     this->moveSpeedMultiplier = moveSpeedMultiplier;
 }
 
-} // namespace alf
+} // namespace bg

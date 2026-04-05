@@ -11,7 +11,7 @@
 #include <string_view>
 #include <vector>
 
-namespace alf
+namespace bg
 {
 
 void CheckShaderCompilation(GLuint shader, const char* type)
@@ -126,7 +126,7 @@ GLuint loadShader(std::string_view vertexPath, std::string_view fragmentPath)
 
 GLuint loadTexture(std::string_view imagePath)
 {
-    auto result          = alf::loadImage(std::string{ imagePath }, true);
+    auto result          = bg::loadImage(std::string{ imagePath }, true);
     std::uint32_t width  = result.width;
     std::uint32_t height = result.height;
     unsigned char* data  = result.bytes.data();
@@ -149,4 +149,4 @@ GLuint loadTexture(std::string_view imagePath)
     return texture;
 }
 
-} // namespace alf
+} // namespace bg

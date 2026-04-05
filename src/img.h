@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-namespace alf
+namespace bg
 {
 
 struct GetImageResult {
@@ -16,4 +16,4 @@ struct GetImageResult {
 /// Get raw image bytes from an image file in the form of RGBRGBRBG.
 GetImageResult loadImage(std::string const& imagePath, bool flippedVertically = false);
 
-} // namespace alf
+} // namespace bg

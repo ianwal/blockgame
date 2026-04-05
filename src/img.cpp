@@ -6,7 +6,7 @@
 #include <utility>
 #include <vector>
 
-namespace alf
+namespace bg
 {
 
 // Note: This function is in its own file to reduce compile time when modifying other files because CImg is very large.
@@ -33,4 +33,4 @@ GetImageResult loadImage(std::string const& imagePath, bool flippedVertically)
                            static_cast<std::uint32_t>(height) };
 }
 
-} // namespace alf
+} // namespace bg

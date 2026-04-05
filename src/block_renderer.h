@@ -5,7 +5,7 @@
 
 #include <GL/glew.h>
 
-namespace alf
+namespace bg
 {
 
 class BlockRenderer
@@ -28,4 +28,4 @@ private:
     static GLuint vbo;
 };
 
-} // namespace alf
+} // namespace bg

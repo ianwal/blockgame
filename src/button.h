@@ -13,7 +13,7 @@
 #include <optional>
 #include <string>
 
-namespace alf
+namespace bg
 {
 
 SDL_Point get_center_in_rect(SDL_Rect rect);
@@ -150,4 +150,4 @@ public:
     SDL_Point pos;
 };
 
-} // namespace alf
+} // namespace bg

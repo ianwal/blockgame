@@ -20,12 +20,12 @@
 #include <glm/glm.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
-#include <tracy/Tracy.hpp>
 
 #include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <cstdlib>
+#include <format>
 #include <iostream>
 #include <string>
 #include <string_view>
@@ -36,10 +36,14 @@
 #include <glm/gtx/string_cast.hpp>
 // clang-format on
 
-using alf::AppContext;
-using alf::Timestamp;
+#ifdef BLOCKGAME_ENABLE_TRACY
+#include <tracy/Tracy.hpp>
+#endif
 
-namespace alf
+using bg::AppContext;
+using bg::Timestamp;
+
+namespace bg
 {
 
 namespace
@@ -103,9 +107,10 @@ extern "C" SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
 
-    // create a window
-    SDL_Window* window = SDL_CreateWindow("Window", 1280, 720, SDL_WINDOW_OPENGL);
+    std::string const windowTitle = std::format("Block Game1 | Build: {} {}", __DATE__, __TIME__);
+    SDL_Window* window = SDL_CreateWindow(windowTitle.c_str(), 1280, 720, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
     if (!window) {
+        logCritical("SDL_CreateWindow() failed: {}", SDL_GetError());
         return SDL_Fail();
     }
 
@@ -135,22 +140,22 @@ extern "C" SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
     // Disable vsync
     SDL_GL_SetSwapInterval(0);
 
-    alf::global_font_init();
+    bg::global_font_init();
 
     // Load assets
 
-    alf::ShaderManagerSingleton::get()
+    bg::ShaderManagerSingleton::get()
         .load("vertex_shader", "assets/shaders/vertex_shader.glsl", "assets/shaders/vertex_shader.frag")
         .load("cube", "assets/shaders/cube.glsl", "assets/shaders/cube.frag")
         .load("crosshair", "assets/shaders/crosshair.glsl", "assets/shaders/crosshair.frag");
 
-    alf::TextureResourceManagerSingleton::get()
+    bg::TextureResourceManagerSingleton::get()
         .load("block.cobble", "assets/textures/cobble.png")
         .load("block.grass", "assets/textures/grass.png")
         .load("block.dirt", "assets/textures/dirt.png")
         .load("block.lucky", "assets/textures/lucky.png");
 
-    alf::Renderer::init();
+    bg::Renderer::init();
 
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
@@ -226,7 +231,9 @@ extern "C" SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
 
 extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
 {
+#ifdef BLOCKGAME_ENABLE_TRACY
     ZoneScopedN("AppIterate");
+#endif
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplSDL3_NewFrame();
     ImGui::NewFrame();
@@ -234,7 +241,7 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
     auto& app                = *static_cast<AppContext*>(appstate);
     auto& game               = *app.game;
     auto const previous_time = app.current_time;
-    app.current_time         = alf::get_time();
+    app.current_time         = bg::get_time();
     assert(app.current_time.count() > 0);
 
     auto& pendingActions = game.pendingActions;
@@ -243,12 +250,12 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
         static bool added_button = [&app]() {
             added_button             = true;
             auto const test_callback = []() { logInfo("Button pressed!"); };
-            alf::Button button{ test_callback };
+            bg::Button button{ test_callback };
             SDL_FRect rect{ 100, 100, 100, 100 };
-            alf::VisibleButton visible_button{ button, rect };
+            bg::VisibleButton visible_button{ button, rect };
             app.game->gui_objects.add(std::move(visible_button));
-            alf::TextButton text_button{ alf::Text{ "test" }, alf::VisibleButton{ alf::Button{ test_callback },
-                                                                                  SDL_FRect{ 200, 200, 50, 50 } } };
+            bg::TextButton text_button{ bg::Text{ "test" }, bg::VisibleButton{ bg::Button{ test_callback },
+                                                                               SDL_FRect{ 200, 200, 50, 50 } } };
             text_button.set_pos(SDL_Point{ 500, 500 });
             app.game->gui_objects.add(std::move(text_button));
             return true;
@@ -296,7 +303,7 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
         }
 
         // Assume nothing is changed, overwrite later.
-        alf::Inputs curr_inputs = app.game->prev_inputs;
+        bg::Inputs curr_inputs = app.game->prev_inputs;
 
         // TODO: The first time prev_inputs is set, it should be set from the player inputs, otherwise if you hold
         // a key when the game is starting it won't be registered.
@@ -304,7 +311,7 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
         while (auto input_opt = app.game->input_event_buffer->consume()) {
             auto& input            = input_opt.value();
             static int input_count = 0;
-            auto& text_button      = std::get<alf::TextButton>(app.game->gui_objects.objects[1]);
+            auto& text_button      = std::get<bg::TextButton>(app.game->gui_objects.objects[1]);
             text_button.update_text_str(std::to_string(input_count));
             ++input_count;
             // logDebug("Received event. Event type: {}", input.type);
@@ -485,14 +492,14 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
             // The camera front must be calculated before movement because camera front is used in movement
             // calculations.
             game.player.currentCamera->updateFront(
-                alf::cameraFront(game.player.currentCamera->getYaw(), game.player.currentCamera->getPitch()));
+                bg::cameraFront(game.player.currentCamera->getYaw(), game.player.currentCamera->getPitch()));
         }
 
         if (game.debug_window_on) {
             ImGui::ShowDemoWindow();
         }
 
-        std::chrono::nanoseconds timeSinceLastTick = alf::get_time() - app.game->prevTickTimestamp;
+        std::chrono::nanoseconds timeSinceLastTick = bg::get_time() - app.game->prevTickTimestamp;
 
         auto const timeBetweenTicks = std::chrono::milliseconds{ 25 }; // 40 ticks per second
 
@@ -507,7 +514,9 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
         bool moved = false;
 
         {
+#ifdef BLOCKGAME_ENABLE_TRACY
             ZoneScopedN("GameLogic");
+#endif
             // TODO: Process multiple ticks if behind.
             // 20 ticks / second == 50 ms between ticks
             if (timeSinceLastTick >= timeBetweenTicks) {
@@ -518,14 +527,14 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
                 // Process game logic.
                 if (!game.debug_window_on) {
                     for (auto&& action : pendingActions) {
-                        std::visit(alf::overloaded{
-                                       [&](alf::SwingAction&) {
+                        std::visit(bg::overloaded{
+                                       [&](bg::SwingAction&) {
                                            if (!swung) {
                                                handleSwingAction(game);
                                                swung = true;
                                            }
                                        },
-                                       [&](alf::MoveAction& action) {
+                                       [&](bg::MoveAction& action) {
                                            if (!moved) {
                                                handleMoveAction(game, action);
                                                moved = true;
@@ -538,7 +547,7 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
 
                 pendingActions.clear();
 
-                app.game->prevTickTimestamp = alf::get_time();
+                app.game->prevTickTimestamp = bg::get_time();
             }
         }
 
@@ -547,7 +556,7 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
         // Rendering
 
         // Ratio of progress to the next tick.
-        timeSinceLastTick = alf::get_time() - app.game->prevTickTimestamp;
+        timeSinceLastTick = bg::get_time() - app.game->prevTickTimestamp;
         float progressToNextTick =
             static_cast<float>(std::chrono::duration_cast<std::chrono::milliseconds>(timeSinceLastTick).count()) /
             static_cast<float>(timeBetweenTicks.count());
@@ -556,14 +565,16 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
 
         // logDebug("Progress to next tick: {:2.2f}%", progressToNextTick);
         {
+#ifdef BLOCKGAME_ENABLE_TRACY
             ZoneScopedN("Render");
-            alf::Renderer::render(app, progressToNextTick);
+#endif
+            bg::Renderer::render(app, progressToNextTick);
         }
 
         ++app.game->frame_num;
 
         // Limit fps to 300
-        auto const fps = alf::calculate_fps(previous_time, alf::get_time());
+        auto const fps = bg::calculate_fps(previous_time, bg::get_time());
         // std::cout << std::to_string(fps) << '\n';
         if (fps > 300) {
             SDL_Delay(1);
@@ -586,10 +597,10 @@ extern "C" void SDL_AppQuit(void* appstate, SDL_AppResult result)
     ImGui_ImplSDL3_Shutdown();
     ImGui::DestroyContext();
 
-    alf::destroy_global_font();
+    bg::destroy_global_font();
 
     SDL_Quit();
     logInfo("Application quit.");
 }
 
-} // namespace alf
+} // namespace bg

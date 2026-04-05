@@ -4,7 +4,7 @@
 
 #include <glm/glm.hpp>
 
-namespace alf
+namespace bg
 {
 
 /// @brief Get the camera front vector from the yaw and pitch.
@@ -96,4 +96,4 @@ private:
     float pitch{ 0.0f };
 };
 
-} // namespace alf
+} // namespace bg

@@ -5,7 +5,7 @@
 
 #include <GL/glew.h>
 
-namespace alf
+namespace bg
 {
 
 class Renderer
@@ -23,4 +23,4 @@ private:
 
 std::int64_t calculate_fps(Timestamp previous_frame, Timestamp current_frame);
 
-} // namespace alf
+} // namespace bg

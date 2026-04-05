@@ -7,7 +7,7 @@
 #include <queue>
 #include <utility>
 
-namespace alf
+namespace bg
 {
 
 /// A thread-safe event queue.
@@ -43,4 +43,4 @@ private:
     std::mutex event_mtx{};
 };
 
-} // namespace alf
+} // namespace bg

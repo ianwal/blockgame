@@ -4,7 +4,7 @@
 
 #include <glm/glm.hpp>
 
-namespace alf
+namespace bg
 {
 
 class Player
@@ -37,4 +37,4 @@ private:
     bool noclip{ true };
 };
 
-} // namespace alf
+} // namespace bg

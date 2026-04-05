@@ -7,7 +7,7 @@
 #include <string>
 #include <string_view>
 
-namespace alf
+namespace bg
 {
 
 GLuint loadShader(std::string_view vertexPath, std::string_view fragmentPath);
@@ -122,4 +122,4 @@ public:
     }
 };
 
-} // namespace alf
+} // namespace bg

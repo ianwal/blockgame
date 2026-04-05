@@ -9,7 +9,7 @@
 #include <cassert>
 #include <cstdlib>
 
-namespace alf
+namespace bg
 {
 
 struct AppContext {
@@ -33,4 +33,4 @@ struct AppContext {
 /// Get current game window size.
 Dim2d getWindowSize(AppContext& ctx);
 
-} // namespace alf
+} // namespace bg

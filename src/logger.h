@@ -5,7 +5,7 @@
 #include <format>
 #include <utility>
 
-namespace alf
+namespace bg
 {
 
 template <class... Args>
@@ -38,4 +38,4 @@ static void logDebug(std::format_string<Args...> fmt, Args&&... args)
     SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "%s", std::format(fmt, std::forward<Args>(args)...).c_str());
 }
 
-} // namespace alf
+} // namespace bg

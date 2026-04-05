@@ -14,9 +14,12 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>
-#include <tracy/Tracy.hpp>
 
-namespace alf
+#ifdef BLOCKGAME_ENABLE_TRACY
+#include <tracy/Tracy.hpp>
+#endif
+
+namespace bg
 {
 
 GLuint BlockRenderer::vao;
@@ -99,7 +102,7 @@ void BlockRenderer::init()
 
     glBindVertexArray(0);
 
-    shaderId          = alf::ShaderManagerSingleton::get().get("cube");
+    shaderId          = bg::ShaderManagerSingleton::get().get("cube");
     GLuint blockIndex = glGetUniformBlockIndex(shaderId, "Matrices");
     glUniformBlockBinding(shaderId, blockIndex, 0);
     glUniform1i(glGetUniformLocation(shaderId, "tex"), 0);
@@ -114,7 +117,9 @@ void BlockRenderer::cleanup()
 void BlockRenderer::render(AppContext& ctx, Block const& block, float partialTick)
 {
     /*
+#ifdef BLOCKGAME_ENABLE_TRACY
     ZoneScopedN("SingleBlockRender");
+#endif
     if (block.type == BlockType::BLOCK_AIR) {
         return;
     }
@@ -182,4 +187,4 @@ void BlockRenderer::render(AppContext& ctx, std::vector<Block> const& blocks, fl
     glDisable(GL_CULL_FACE);
 }
 
-} // namespace alf
+} // namespace bg

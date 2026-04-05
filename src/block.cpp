@@ -10,7 +10,7 @@
 #include <cstdint>
 #include <string>
 
-namespace alf
+namespace bg
 {
 
 GLuint getBlockTexture(BlockType type)
@@ -45,7 +45,7 @@ GLuint getBlockTexture(BlockType type)
         } break;
     };
 
-    return alf::TextureResourceManagerSingleton::get().get(name);
+    return bg::TextureResourceManagerSingleton::get().get(name);
 }
 
-} // namespace alf
+} // namespace bg

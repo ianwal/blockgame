@@ -5,7 +5,7 @@
 #include <cassert>
 #include <memory>
 
-namespace alf
+namespace bg
 {
 
 namespace
@@ -44,4 +44,4 @@ TTF_Font& get_font()
     return *(main_font.get());
 }
 
-} // namespace alf
+} // namespace bg
