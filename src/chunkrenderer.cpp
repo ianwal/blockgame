@@ -124,15 +124,16 @@ void ChunkRenderer::render(AppContext& ctx, ChunkManager const& chunkManager, fl
     std::map<BlockType, std::vector<glm::vec3>> byType{};
 
     for (auto const& [chunkPos, chunk] : chunkManager.loadedChunks) {
-        // OPTIMIZATION: Only render chunks within a certain radius.
-        ChunkPos const playerChunkPos             = getChunkPos(ctx.game->player.getPos(partialTick));
-        constexpr std::uint32_t maxRenderDistance = 8;
-        if (glm::distance(glm::vec2{ chunkPos.x, chunkPos.z }, glm::vec2{ playerChunkPos.x, playerChunkPos.z }) >
-            maxRenderDistance) {
-            continue;
+        {
+            // Only render chunks within a certain radius.
+            ChunkPos const playerChunkPos = getChunkPos(ctx.game->player.getPos(partialTick));
+            if (glm::distance(glm::vec2{ chunkPos.x, chunkPos.z }, glm::vec2{ playerChunkPos.x, playerChunkPos.z }) >
+                ctx.game->chunkRenderDistance) {
+                continue;
+            }
         }
 
-        for (auto const& block : chunk.blocks) {
+        for (auto const& block : chunk->blocks) {
             if (block.type == BlockType::BLOCK_AIR) {
                 continue;
             }

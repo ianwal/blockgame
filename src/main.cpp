@@ -263,9 +263,8 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
 
         static bool gameInputManagerInitialized = false;
         if (!gameInputManagerInitialized) {
-            app.game->input_manager.registerCallbackOnRelease(SDLK_F3, [&app]() {
-                app.game->f3_window_on = !app.game->f3_window_on;
-            });
+            app.game->input_manager.registerCallbackOnRelease(
+                SDLK_F3, [&app]() { app.game->f3_window_on = !app.game->f3_window_on; });
 
             app.game->input_manager.registerCallbackOnRelease(SDLK_F4, [&app]() {
                 if (app.game->debug_window_on) {
@@ -542,9 +541,8 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
                 game.player.updatePos(game.player.getPos(1.0));
 
                 // Load chunks, generating as needed.
-                constexpr std::int32_t chunkLoadRadius = 8;
-                constexpr std::uint64_t worldSeed      = 123;
-                game.chunkManager.loadChunks(game.player.getPos(1.0), 4, worldSeed);
+                constexpr std::uint64_t worldSeed = 123;
+                game.chunkManager.updateChunks(game.player.getPos(1.0), game.chunkLoadRadius, worldSeed);
 
                 // Process game logic.
                 if (!game.debug_window_on) {

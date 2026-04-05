@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <functional>
 #include <map>
+#include <memory>
 #include <string>
 
 namespace bg
@@ -62,14 +63,16 @@ class ChunkManager
 public:
     ChunkManager() = default;
 
-    void loadChunks(glm::vec3 const& worldPos, std::int32_t chunkLoadRadius, std::uint64_t seed);
+    void updateChunks(glm::vec3 const& worldPos, std::int32_t chunkLoadRadius, std::uint64_t seed);
 
 private:
     struct Chunk {
         std::vector<Block> blocks{};
     };
 
-    std::unordered_map<ChunkPos, Chunk> loadedChunks{};
+    std::unordered_map<ChunkPos, Chunk*>
+        loadedChunks{}; // TODO: Make pointer to the iterator in allChunks and refresh every tick?
+    std::unordered_map<ChunkPos, std::unique_ptr<Chunk>> allChunks{};
 
     friend class ChunkRenderer;
 };

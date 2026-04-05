@@ -159,7 +159,7 @@ struct GameContext {
 
     Inputs prev_inputs{};
 
-    bool f3_window_on = false;
+    bool f3_window_on    = false;
     bool debug_window_on = false;
 
     float fastNoClipSpeed = false;
@@ -167,6 +167,9 @@ struct GameContext {
     bool noclip = true;
 
     ChunkManager chunkManager{};
+
+    std::int32_t chunkLoadRadius{ 8 };
+    std::int32_t chunkRenderDistance = chunkLoadRadius;
 
     GuiObjects gui_objects{};
     std::unique_ptr<EventBuffer> input_event_buffer{ std::make_unique<EventBuffer>() };

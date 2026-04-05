@@ -32,8 +32,9 @@ glm::vec3 getWorldPos(ChunkPos const& chunkPos, glm::vec3 blockOffset)
                       (chunkPos.z * chunkSize) + blockOffset.z };
 }
 
-void ChunkManager::loadChunks(glm::vec3 const& worldPos, std::int32_t chunkLoadRadius, std::uint64_t seed)
+void ChunkManager::updateChunks(glm::vec3 const& worldPos, std::int32_t const chunkLoadRadius, std::uint64_t const seed)
 {
+    loadedChunks.clear();
     ChunkPos startChunkPos = getChunkPos(worldPos);
     for (std::int32_t targetChunkXOffset = -chunkLoadRadius; targetChunkXOffset < chunkLoadRadius;
          ++targetChunkXOffset) {
@@ -41,40 +42,38 @@ void ChunkManager::loadChunks(glm::vec3 const& worldPos, std::int32_t chunkLoadR
              ++targetChunkZOffset) {
             ChunkPos const targetChunkPos{ (startChunkPos.x + targetChunkXOffset),
                                            (startChunkPos.z + targetChunkZOffset) };
+            if (allChunks.contains(targetChunkPos)) {
+                loadedChunks.insert({ targetChunkPos, allChunks[targetChunkPos].get() });
+            } else {
+                // Generate chunk
+                // logDebug("Generating chunk: {}", to_string(targetChunkPos));
 
-            if (loadedChunks.contains(targetChunkPos)) {
-                continue;
-            }
-
-            // Generate chunk
-            // logDebug("Generating chunk: {}", to_string(targetChunkPos));
-
-            // If chunk is not loaded, generate it. Chunks are never unloaded currently because unloading checks would
-            // require saving them somewhere. They could be unloaded and saved to a vector to avoid iterating over and
-            // ignoring them. Minecraft also saves them to disk to save progress.
-            // TODO: At some point chunks should be unloaded.
-            Chunk chunk{};
-            for (int i = 0; i < chunkSize; ++i) {
-                for (int j = 0; j < chunkHeight; ++j) {
-                    for (int k = 0; k < chunkSize; ++k) {
-                        Block block{};
-                        int const surface_y = chunkHeight / 2;
-                        if (j == surface_y) {
-                            block.type = BlockType::BLOCK_GRASS;
-                        } else if (j > surface_y) {
-                            block.type == BlockType::BLOCK_AIR;
-                        } else if (j < surface_y && j >= (surface_y - 5)) {
-                            block.type = BlockType::BLOCK_DIRT;
-                        } else {
-                            block.type = BlockType::BLOCK_COBBLE;
+                // If chunk is not loaded, generate it. Chunks are never unloaded currently because unloading checks
+                // would require saving them somewhere. They could be unloaded and saved to a vector to avoid iterating
+                // over and ignoring them. Minecraft also saves them to disk to save progress.
+                // TODO: At some point chunks should be unloaded.
+                auto chunk = std::make_unique<Chunk>();
+                for (int i = 0; i < chunkSize; ++i) {
+                    for (int j = 0; j < chunkHeight; ++j) {
+                        for (int k = 0; k < chunkSize; ++k) {
+                            Block block{};
+                            int const surface_y = chunkHeight / 2;
+                            if (j == surface_y) {
+                                block.type = BlockType::BLOCK_GRASS;
+                            } else if (j > surface_y) {
+                                block.type == BlockType::BLOCK_AIR;
+                            } else if (j < surface_y && j >= (surface_y - 5)) {
+                                block.type = BlockType::BLOCK_DIRT;
+                            } else {
+                                block.type = BlockType::BLOCK_COBBLE;
+                            }
+                            block.pos = getWorldPos(targetChunkPos, glm::vec3{ i, j, k });
+                            chunk->blocks.push_back(block);
                         }
-                        block.pos = getWorldPos(targetChunkPos, glm::vec3{ i, j, k });
-                        chunk.blocks.push_back(block);
                     }
                 }
+                allChunks.insert({ targetChunkPos, std::move(chunk) });
             }
-
-            loadedChunks.insert({ targetChunkPos, std::move(chunk) });
         }
     }
 }
