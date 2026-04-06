@@ -2,6 +2,7 @@
 
 #include "src/block.h"
 #include "src/camera.h"
+#include "src/chunkrenderer.h"
 #include "src/logger.h"
 
 #include <SDL3/SDL.h>
@@ -17,10 +18,18 @@
 namespace bg
 {
 
+void test_fn(glm::vec3 pos, BlockType oldType, BlockType newType)
+{
+    logInfo("Block broken.");
+}
+
 GameContext::GameContext()
 {
+    levelManager.registerOnBlockChanged(test_fn);
+    levelManager.registerOnBlockChanged(
+        [](glm::vec3 pos, BlockType oldType, BlockType newType) { ChunkRenderer::markChunkDirty(getChunkPos(pos)); });
     // Move the player
-    player.updatePos(glm::vec3{ 0, 45, 0 });
+    player.updatePos(glm::vec3{ 0, 55, 0 });
 }
 
 void handleSwingAction(GameContext& game)
@@ -59,7 +68,9 @@ void handleSwingAction(GameContext& game)
     }
 
     if (hitBlock != blockCandidates.end()) {
+        Block const oldBlock = **hitBlock;
         game.chunkManager.removeBlock(*hitBlock);
+        game.levelManager.pushOnBlockChanged(oldBlock.pos, oldBlock.type, BlockType::BLOCK_AIR);
     }
 }
 

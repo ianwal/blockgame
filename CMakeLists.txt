@@ -117,6 +117,7 @@ PRIVATE
     src/game.cpp
     src/font.cpp
     src/crosshair_renderer.cpp
+    src/levelmanager.cpp
     src/common.cpp
     src/chunkrenderer.cpp
     src/chunk.cpp

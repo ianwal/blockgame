@@ -9,6 +9,7 @@
 #include "src/event_handling.h"
 #include "src/game.h"
 #include "src/input_manager.h"
+#include "src/levelmanager.h"
 #include "src/player.h"
 #include "src/time.h"
 
@@ -171,6 +172,8 @@ struct GameContext {
 
     std::int32_t chunkLoadRadius{ 6 };
     std::int32_t chunkRenderDistance = chunkLoadRadius;
+
+    LevelManager levelManager{};
 
     GuiObjects gui_objects{};
     std::unique_ptr<EventBuffer> input_event_buffer{ std::make_unique<EventBuffer>() };

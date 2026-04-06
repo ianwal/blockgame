@@ -27,6 +27,8 @@ GLuint ChunkRenderer::vertexbuffer;
 GLuint ChunkRenderer::shaderId;
 GLuint ChunkRenderer::matrixId;
 GLuint ChunkRenderer::vbo;
+std::vector<ChunkPos> ChunkRenderer::dirtyChunks;
+std::unordered_map<ChunkPos, std::map<BlockType, std::vector<glm::vec3>>> ChunkRenderer::blockPosData;
 
 // clang-format off
 static constexpr GLfloat g_vertex_buffer_data[] = {
@@ -121,11 +123,42 @@ void ChunkRenderer::render(AppContext& ctx, ChunkManager const& chunkManager, fl
     glCullFace(GL_BACK);
     glDepthFunc(GL_LESS);
 
-    // OPTIMIZATION:
-    // Avoid allocations across render calls by clearing the positions each time instead of destroying them.
-    static std::map<BlockType, std::vector<glm::vec3>> byType{};
-    for (auto& [type, positions] : byType) {
-        positions.clear();
+    for (ChunkPos const& chunkPos : dirtyChunks) {
+        // Create the data or clear the data if it already exists.
+        blockPosData[chunkPos] = {};
+
+        assertr(chunkManager.loadedChunks.contains(chunkPos));
+        for (auto const& block : chunkManager.loadedChunks.find(chunkPos)->second->blocks) {
+            if (block.type == BlockType::BLOCK_AIR) {
+                continue;
+            }
+            blockPosData[chunkPos][block.type].push_back(glm::vec3(block.pos));
+        }
+    }
+    dirtyChunks.clear(); // Chunk data rebuilt, so clear it.
+
+    // Get any loaded chunks
+    for (auto const& [chunkPos, chunk] : chunkManager.loadedChunks) {
+        if (!blockPosData.contains(chunkPos)) {
+            for (auto const& block : chunkManager.loadedChunks.find(chunkPos)->second->blocks) {
+                if (block.type == BlockType::BLOCK_AIR) {
+                    continue;
+                }
+                blockPosData[chunkPos][block.type].push_back(glm::vec3(block.pos));
+            }
+        }
+    }
+
+    // Remove any unloaded chunks.
+    // TODO: This is clearly inefficient and requires multiple unnecessary lookups.
+    std::vector<ChunkPos> unloadedChunks{};
+    for (auto const& [chunkPos, chunk] : blockPosData) {
+        if (!chunkManager.loadedChunks.contains(chunkPos)) {
+            unloadedChunks.push_back(chunkPos);
+        }
+    }
+    for (auto const& chunkPos : unloadedChunks) {
+        blockPosData.erase(blockPosData.find(chunkPos));
     }
 
     // Note: I don't know why, but rendering a chunk at a time is ~30fps faster than rendering all chunks at once.
@@ -134,23 +167,12 @@ void ChunkRenderer::render(AppContext& ctx, ChunkManager const& chunkManager, fl
     glUseProgram(shaderId);
     glBindVertexArray(vao);
     glActiveTexture(GL_TEXTURE0);
-    for (auto const& [chunkPos, chunk] : chunkManager.loadedChunks) {
-        for (auto& [type, positions] : byType) {
-            positions.clear();
-        }
-        // Only render chunks within the render distance.
-        if (glm::distance(glm::vec2{ chunkPos.x, chunkPos.z }, playerChunkPosVec) > ctx.game->chunkRenderDistance) {
-            continue;
-        }
 
-        for (auto const& block : chunk->blocks) {
-            if (block.type == BlockType::BLOCK_AIR) {
+    for (auto const& [chunkPos, data] : blockPosData) {
+        for (auto& [type, positions] : data) {
+            if (positions.empty()) {
                 continue;
             }
-            byType[block.type].push_back(glm::vec3(block.pos));
-        }
-
-        for (auto& [type, positions] : byType) {
             glBindTexture(GL_TEXTURE_2D, getBlockTexture(type));
             glBindBuffer(GL_ARRAY_BUFFER, vbo);
             glBufferData(GL_ARRAY_BUFFER, positions.size() * sizeof(glm::vec3), positions.data(), GL_DYNAMIC_DRAW);
@@ -160,6 +182,11 @@ void ChunkRenderer::render(AppContext& ctx, ChunkManager const& chunkManager, fl
 
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
+}
+
+void ChunkRenderer::markChunkDirty(ChunkPos pos)
+{
+    dirtyChunks.push_back(pos);
 }
 
 } // namespace bg
