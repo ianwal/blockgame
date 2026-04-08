@@ -560,9 +560,8 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
             }
         }
 
-        bool swung         = false;
-        bool moved         = false;
-        auto movedBitfield = MoveAction::Direction::NONE;
+        bool alreadySwung         = false;
+        auto alreadyMovedBitfield = MoveAction::Direction::NONE;
 
         {
 #ifdef BLOCKGAME_ENABLE_TRACY
@@ -584,19 +583,19 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
                     for (auto&& action : pendingActions) {
                         std::visit(bg::overloaded{
                                        [&](bg::SwingAction&) {
-                                           if (!swung) {
+                                           if (!alreadySwung) {
                                                handleSwingAction(game);
-                                               swung = true;
+                                               alreadySwung = true;
                                            }
                                        },
                                        [&](bg::MoveAction& action) {
                                            // TODO: Allowing multiple actions means moving diagonally is faster than in
                                            // cardinal directions. Instead, the full move action bitwise should be
                                            // passed to handleMoveAction and it should be normalized there.
-                                           if ((movedBitfield & action.direction) == 0) {
+                                           if ((alreadyMovedBitfield & action.direction) == 0) {
                                                handleMoveAction(game, action);
-                                               movedBitfield =
-                                                   static_cast<MoveAction::Direction>(movedBitfield | action.direction);
+                                               alreadyMovedBitfield = static_cast<MoveAction::Direction>(
+                                                   alreadyMovedBitfield | action.direction);
                                            }
                                        },
                                    },
@@ -648,6 +647,7 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
                 ImGui::Text("%s", std::format("Noclip: {}", game.player.isNoclip()).c_str());
                 ImGui::Text(" ");
                 ImGui::Text("%s", std::format("Loaded Chunk Count: {}", chunkManagerStats.loadedChunkCount).c_str());
+                ImGui::Text("%s", std::format("World Chunk Count: {}", chunkManagerStats.worldChunkCount).c_str());
                 // clang-format on
                 ImGui::End();
             }

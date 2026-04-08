@@ -61,6 +61,7 @@ glm::vec3 getWorldPos(ChunkPos const& chunkPos, glm::vec3 blockOffset);
 
 struct ChunkManagerStats {
     std::uint32_t loadedChunkCount{};
+    std::uint32_t worldChunkCount{};
 };
 
 class ChunkManager

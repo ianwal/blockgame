@@ -150,7 +150,8 @@ bool ChunkManager::removeBlock(Block const* block)
 
 ChunkManagerStats ChunkManager::getStats() const
 {
-    return ChunkManagerStats{ static_cast<std::uint32_t>(loadedChunks.size()) };
+    return ChunkManagerStats{ static_cast<std::uint32_t>(loadedChunks.size()),
+                              static_cast<std::uint32_t>(allChunks.size()) };
 }
 
 } // namespace bg

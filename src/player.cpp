@@ -1,5 +1,6 @@
 #include "src/player.h"
 
+#include "src/aabb.h"
 #include "src/game.h"
 #include "src/logger.h"
 #include "src/utils.h"
@@ -30,6 +31,16 @@ AABB getBlockAABB(Block const& block)
     return aabb;
 }
 
+/// Round the given vector to zero if its length is near zero.
+void roundToZero(glm::vec3 v)
+{
+    if (!isZeroVector(v)) {
+        if (glm::length(v) < 0.02) {
+            v = glm::vec3{ 0.0f, 0.0f, 0.0f };
+        }
+    }
+}
+
 } // namespace
 
 Player::Player()
@@ -43,12 +54,7 @@ void Player::tick()
     constexpr float maxVelocity       = 1.0f;
     constexpr float minVelocityToZero = 0.02; // Velocity threshold that is rounded to zero.
     vel                               = clampLength(vel, maxVelocity);
-
-    if (!isZeroVector(vel)) {
-        if (glm::length(vel) < 0.02) {
-            vel = glm::vec3{ 0.0f, 0.0f, 0.0f };
-        }
-    }
+    roundToZero(vel);
 
     auto const originalVel = vel;
     glm::vec3 newPos{};
@@ -106,12 +112,7 @@ void Player::tick()
 
         // Note: These are the min X and Z and max Y based on how the player AABB is defined (see getAABB()).
         newPos = glm::vec3{ aabb.minX, aabb.minY, aabb.minZ };
-
-        if (!isZeroVector(newPos)) {
-            if (glm::length(newPos) < 0.02) {
-                newPos = glm::vec3{ 0.0f, 0.0f, 0.0f };
-            }
-        }
+        roundToZero(newPos);
     }
 
     updatePos(newPos);
@@ -152,13 +153,7 @@ void Player::tick()
     }
 
     vel = clampLength(vel, maxVelocity);
-
-    // Round velocity to zero if near zero.
-    if (!isZeroVector(vel)) {
-        if (glm::length(vel) < 0.02) {
-            vel = glm::vec3{ 0.0f, 0.0f, 0.0f };
-        }
-    }
+    roundToZero(vel);
 }
 
 glm::vec3 Player::getPos(float partialTick) const
