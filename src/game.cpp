@@ -19,14 +19,8 @@
 namespace bg
 {
 
-void test_fn(glm::vec3 pos, BlockType oldType, BlockType newType)
-{
-    logInfo("Block broken.");
-}
-
 GameContext::GameContext()
 {
-    levelManager.registerOnBlockChanged(test_fn);
     levelManager.registerOnBlockChanged(
         [](glm::vec3 pos, BlockType oldType, BlockType newType) { ChunkRenderer::markChunkDirty(getChunkPos(pos)); });
     // Move the player
@@ -77,14 +71,13 @@ void handleMoveAction(GameContext& game, MoveAction const& action)
 {
     // logDebug("Tick {} Move Dir: {}", game.tick, std::to_underlying(action.direction));
 
-    float const moveSpeed = (0.2 * game.player.getMoveSpeedMultiplier()) * (game.fastNoClipSpeed ? 2.0f : 1.0f);
-
     // Use first person camera because moving is done relative to the first person camera.
     auto& currentCamera = game.player.fpCamera;
     auto& player        = game.player;
 
-    if (game.noclip) {
-        auto moveLeft = [&player, &currentCamera, &moveSpeed]() {
+    if (player.isFlying()) {
+        float const moveSpeed = (0.2 * player.getMoveSpeedMultiplier()) * (game.fastNoClipSpeed ? 2.0f : 1.0f);
+        auto moveLeft         = [&player, &currentCamera, &moveSpeed]() {
             // Add velocity in the direction.
             glm::vec3 const dir = glm::normalize(glm::cross(currentCamera.getFront(1.0), currentCamera.getUp()));
             glm::vec3 const newVelocity = (player.getVelocity() - (moveSpeed * dir));
@@ -142,10 +135,74 @@ void handleMoveAction(GameContext& game, MoveAction const& action)
             case MoveAction::Direction::BACKWARD: {
                 moveBackward();
             } break;
+            case MoveAction::Direction::NONE: {
+                // Do nothing.
+            } break;
         }
-
     } else {
-        // TODO
+        // TODO: The non-grounded movement is janky and needs to be fixed.
+        float const moveSpeed = (0.1 * player.getMoveSpeedMultiplier() * (player.isGrounded() ? 1.0f : 0.8f));
+        auto moveLeft         = [&player, &currentCamera, &moveSpeed]() {
+            // Add velocity in the direction.
+            glm::vec3 const dir = glm::normalize(glm::cross(currentCamera.getFront(1.0), currentCamera.getUp()));
+            glm::vec3 const newVelocity = (player.getVelocity() - (moveSpeed * dir));
+            player.setVelocity(newVelocity);
+        };
+
+        auto moveRight = [&player, &currentCamera, &moveSpeed]() {
+            // Add velocity in the direction.
+            glm::vec3 const dir = glm::normalize(glm::cross(currentCamera.getFront(1.0), currentCamera.getUp()));
+            glm::vec3 const newVelocity = (player.getVelocity() + (moveSpeed * dir));
+            player.setVelocity(newVelocity);
+        };
+
+        auto moveForward = [&player, &currentCamera, &moveSpeed]() {
+            // Add velocity in the direction.
+            glm::vec3 const dir = glm::normalize(
+                glm::cross(glm::cross(currentCamera.getFront(1.0), currentCamera.getUp()), currentCamera.getUp()));
+            glm::vec3 const newVelocity = (player.getVelocity() - (moveSpeed * dir));
+            player.setVelocity(newVelocity);
+        };
+
+        auto moveBackward = [&player, &currentCamera, &moveSpeed]() {
+            glm::vec3 const dir = glm::normalize(
+                glm::cross(glm::cross(currentCamera.getFront(1.0), currentCamera.getUp()), currentCamera.getUp()));
+            glm::vec3 const newVelocity = (player.getVelocity() + (moveSpeed * dir));
+            player.setVelocity(newVelocity);
+        };
+
+        auto moveUp = [&player, &currentCamera, &moveSpeed]() {
+            if (player.isGrounded()) {
+                float jumpMultiplier        = 0.4;
+                glm::vec3 const dir         = glm::vec3{ 0, 1, 0 };
+                glm::vec3 const newVelocity = (player.getVelocity() + (jumpMultiplier * dir));
+                player.setVelocity(newVelocity);
+            }
+        };
+
+        switch (action.direction) {
+            case MoveAction::Direction::LEFT: {
+                moveLeft();
+            } break;
+            case MoveAction::Direction::RIGHT: {
+                moveRight();
+            } break;
+            case MoveAction::Direction::UP: {
+                moveUp();
+            } break;
+            case MoveAction::Direction::DOWN: {
+                // Do nothing.
+            } break;
+            case MoveAction::Direction::FORWARD: {
+                moveForward();
+            } break;
+            case MoveAction::Direction::BACKWARD: {
+                moveBackward();
+            } break;
+            case MoveAction::Direction::NONE: {
+                // Do nothing.
+            } break;
+        }
     }
 }
 

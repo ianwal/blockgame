@@ -12,13 +12,14 @@ struct SwingAction {
 };
 
 struct MoveAction {
-    enum class Direction : std::uint8_t {
-        LEFT = 0,
-        RIGHT,
-        UP,
-        DOWN,
-        FORWARD,
-        BACKWARD,
+    enum Direction : std::uint8_t {
+        NONE     = 0,
+        LEFT     = 1,
+        RIGHT    = 1 << 1,
+        UP       = 1 << 2,
+        DOWN     = 1 << 3,
+        FORWARD  = 1 << 4,
+        BACKWARD = 1 << 5,
     };
 
     Direction direction{};

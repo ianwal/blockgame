@@ -7,6 +7,7 @@
 #include <glm/glm.hpp>
 
 #include <algorithm>
+#include <cmath>
 
 namespace bg
 {
@@ -42,6 +43,12 @@ void Player::tick()
     constexpr float maxVelocity       = 1.0f;
     constexpr float minVelocityToZero = 0.02; // Velocity threshold that is rounded to zero.
     vel                               = clampLength(vel, maxVelocity);
+
+    if (!isZeroVector(vel)) {
+        if (glm::length(vel) < 0.02) {
+            vel = glm::vec3{ 0.0f, 0.0f, 0.0f };
+        }
+    }
 
     auto const originalVel = vel;
     glm::vec3 newPos{};
@@ -83,24 +90,37 @@ void Player::tick()
             vel.x = 0;
         }
 
+        grounded = false; // reset before possibly setting below
         if (vel.y != originalVel.y) {
             vel.y = 0;
+            if (originalVel.y < 0.0) {
+                grounded = true;
+            }
         }
 
         if (vel.z != originalVel.z) {
             vel.z = 0;
         }
 
+        // Round velocity to zero if near zero.
+
         // Note: These are the min X and Z and max Y based on how the player AABB is defined (see getAABB()).
         newPos = glm::vec3{ aabb.minX, aabb.minY, aabb.minZ };
+
+        if (!isZeroVector(newPos)) {
+            if (glm::length(newPos) < 0.02) {
+                newPos = glm::vec3{ 0.0f, 0.0f, 0.0f };
+            }
+        }
     }
 
     updatePos(newPos);
 
     if (flying) {
+        grounded = false; // Never grounded while flying is enabled.
+
         // Air resistance
         if (!isZeroVector(vel)) {
-
             // Get the direction player is moving towards currently.
             glm::vec3 velDir = glm::normalize(vel);
 
@@ -110,9 +130,25 @@ void Player::tick()
     } else {
         // Add gravity
         glm::vec3 const gravityDir = glm::vec3{ 0.0f, -1.0f, 0.0f };
-        constexpr float gravityScale{ 0.5 };
         static_assert(gravityScale > minVelocityToZero);
         vel += gravityDir * gravityScale;
+
+        // Add ground resistance
+        if (!isZeroVector(vel)) {
+            // Reduce velocity.
+            if (isGrounded()) {
+                vel = glm::vec3{ 0, vel.y, 0 };
+            }
+        }
+
+        // Air resistance
+        if (!isZeroVector(vel)) {
+            // Get the direction player is moving towards currently.
+            glm::vec3 velDir = glm::normalize(vel);
+
+            // Reduce velocity a bit.
+            vel -= (glm::vec3{ 1, 0, 1 } * (velDir * 0.1f));
+        }
     }
 
     vel = clampLength(vel, maxVelocity);
@@ -169,6 +205,31 @@ AABB Player::getAABB() const
     aabb.minY = pos.y;
     aabb.maxY = pos.y + playerHeight;
     return aabb;
+}
+
+bool Player::isGrounded() const
+{
+    return grounded;
+}
+
+void Player::setFlying(bool enabled)
+{
+    flying = enabled;
+}
+
+bool Player::isFlying() const
+{
+    return flying;
+}
+
+void Player::setNoclip(bool enabled)
+{
+    noclip = enabled;
+}
+
+bool Player::isNoclip() const
+{
+    return noclip;
 }
 
 } // namespace bg

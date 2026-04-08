@@ -113,7 +113,9 @@ void Renderer::render(AppContext& ctx, float partialTick)
         ChunkRenderer::render(ctx, ctx.game->chunkManager, partialTick);
     }
 
-    CrosshairRenderer::render(ctx);
+    if (ctx.game->ingameHudVisible) {
+        CrosshairRenderer::render(ctx);
+    }
 
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

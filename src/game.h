@@ -111,8 +111,11 @@ struct Inputs {
     bool d{};
     bool z{};
     bool q{};
+    bool f1{};
     bool f3{};
     bool f4{};
+    bool f6{};
+    bool f7{};
     bool f11{};
     bool lshift{};
     bool space{};
@@ -163,10 +166,9 @@ struct GameContext {
 
     bool f3_window_on    = false;
     bool debug_window_on = false;
+    bool ingameHudVisible{ true };
 
     float fastNoClipSpeed = false;
-
-    bool noclip = true;
 
     ChunkManager chunkManager{};
 

@@ -133,20 +133,30 @@ public:
 
     void tick();
 
-    glm::vec3 getPos(float partialTick) const;
+    [[nodiscard]] glm::vec3 getPos(float partialTick) const;
 
     void setVelocity(glm::vec3 newVel);
 
-    glm::vec3 getVelocity() const;
+    [[nodiscard]] glm::vec3 getVelocity() const;
 
     void updatePos(glm::vec3 newPos);
 
-    float getMoveSpeedMultiplier() const;
+    [[nodiscard]] float getMoveSpeedMultiplier() const;
 
     void setMoveSpeedMultiplier(float moveSpeedMultiplier);
 
+    [[nodiscard]] bool isGrounded() const;
+
+    void setFlying(bool enabled);
+
+    [[nodiscard]] bool isFlying() const;
+
+    void setNoclip(bool enabled);
+
+    [[nodiscard]] bool isNoclip() const;
+
 private:
-    AABB getAABB() const;
+    [[nodiscard]] AABB getAABB() const;
 
     glm::vec3 pos{};         ///< Position.
     glm::vec3 prevPos = pos; ///< Position on the previous tick.
@@ -155,7 +165,11 @@ private:
     float moveSpeedMultiplier{ 1.0 };
 
     bool noclip{ false };
-    bool flying{ true };
+    bool flying{ false };
+
+    bool grounded{ false };
+
+    static constexpr float gravityScale{ 0.04 };
 };
 
 } // namespace bg

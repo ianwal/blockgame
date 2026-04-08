@@ -270,6 +270,9 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
         static bool gameInputManagerInitialized = false;
         if (!gameInputManagerInitialized) {
             app.game->input_manager.registerCallbackOnRelease(
+                SDLK_F1, [&app]() { app.game->ingameHudVisible = !app.game->ingameHudVisible; });
+
+            app.game->input_manager.registerCallbackOnRelease(
                 SDLK_F3, [&app]() { app.game->f3_window_on = !app.game->f3_window_on; });
 
             app.game->input_manager.registerCallbackOnRelease(SDLK_F4, [&app]() {
@@ -283,6 +286,12 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
                     SDL_SetWindowRelativeMouseMode(app.window, false);
                 }
             });
+
+            app.game->input_manager.registerCallbackOnRelease(
+                SDLK_F6, [&app]() { app.game->player.setFlying(!app.game->player.isFlying()); });
+
+            app.game->input_manager.registerCallbackOnRelease(
+                SDLK_F7, [&app]() { app.game->player.setNoclip(!app.game->player.isNoclip()); });
 
             app.game->input_manager.registerCallbackOnRelease(SDLK_F11,
                                                               [&app]() { toggleWindowFullscreen(app.window); });
@@ -427,6 +436,15 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
             } else if ((input.type == SDL_EVENT_KEY_UP) && (input.key.key == SDLK_Q)) {
                 app.game->input_manager.queueInputOnRelease(SDLK_Q);
                 curr_inputs.q = false;
+            } else if ((input.type == SDL_EVENT_KEY_DOWN) && (input.key.key == SDLK_F1)) {
+                if (!app.game->prev_inputs.f1) {
+                    app.game->input_manager.queueInputOnDown(SDLK_F1);
+                }
+                app.game->input_manager.queueInputOnHold(SDLK_F1);
+                curr_inputs.f1 = true;
+            } else if ((input.type == SDL_EVENT_KEY_UP) && (input.key.key == SDLK_F1)) {
+                app.game->input_manager.queueInputOnRelease(SDLK_F1);
+                curr_inputs.f1 = false;
             } else if ((input.type == SDL_EVENT_KEY_DOWN) && (input.key.key == SDLK_F3)) {
                 if (!app.game->prev_inputs.f3) {
                     app.game->input_manager.queueInputOnDown(SDLK_F3);
@@ -445,6 +463,24 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
             } else if ((input.type == SDL_EVENT_KEY_UP) && (input.key.key == SDLK_F4)) {
                 app.game->input_manager.queueInputOnRelease(SDLK_F4);
                 curr_inputs.f4 = false;
+            } else if ((input.type == SDL_EVENT_KEY_DOWN) && (input.key.key == SDLK_F6)) {
+                if (!app.game->prev_inputs.f6) {
+                    app.game->input_manager.queueInputOnDown(SDLK_F6);
+                }
+                app.game->input_manager.queueInputOnHold(SDLK_F6);
+                curr_inputs.f6 = true;
+            } else if ((input.type == SDL_EVENT_KEY_UP) && (input.key.key == SDLK_F6)) {
+                app.game->input_manager.queueInputOnRelease(SDLK_F6);
+                curr_inputs.f6 = false;
+            } else if ((input.type == SDL_EVENT_KEY_DOWN) && (input.key.key == SDLK_F7)) {
+                if (!app.game->prev_inputs.f7) {
+                    app.game->input_manager.queueInputOnDown(SDLK_F7);
+                }
+                app.game->input_manager.queueInputOnHold(SDLK_F7);
+                curr_inputs.f7 = true;
+            } else if ((input.type == SDL_EVENT_KEY_UP) && (input.key.key == SDLK_F7)) {
+                app.game->input_manager.queueInputOnRelease(SDLK_F7);
+                curr_inputs.f7 = false;
             } else if ((input.type == SDL_EVENT_KEY_DOWN) && (input.key.key == SDLK_F11)) {
                 if (!app.game->prev_inputs.f11) {
                     app.game->input_manager.queueInputOnDown(SDLK_F11);
@@ -515,7 +551,7 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
 
         std::chrono::nanoseconds timeSinceLastTick = bg::get_time() - app.game->prevTickTimestamp;
 
-        auto const timeBetweenTicks = std::chrono::milliseconds{ 25 }; // 40 ticks per second
+        auto const timeBetweenTicks = std::chrono::milliseconds{ 30 }; // 40 ticks per second
 
         if ((app.game->prevTickTimestamp != std::chrono::nanoseconds{ 0 })) {
             if (timeSinceLastTick >= (timeBetweenTicks * 1.5)) {
@@ -524,8 +560,9 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
             }
         }
 
-        bool swung = false;
-        bool moved = false;
+        bool swung         = false;
+        bool moved         = false;
+        auto movedBitfield = MoveAction::Direction::NONE;
 
         {
 #ifdef BLOCKGAME_ENABLE_TRACY
@@ -553,9 +590,13 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
                                            }
                                        },
                                        [&](bg::MoveAction& action) {
-                                           if (!moved) {
+                                           // TODO: Allowing multiple actions means moving diagonally is faster than in
+                                           // cardinal directions. Instead, the full move action bitwise should be
+                                           // passed to handleMoveAction and it should be normalized there.
+                                           if ((movedBitfield & action.direction) == 0) {
                                                handleMoveAction(game, action);
-                                               moved = true;
+                                               movedBitfield =
+                                                   static_cast<MoveAction::Direction>(movedBitfield | action.direction);
                                            }
                                        },
                                    },
@@ -596,11 +637,16 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
                 auto const chunkManagerStats = game.chunkManager.getStats();
                 // clang-format off
                 ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / imguiIO.Framerate, imguiIO.Framerate);
+                ImGui::Text(" ");
                 ImGui::Text("%s", std::format("Pos: {}", glm::to_string(game.player.getPos(partialTick))).c_str());
                 ImGui::Text("%s", std::format("Angle: {}", glm::to_string(game.player.currentCamera->getFront(partialTick))).c_str());
                 ImGui::Text("%s", std::format("Angle (degrees): {}", glm::to_string(game.player.currentCamera->getFront(partialTick))).c_str());
                 ImGui::Text("%s", std::format("Velocity: {}", glm::to_string(game.player.getVelocity())).c_str());
                 ImGui::Text("%s", std::format("Velocity Magnitude: {}", glm::length(game.player.getVelocity())).c_str());
+                ImGui::Text("%s", std::format("Grounded: {}", game.player.isGrounded()).c_str());
+                ImGui::Text("%s", std::format("Flying: {}", game.player.isFlying()).c_str());
+                ImGui::Text("%s", std::format("Noclip: {}", game.player.isNoclip()).c_str());
+                ImGui::Text(" ");
                 ImGui::Text("%s", std::format("Loaded Chunk Count: {}", chunkManagerStats.loadedChunkCount).c_str());
                 // clang-format on
                 ImGui::End();
