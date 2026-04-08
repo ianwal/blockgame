@@ -158,7 +158,8 @@ extern "C" SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
         .load("block.cobble", "assets/textures/cobble.png")
         .load("block.grass", "assets/textures/grass.png")
         .load("block.dirt", "assets/textures/dirt.png")
-        .load("block.lucky", "assets/textures/lucky.png");
+        .load("block.lucky", "assets/textures/lucky.png")
+        .load("player.hand", "assets/textures/hand.png");
 
     bg::Renderer::init();
 

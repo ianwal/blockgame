@@ -149,16 +149,25 @@ void HandRenderer::render(AppContext& ctx, float partialTick)
     glm::vec3 right   = glm::normalize(glm::cross(forward, glm::vec3(0, 1, 0)));
     glm::vec3 up      = glm::normalize(glm::cross(right, forward));
 
-    // hand position in world space
-    glm::vec3 o = camera.getPos(partialTick) + forward * 0.2f + right * 0.2f + up * -0.4f;
+    glm::mat4 rot = glm::rotate(glm::mat4(1.0f), glm::radians(10.0f), right);
+    rot           = glm::rotate(rot, glm::radians(-10.0f), up);
+    rot           = glm::rotate(rot, glm::radians(20.0f), forward);
 
-    // cube size
-    float s = 0.2f;
+    right = glm::normalize(glm::vec3(rot * glm::vec4(right, 0.0f)));
+    up    = glm::normalize(glm::vec3(rot * glm::vec4(up, 0.0f)));
+
+    // hand position in world space
+    glm::vec3 o = camera.getPos(partialTick) + forward * 0.2f + right * 0.3f + up * -0.4f;
+
+    // size
+    float const width  = 0.3f;
+    float const height = 0.2f;
+    float const depth  = 0.5f;
 
     // basis vectors scaled to cube size
-    glm::vec3 r = right * s;
-    glm::vec3 u = up * s;
-    glm::vec3 f = forward * s;
+    glm::vec3 r = right * width;
+    glm::vec3 u = up * height;
+    glm::vec3 f = forward * depth;
 
     // 8 corners of the oriented cube
     glm::vec3 ldb = o;
@@ -170,41 +179,51 @@ void HandRenderer::render(AppContext& ctx, float partialTick)
     glm::vec3 luf = o + u + f;
     glm::vec3 ruf = o + r + u + f;
 
-    glDisable(GL_TEXTURE_2D);
-    glColor3f(0.68, 0.42, 0.23);
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, TextureResourceManagerSingleton::get().get("player.hand"));
+    // glColor3f(0.68, 0.42, 0.23);
 
+    // Clear the buffer bit so that the hand is always rendered in front of the world.
+    glClear(GL_DEPTH_BUFFER_BIT);
+
+    // clang-format off
     glBegin(GL_QUADS);
     // front
-    glVertex3fv(glm::value_ptr(ldf));
-    glVertex3fv(glm::value_ptr(rdf));
-    glVertex3fv(glm::value_ptr(ruf));
-    glVertex3fv(glm::value_ptr(luf));
+    glTexCoord2f(0,0); glVertex3fv(glm::value_ptr(ldf));
+    glTexCoord2f(1,0); glVertex3fv(glm::value_ptr(rdf));
+    glTexCoord2f(1,1); glVertex3fv(glm::value_ptr(ruf));
+    glTexCoord2f(0,1); glVertex3fv(glm::value_ptr(luf));
     // back
-    glVertex3fv(glm::value_ptr(rdb));
-    glVertex3fv(glm::value_ptr(ldb));
-    glVertex3fv(glm::value_ptr(lub));
-    glVertex3fv(glm::value_ptr(rub));
+    glTexCoord2f(0,0); glVertex3fv(glm::value_ptr(rdb));
+    glTexCoord2f(1,0); glVertex3fv(glm::value_ptr(ldb));
+    glTexCoord2f(1,1); glVertex3fv(glm::value_ptr(lub));
+    glTexCoord2f(0,1); glVertex3fv(glm::value_ptr(rub));
     // left
-    glVertex3fv(glm::value_ptr(ldb));
-    glVertex3fv(glm::value_ptr(ldf));
-    glVertex3fv(glm::value_ptr(luf));
-    glVertex3fv(glm::value_ptr(lub));
+    glTexCoord2f(0,0); glVertex3fv(glm::value_ptr(ldb));
+    glTexCoord2f(1,0); glVertex3fv(glm::value_ptr(ldf));
+    glTexCoord2f(1,1); glVertex3fv(glm::value_ptr(luf));
+    glTexCoord2f(0,1); glVertex3fv(glm::value_ptr(lub));
     // right
-    glVertex3fv(glm::value_ptr(rdf));
-    glVertex3fv(glm::value_ptr(rdb));
-    glVertex3fv(glm::value_ptr(rub));
-    glVertex3fv(glm::value_ptr(ruf));
+    glTexCoord2f(0,0); glVertex3fv(glm::value_ptr(rdf));
+    glTexCoord2f(1,0); glVertex3fv(glm::value_ptr(rdb));
+    glTexCoord2f(1,1); glVertex3fv(glm::value_ptr(rub));
+    glTexCoord2f(0,1); glVertex3fv(glm::value_ptr(ruf));
     // top
-    glVertex3fv(glm::value_ptr(luf));
-    glVertex3fv(glm::value_ptr(ruf));
-    glVertex3fv(glm::value_ptr(rub));
-    glVertex3fv(glm::value_ptr(lub));
+    glTexCoord2f(0,0); glVertex3fv(glm::value_ptr(luf));
+    glTexCoord2f(1,0); glVertex3fv(glm::value_ptr(ruf));
+    glTexCoord2f(1,1); glVertex3fv(glm::value_ptr(rub));
+    glTexCoord2f(0,1); glVertex3fv(glm::value_ptr(lub));
     // bottom
-    glVertex3fv(glm::value_ptr(ldb));
-    glVertex3fv(glm::value_ptr(rdb));
-    glVertex3fv(glm::value_ptr(rdf));
-    glVertex3fv(glm::value_ptr(ldf));
+    glTexCoord2f(0,0); glVertex3fv(glm::value_ptr(ldb));
+    glTexCoord2f(1,0); glVertex3fv(glm::value_ptr(rdb));
+    glTexCoord2f(1,1); glVertex3fv(glm::value_ptr(rdf));
+    glTexCoord2f(0,1); glVertex3fv(glm::value_ptr(ldf));
     glEnd();
+    // clang-format on
+
+    glDisable(GL_TEXTURE_2D);
+    glDisable(GL_DEPTH_TEST);
 
     glUseProgram(saveProgram);
 }
