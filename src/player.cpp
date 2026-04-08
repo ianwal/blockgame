@@ -14,6 +14,9 @@ namespace bg
 namespace
 {
 
+constexpr float playerWidth  = 0.6;
+constexpr float playerHeight = 1.8;
+
 AABB getBlockAABB(Block const& block)
 {
     AABB aabb{};
@@ -40,11 +43,61 @@ void Player::tick()
     constexpr float minVelocityToZero = 0.02; // Velocity threshold that is rounded to zero.
     vel                               = clampLength(vel, maxVelocity);
 
-    auto newPos = pos + vel; // time is already factored in because it's constant between ticks.
+    auto const originalVel = vel;
+    glm::vec3 newPos{};
+    if (noclip) {
+        newPos = pos + vel;
+    } else {
+        auto aabb = getAABB();
+        {
+            auto collideCandidates = GlobalGame::get().chunkManager.getNearbyBlocks(pos, 30);
+            for (auto block : collideCandidates) {
+                if (block->type == BlockType::BLOCK_AIR) {
+                    continue;
+                }
+
+                vel.y = aabb.getNearestClipY(getBlockAABB(*block), vel.y);
+            }
+            aabb.translate(glm::vec3{ 0.0f, vel.y, 0.0f });
+
+            for (auto block : collideCandidates) {
+                if (block->type == BlockType::BLOCK_AIR) {
+                    continue;
+                }
+
+                vel.x = aabb.getNearestClipX(getBlockAABB(*block), vel.x);
+            }
+            aabb.translate(glm::vec3{ vel.x, 0.0f, 0.0f });
+
+            for (auto block : collideCandidates) {
+                if (block->type == BlockType::BLOCK_AIR) {
+                    continue;
+                }
+
+                vel.z = aabb.getNearestClipZ(getBlockAABB(*block), vel.z);
+            }
+            aabb.translate(glm::vec3{ 0.0f, 0.0f, vel.z });
+        }
+
+        if (vel.x != originalVel.x) {
+            vel.x = 0;
+        }
+
+        if (vel.y != originalVel.y) {
+            vel.y = 0;
+        }
+
+        if (vel.z != originalVel.z) {
+            vel.z = 0;
+        }
+
+        // Note: These are the min X and Z and max Y based on how the player AABB is defined (see getAABB()).
+        newPos = glm::vec3{ aabb.minX, aabb.minY, aabb.minZ };
+    }
+
     updatePos(newPos);
 
-    if (noclip) {
-
+    if (flying) {
         // Air resistance
         if (!isZeroVector(vel)) {
 
@@ -54,23 +107,6 @@ void Player::tick()
             // Reduce velocity a bit.
             vel -= (velDir * 0.1f);
         }
-
-        auto collideCandidates = GlobalGame::get().chunkManager.getNearbyBlocks(pos, 2);
-
-        // Hulk mode (for debugging)
-        auto aabb = getAABB();
-        for (auto block : collideCandidates) {
-            if (block->type == BlockType::BLOCK_AIR) {
-                continue;
-            }
-            if (getAABB().intersects(getBlockAABB(*block))) {
-                logInfo("Player pos: X: {} Y: {} Z: {}", pos.x, pos.y, pos.z);
-                logInfo("Player AABB: min X: {} min Y: {} min Z: {}", aabb.minX, aabb.minY, aabb.minZ);
-                logInfo("Collided with block: X: {} Y: {} Z: {}", block->pos.x, block->pos.y, block->pos.z);
-                GlobalGame::get().levelManager.removeBlock(block);
-            }
-        }
-
     } else {
         // Add gravity
         glm::vec3 const gravityDir = glm::vec3{ 0.0f, -1.0f, 0.0f };
@@ -78,8 +114,6 @@ void Player::tick()
         static_assert(gravityScale > minVelocityToZero);
         vel += gravityDir * gravityScale;
     }
-
-    // TODO: Check collision
 
     vel = clampLength(vel, maxVelocity);
 
@@ -110,7 +144,8 @@ void Player::updatePos(glm::vec3 newPos)
 {
     prevPos = pos;
     pos     = newPos;
-    fpCamera.updatePos(newPos - glm::vec3{ 0, 0.2, 0 }); // First person camera is centered near the head of the player.
+    fpCamera.updatePos(newPos -
+                       glm::vec3{ 0.1, -1, 0.1 }); // First person camera is centered near the head of the player.
 }
 
 float Player::getMoveSpeedMultiplier() const
@@ -127,16 +162,12 @@ AABB Player::getAABB() const
 {
     // Note: Player rotation doesn't affect AABB.
     AABB aabb{};
-    float const playerWidth  = 0.6;
-    float const playerHeight = 1.8;
-    // TODO: Is this / 2 correct or should the min be the pos min and max is + the width?
     aabb.minX = pos.x;
     aabb.maxX = pos.x + playerWidth;
     aabb.minZ = pos.z;
     aabb.maxZ = pos.z + playerWidth;
-    // The player position is at the bottom of the player.
-    aabb.minY = pos.y - playerHeight;
-    aabb.maxY = pos.y;
+    aabb.minY = pos.y;
+    aabb.maxY = pos.y + playerHeight;
     return aabb;
 }
 
