@@ -1,5 +1,6 @@
 #include "src/player.h"
 
+#include "src/game.h"
 #include "src/logger.h"
 #include "src/utils.h"
 
@@ -9,6 +10,29 @@
 
 namespace bg
 {
+
+namespace
+{
+
+AABB getBlockAABB(Block const& block)
+{
+    AABB aabb{};
+    aabb.minX = block.pos.x;
+    aabb.maxX = block.pos.x + 1.0f;
+    aabb.minY = block.pos.y;
+    aabb.maxY = block.pos.y + 1.0f; // todo: is minus?
+    aabb.minZ = block.pos.z;
+    aabb.maxZ = block.pos.z + 1.0f;
+    return aabb;
+}
+
+} // namespace
+
+Player::Player()
+{
+    // Ensure the fp camera position is offset correctly from the player.
+    updatePos(pos);
+}
 
 void Player::tick()
 {
@@ -29,6 +53,22 @@ void Player::tick()
 
             // Reduce velocity a bit.
             vel -= (velDir * 0.1f);
+        }
+
+        auto collideCandidates = GlobalGame::get().chunkManager.getNearbyBlocks(pos, 2);
+
+        // Hulk mode (for debugging)
+        auto aabb = getAABB();
+        for (auto block : collideCandidates) {
+            if (block->type == BlockType::BLOCK_AIR) {
+                continue;
+            }
+            if (getAABB().intersects(getBlockAABB(*block))) {
+                logInfo("Player pos: X: {} Y: {} Z: {}", pos.x, pos.y, pos.z);
+                logInfo("Player AABB: min X: {} min Y: {} min Z: {}", aabb.minX, aabb.minY, aabb.minZ);
+                logInfo("Collided with block: X: {} Y: {} Z: {}", block->pos.x, block->pos.y, block->pos.z);
+                GlobalGame::get().levelManager.removeBlock(block);
+            }
         }
 
     } else {
@@ -70,7 +110,7 @@ void Player::updatePos(glm::vec3 newPos)
 {
     prevPos = pos;
     pos     = newPos;
-    fpCamera.updatePos(newPos);
+    fpCamera.updatePos(newPos - glm::vec3{ 0, 0.2, 0 }); // First person camera is centered near the head of the player.
 }
 
 float Player::getMoveSpeedMultiplier() const
@@ -81,6 +121,23 @@ float Player::getMoveSpeedMultiplier() const
 void Player::setMoveSpeedMultiplier(float moveSpeedMultiplier)
 {
     this->moveSpeedMultiplier = moveSpeedMultiplier;
+}
+
+AABB Player::getAABB() const
+{
+    // Note: Player rotation doesn't affect AABB.
+    AABB aabb{};
+    float const playerWidth  = 0.6;
+    float const playerHeight = 1.8;
+    // TODO: Is this / 2 correct or should the min be the pos min and max is + the width?
+    aabb.minX = pos.x;
+    aabb.maxX = pos.x + playerWidth;
+    aabb.minZ = pos.z;
+    aabb.maxZ = pos.z + playerWidth;
+    // The player position is at the bottom of the player.
+    aabb.minY = pos.y - playerHeight;
+    aabb.maxY = pos.y;
+    return aabb;
 }
 
 } // namespace bg

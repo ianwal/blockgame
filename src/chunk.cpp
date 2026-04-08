@@ -123,6 +123,11 @@ std::vector<Block const*> ChunkManager::getNearbyBlocks(glm::vec3 const& worldPo
 
 bool ChunkManager::removeBlock(Block const* block)
 {
+    // Removing air blocks is not allowed.
+    if (block->type == BlockType::BLOCK_AIR) {
+        return false;
+    }
+
     // Get the chunk that the block is in
     ChunkPos chunkPos = getChunkPos(block->pos);
     auto chunkIt      = loadedChunks.find(chunkPos);

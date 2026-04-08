@@ -1,6 +1,7 @@
 #include "src/levelmanager.h"
 
 #include "src/block.h"
+#include "src/game.h"
 
 #include <glm/glm.hpp>
 
@@ -24,6 +25,14 @@ void LevelManager::pushOnBlockChanged(glm::vec3 pos, BlockType oldType, BlockTyp
 {
     for (auto const& fn : blockChangeObservers) {
         fn(pos, oldType, newType);
+    }
+}
+
+void LevelManager::removeBlock(Block const* block)
+{
+    Block const oldBlock = *block;
+    if (GlobalGame::get().chunkManager.removeBlock(block)) {
+        pushOnBlockChanged(oldBlock.pos, oldBlock.type, BlockType::BLOCK_AIR);
     }
 }
 

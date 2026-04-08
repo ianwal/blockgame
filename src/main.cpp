@@ -195,6 +195,8 @@ extern "C" SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
         window,
     };
 
+    GlobalGame::set(static_cast<AppContext*>(*appstate)->game.get());
+
     logInfo("Application started successfully!");
 
     return SDL_APP_CONTINUE;

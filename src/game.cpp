@@ -1,5 +1,6 @@
 #include "src/game.h"
 
+#include "src/assertr.h"
 #include "src/block.h"
 #include "src/camera.h"
 #include "src/chunkrenderer.h"
@@ -68,9 +69,7 @@ void handleSwingAction(GameContext& game)
     }
 
     if (hitBlock != blockCandidates.end()) {
-        Block const oldBlock = **hitBlock;
-        game.chunkManager.removeBlock(*hitBlock);
-        game.levelManager.pushOnBlockChanged(oldBlock.pos, oldBlock.type, BlockType::BLOCK_AIR);
+        game.levelManager.removeBlock(*hitBlock);
     }
 }
 
@@ -148,6 +147,19 @@ void handleMoveAction(GameContext& game, MoveAction const& action)
     } else {
         // TODO
     }
+}
+
+GameContext* GlobalGame::game = nullptr;
+
+GameContext& GlobalGame::get()
+{
+    assertr(game != nullptr);
+    return *game;
+}
+
+void GlobalGame::set(GameContext* newGame)
+{
+    game = newGame;
 }
 
 } // namespace bg

@@ -184,6 +184,18 @@ struct GameContext {
     Timestamp prevTickTimestamp{};
 };
 
+/// Global game singleton.
+class GlobalGame
+{
+public:
+    static GameContext& get();
+
+    static void set(GameContext* newGame);
+
+private:
+    static GameContext* game;
+};
+
 GameContext createGameContext();
 
 void handleSwingAction(GameContext& game);

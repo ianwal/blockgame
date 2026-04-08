@@ -7,10 +7,25 @@
 namespace bg
 {
 
+struct AABB {
+    float minX{};
+    float maxX{};
+    float minY{};
+    float maxY{};
+    float minZ{};
+    float maxZ{};
+
+    constexpr bool intersects(AABB const& rhs) const
+    {
+        return ((minX < rhs.maxX) && (maxX > rhs.minX)) && ((minY < rhs.maxY) && (maxY > rhs.minY)) &&
+               ((minZ < rhs.maxZ) && (maxZ > rhs.minZ));
+    }
+};
+
 class Player
 {
 public:
-    Player() = default;
+    Player();
 
     Camera fpCamera{ glm::vec3{ 0.f, 0.f, 0.f } }; // First person camera
 
@@ -32,6 +47,8 @@ public:
     void setMoveSpeedMultiplier(float moveSpeedMultiplier);
 
 private:
+    AABB getAABB() const;
+
     glm::vec3 pos{};         ///< Position.
     glm::vec3 prevPos = pos; ///< Position on the previous tick.
     glm::vec3 vel{};         ///< Velocity.
