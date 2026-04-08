@@ -113,11 +113,12 @@ PRIVATE
     src/renderer.cpp
     src/player.cpp
     src/main.cpp
+    src/levelmanager.cpp
     src/img.cpp
+    src/handrenderer.cpp
     src/game.cpp
     src/font.cpp
     src/crosshair_renderer.cpp
-    src/levelmanager.cpp
     src/common.cpp
     src/chunkrenderer.cpp
     src/chunk.cpp

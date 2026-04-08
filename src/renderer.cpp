@@ -9,6 +9,7 @@
 #include "src/chunkrenderer.h"
 #include "src/crosshair_renderer.h"
 #include "src/game.h"
+#include "src/handrenderer.h"
 #include "src/logger.h"
 #include "src/shaders.h"
 #include "src/time.h"
@@ -68,6 +69,7 @@ void Renderer::init()
     // BlockRenderer::init();
     ChunkRenderer::init();
     CrosshairRenderer::init();
+    HandRenderer::init();
 }
 
 void Renderer::cleanup()
@@ -76,6 +78,7 @@ void Renderer::cleanup()
     // BlockRenderer::cleanup();
     ChunkRenderer::cleanup();
     CrosshairRenderer::cleanup();
+    HandRenderer::cleanup();
 }
 
 void Renderer::render(AppContext& ctx, float partialTick)
@@ -114,6 +117,7 @@ void Renderer::render(AppContext& ctx, float partialTick)
     }
 
     if (ctx.game->ingameHudVisible) {
+        HandRenderer::render(ctx, partialTick);
         CrosshairRenderer::render(ctx);
     }
 
