@@ -198,8 +198,6 @@ private:
     static GameContext* game;
 };
 
-GameContext createGameContext();
-
 void handleSwingAction(GameContext& game);
 
 void handleMoveAction(GameContext& game, MoveAction const& action);

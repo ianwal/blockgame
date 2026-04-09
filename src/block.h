@@ -1,9 +1,12 @@
 #pragma once
 
+#include "src/block.h"
+
 #include <GL/glew.h>
 #include <glm/vec3.hpp>
 
 #include <cstdint>
+#include <string>
 
 namespace bg
 {
@@ -24,5 +27,7 @@ struct Block {
 };
 
 GLuint getBlockTexture(BlockType type);
+
+std::string getBlockBreakSoundName(BlockType type);
 
 } // namespace bg

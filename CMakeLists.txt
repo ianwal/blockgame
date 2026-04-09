@@ -125,6 +125,7 @@ PRIVATE
     src/button.cpp
     src/block.cpp
     src/block_renderer.cpp
+    src/audio.cpp
     src/assertr.cpp
     src/app_context.cpp
 
@@ -196,6 +197,13 @@ add_subdirectory(SDL_ttf EXCLUDE_FROM_ALL)
 
 # Link SDL_ttf to our executable. This also makes its include directory available to us.
 target_link_libraries(${EXECUTABLE_NAME} PUBLIC SDL3_ttf::SDL3_ttf)
+
+# Configure SDL_mixer by calling its CMake file.
+# we use EXCLUDE_FROM_ALL so that its install targets and configs don't
+# pollute upwards into our configuration.
+add_subdirectory(SDL_mixer EXCLUDE_FROM_ALL)
+
+target_link_libraries(${EXECUTABLE_NAME} PUBLIC SDL3_mixer::SDL3_mixer)
 
 # Link GLEW
 find_package(GLEW)

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "src/assertr.h"
+
 #include <GL/glew.h>
 
 #include <cassert>
@@ -22,13 +24,14 @@ public:
     /// Get the shader by name.
     GLuint get(std::string const& name)
     {
+        assertr(programs.contains(name), name);
         return programs.at(name);
     }
 
     /// Load the shader and assign it a name.
     ShaderManager& load(std::string const& name, std::string const& vert, std::string const& frag)
     {
-        assert(!programs.contains(name));
+        assertr(!programs.contains(name));
         if (!programs.contains(name)) {
             programs[name] = loadShader(std::string_view{ vert }, std::string_view{ frag });
         }
@@ -43,11 +46,10 @@ public:
         programs.clear();
     }
 
-    // Moveable, not copyable.
     ShaderManager(ShaderManager const&)            = delete;
-    ShaderManager(ShaderManager&&)                 = default;
+    ShaderManager(ShaderManager&&)                 = delete;
     ShaderManager& operator=(ShaderManager const&) = delete;
-    ShaderManager& operator=(ShaderManager&&)      = default;
+    ShaderManager& operator=(ShaderManager&&)      = delete;
 
     ~ShaderManager()
     {
@@ -76,13 +78,14 @@ public:
     /// Get the texture by name.
     GLuint get(std::string const& name)
     {
+        assertr(textures.contains(name), name);
         return textures.at(name);
     }
 
     /// Load the texture and assign it a name.
     TextureResourceManager& load(std::string const& name, std::string const& path)
     {
-        assert(!textures.contains(name));
+        assertr(!textures.contains(name));
         if (!textures.contains(name)) {
             textures[name] = loadTexture(std::string_view{ path });
         }
@@ -97,11 +100,10 @@ public:
         textures.clear();
     }
 
-    // Moveable, not copyable.
     TextureResourceManager(TextureResourceManager const&)            = delete;
-    TextureResourceManager(TextureResourceManager&&)                 = default;
+    TextureResourceManager(TextureResourceManager&&)                 = delete;
     TextureResourceManager& operator=(TextureResourceManager const&) = delete;
-    TextureResourceManager& operator=(TextureResourceManager&&)      = default;
+    TextureResourceManager& operator=(TextureResourceManager&&)      = delete;
 
     ~TextureResourceManager()
     {

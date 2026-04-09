@@ -1,6 +1,7 @@
 #include "src/game.h"
 
 #include "src/assertr.h"
+#include "src/audio.h"
 #include "src/block.h"
 #include "src/camera.h"
 #include "src/chunkrenderer.h"
@@ -63,7 +64,9 @@ void handleSwingAction(GameContext& game)
     }
 
     if (hitBlock != blockCandidates.end()) {
+        BlockType const blockType = (*hitBlock)->type;
         game.levelManager.removeBlock(*hitBlock);
+        playSound2d(getBlockBreakSoundName(blockType));
     }
 }
 

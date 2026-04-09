@@ -17,4 +17,16 @@ Dim2d getWindowSize(AppContext& ctx)
     return dim;
 }
 
+AppContext* App::app{};
+
+AppContext& App::get()
+{
+    return *App::app;
+}
+
+void App::set(AppContext* newApp)
+{
+    App::app = newApp;
+}
+
 } // namespace bg

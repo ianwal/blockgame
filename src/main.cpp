@@ -18,6 +18,7 @@
 #include <GL/glew.h>
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
+#include <SDL3_mixer/SDL_mixer.h>
 #include <SDL3_ttf/SDL_ttf.h>
 #include <glm/glm.hpp>
 #include <glm/vec3.hpp>
@@ -28,9 +29,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <format>
-#include <iostream>
 #include <string>
-#include <string_view>
 #include <vector>
 
 // clang-format off
@@ -93,13 +92,19 @@ extern "C" SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
     SDL_SetLogPriorityPrefix(SDL_LOG_PRIORITY_INFO, "INFO: ");
     SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_DEBUG);
 
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS)) {
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_EVENTS)) {
         // Success.
     } else {
         return SDL_Fail();
     }
 
     if (TTF_Init()) {
+        // Success.
+    } else {
+        return SDL_Fail();
+    }
+
+    if (MIX_Init()) {
         // Success.
     } else {
         return SDL_Fail();
@@ -112,7 +117,11 @@ extern "C" SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
 
-    std::string const windowTitle = std::format("Block Game1 | Build: {} {}", __DATE__, __TIME__);
+    std::string const gameTitle   = "Block Game";
+    std::string const gameVersion = std::format("Build: {} {}", __DATE__, __TIME__);
+    SDL_SetAppMetadata(gameTitle.c_str(), gameVersion.c_str(), nullptr);
+
+    std::string const windowTitle = std::format("{} | {}", gameTitle, gameVersion);
     SDL_Window* window = SDL_CreateWindow(windowTitle.c_str(), 1280, 720, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
     if (!window) {
         logCritical("SDL_CreateWindow() failed: {}", SDL_GetError());
@@ -196,7 +205,9 @@ extern "C" SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
         window,
     };
 
-    GlobalGame::set(static_cast<AppContext*>(*appstate)->game.get());
+    App::set(static_cast<AppContext*>(*appstate));
+
+    GlobalGame::set(App::get().game.get());
 
     logInfo("Application started successfully!");
 
@@ -640,7 +651,6 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
                 ImGui::Text(" ");
                 ImGui::Text("%s", std::format("Pos: {}", glm::to_string(game.player.getPos(partialTick))).c_str());
                 ImGui::Text("%s", std::format("Angle: {}", glm::to_string(game.player.currentCamera->getFront(partialTick))).c_str());
-                ImGui::Text("%s", std::format("Angle (degrees): {}", glm::to_string(game.player.currentCamera->getFront(partialTick))).c_str());
                 ImGui::Text("%s", std::format("Velocity: {}", glm::to_string(game.player.getVelocity())).c_str());
                 ImGui::Text("%s", std::format("Velocity Magnitude: {}", glm::length(game.player.getVelocity())).c_str());
                 ImGui::Text("%s", std::format("Grounded: {}", game.player.isGrounded()).c_str());
@@ -692,8 +702,9 @@ extern "C" void SDL_AppQuit(void* appstate, SDL_AppResult result)
 
     bg::destroy_global_font();
 
+    MIX_Quit();
+    TTF_Quit();
     SDL_Quit();
-    logInfo("Application quit.");
 }
 
 } // namespace bg
