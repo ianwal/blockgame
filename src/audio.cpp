@@ -28,7 +28,7 @@ AudioResourceManager& AudioResourceManager::load(std::string const& name, std::s
         std::uint8_t* loadedAudio = static_cast<std::uint8_t*>(SDL_LoadFile(path.c_str(), &size));
         assertr(loadedAudio != nullptr, path);
         audioFiles[name] = std::span{ loadedAudio, size };
-        logDebug("Loaded audio file: {} , size: {} bytes", path, size);
+        logDebug("Loaded audio file: {} ({} bytes)", path, size);
     }
     return *this;
 }

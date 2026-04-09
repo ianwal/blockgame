@@ -308,10 +308,16 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
             app.game->input_manager.registerCallbackOnRelease(SDLK_F11,
                                                               [&app]() { toggleWindowFullscreen(app.window); });
 
-            app.game->input_manager.registerCallbackOnHold(SDLK_LSHIFT, [&app]() { app.game->fastNoClipSpeed = true; });
+            app.game->input_manager.registerCallbackOnHold(SDLK_LSHIFT, [&app, &pendingActions]() {
+                if (app.game->player.isFlying()) {
+                    app.game->fastNoClipSpeed = true;
+                }
+            });
 
-            app.game->input_manager.registerCallbackOnRelease(SDLK_LSHIFT,
-                                                              [&app]() { app.game->fastNoClipSpeed = false; });
+            app.game->input_manager.registerCallbackOnRelease(SDLK_LSHIFT, [&app]() {
+                app.game->fastNoClipSpeed = false;
+                app.game->player.setSneaking(false);
+            });
 
             app.game->input_manager.registerCallbackOnRelease(SDLK_Q, [&app]() {
                 // Debug
@@ -544,6 +550,9 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
         if (curr_inputs.space == true) {
             pendingActions.push_back(MoveAction{ MoveAction::Direction::UP });
         }
+        if (curr_inputs.lshift == true) {
+            pendingActions.push_back(SneakAction{});
+        }
 
         // Process game state
 
@@ -601,6 +610,11 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
                 constexpr std::uint64_t worldSeed = 123;
                 game.chunkManager.updateChunks(game.player.getPos(1.0), game.chunkLoadRadius, worldSeed);
 
+                // TODO: This is bad. Sneaking should be updated before processing move actions always.
+                if (game.player.isSneaking()) {
+                    game.player.setSneaking(false);
+                }
+
                 // Process game logic.
                 if (!game.debug_window_on) {
                     for (auto&& action : pendingActions) {
@@ -608,9 +622,11 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
                                        [&](bg::SwingAction&) {
                                            if (!alreadySwung) {
                                                handleSwingAction(game);
+                                               game.player.swing();
                                                alreadySwung = true;
                                            }
                                        },
+                                       [&](bg::SneakAction& action) { game.player.setSneaking(true); },
                                        [&](bg::MoveAction& action) {
                                            // TODO: Allowing multiple actions means moving diagonally is faster than in
                                            // cardinal directions. Instead, the full move action bitwise should be

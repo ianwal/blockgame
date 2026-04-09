@@ -149,15 +149,28 @@ void HandRenderer::render(AppContext& ctx, float partialTick)
     glm::vec3 right   = glm::normalize(glm::cross(forward, glm::vec3(0, 1, 0)));
     glm::vec3 up      = glm::normalize(glm::cross(right, forward));
 
-    glm::mat4 rot = glm::rotate(glm::mat4(1.0f), glm::radians(10.0f), right);
-    rot           = glm::rotate(rot, glm::radians(-10.0f), up);
-    rot           = glm::rotate(rot, glm::radians(20.0f), forward);
+    glm::vec3 fixedRight = right;
+    glm::vec3 fixedUp    = up;
 
-    right = glm::normalize(glm::vec3(rot * glm::vec4(right, 0.0f)));
-    up    = glm::normalize(glm::vec3(rot * glm::vec4(up, 0.0f)));
+    glm::mat4 rot = glm::rotate(glm::mat4(1.0f), glm::radians(45.0f), right);
+    rot           = glm::rotate(rot, glm::radians(-10.0f), up);
+    rot           = glm::rotate(rot, glm::radians(10.0f), forward);
+
+    float const swingProgress = ctx.game->player.getSwingProgress(partialTick);
+    float const f1            = glm::sin(swingProgress * glm::pi<float>());
+    float const f2            = glm::sin(swingProgress * swingProgress * glm::pi<float>());
+
+    rot = glm::rotate(rot, glm::radians(-60.0f) * f2, right); // punch forward (pitch)
+
+    glm::vec3 const vel = ctx.game->player.getVelocity(partialTick);
+
+    forward = glm::normalize(glm::vec3(rot * glm::vec4(forward, 0.0f)));
+    right   = glm::normalize(glm::vec3(rot * glm::vec4(right, 0.0f)));
+    up      = glm::normalize(glm::vec3(rot * glm::vec4(up, 0.0f)));
 
     // hand position in world space
-    glm::vec3 o = camera.getPos(partialTick) + forward * 0.2f + right * 0.3f + up * -0.4f;
+    glm::vec3 o = camera.getPos(partialTick) + (vel * 0.1f) + (fixedUp * -0.3f) + (fixedRight * 0.4f) +
+                  (forward * 0.05f) + ((right * 0.1f) * (2.0f * -f1)) + up * (-0.6f + f1 * 0.05f - f2 * 0.15f);
 
     // size
     float const width  = 0.3f;

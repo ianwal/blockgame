@@ -51,6 +51,9 @@ Player::Player()
 
 void Player::tick()
 {
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // Movement
+    ////////////////////////////////////////////////////////////////////////////////////////////////
     constexpr float maxVelocity       = 1.0f;
     constexpr float minVelocityToZero = 0.02; // Velocity threshold that is rounded to zero.
     vel                               = clampLength(vel, maxVelocity);
@@ -138,7 +141,7 @@ void Player::tick()
         if (!isZeroVector(vel)) {
             // Reduce velocity.
             if (isGrounded()) {
-                vel = glm::vec3{ 0, vel.y, 0 };
+                vel = glm::vec3{ 0.0f, vel.y, 0.0f };
             }
         }
 
@@ -154,6 +157,19 @@ void Player::tick()
 
     vel = clampLength(vel, maxVelocity);
     roundToZero(vel);
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // Attack
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    prevSwingProgressTicks = swingProgressTicks;
+    if (swinging) {
+        ++swingProgressTicks;
+        if (swingProgressTicks >= swingDurationTicks) {
+            swinging           = false;
+            swingProgressTicks = 0;
+        }
+    }
+    prevVel = vel;
 }
 
 glm::vec3 Player::getPos(float partialTick) const
@@ -166,6 +182,11 @@ glm::vec3 Player::getVelocity() const
     return vel;
 }
 
+glm::vec3 Player::getVelocity(float partialTick) const
+{
+    return lerp(prevVel, vel, partialTick);
+}
+
 void Player::setVelocity(glm::vec3 newVel)
 {
     vel = newVel;
@@ -175,8 +196,11 @@ void Player::updatePos(glm::vec3 newPos)
 {
     prevPos = pos;
     pos     = newPos;
-    fpCamera.updatePos(newPos -
-                       glm::vec3{ 0.1, -1, 0.1 }); // First person camera is centered near the head of the player.
+    glm::vec3 cameraOffset{ 0.1, -1, 0.1 };
+    if (sneaking) {
+        cameraOffset += glm::vec3{ 0.0f, 0.2, 0.0f };
+    }
+    fpCamera.updatePos(newPos - cameraOffset); // First person camera is centered near the head of the player.
 }
 
 float Player::getMoveSpeedMultiplier() const
@@ -207,6 +231,16 @@ bool Player::isGrounded() const
     return grounded;
 }
 
+void Player::setSneaking(bool enabled)
+{
+    sneaking = enabled;
+}
+
+bool Player::isSneaking() const
+{
+    return sneaking;
+}
+
 void Player::setFlying(bool enabled)
 {
     flying = enabled;
@@ -225,6 +259,21 @@ void Player::setNoclip(bool enabled)
 bool Player::isNoclip() const
 {
     return noclip;
+}
+
+void Player::swing()
+{
+    swinging = true;
+}
+
+float Player::getSwingProgress(float partialTick)
+{
+    float v = (((float) swingProgressTicks) / ((float) swingDurationTicks)) -
+              (((float) prevSwingProgressTicks) / ((float) swingDurationTicks));
+    if (v < 0.0f) {
+        v += 1.0f;
+    }
+    return (((float) prevSwingProgressTicks) / ((float) swingDurationTicks)) + v * partialTick;
 }
 
 } // namespace bg

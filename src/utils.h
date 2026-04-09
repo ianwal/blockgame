@@ -5,6 +5,11 @@
 namespace bg
 {
 
+[[nodiscard]] constexpr float lerp(float prev, float current, float t)
+{
+    return prev + ((current - prev) * t);
+}
+
 [[nodiscard]] constexpr glm::vec3 lerp(glm::vec3 prev, glm::vec3 current, float t)
 {
     float x = prev.x + ((current.x - prev.x) * t);
