@@ -56,6 +56,11 @@ std::string to_string(ChunkPos const& chunkPos);
 /// This is a lossy operation - the world pos can't be recovered once converting to the chunk pos.
 ChunkPos getChunkPos(glm::vec3 const& worldPos);
 
+/// Get the position of the chunk that would contain the block in the given world position.
+///
+/// This is a lossy operation - the world pos can't be recovered once converting to the chunk pos.
+ChunkPos getChunkPos(ivec3 const& worldPos);
+
 /// Get the world position of a block from the provided chunk position and block offset from the chunk position.
 glm::vec3 getWorldPos(ChunkPos const& chunkPos, glm::vec3 blockOffset);
 

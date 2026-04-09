@@ -31,6 +31,11 @@ ChunkPos getChunkPos(glm::vec3 const& worldPos)
     return chunkPos;
 }
 
+ChunkPos getChunkPos(ivec3 const& worldPos)
+{
+    return getChunkPos(glm::vec3{ worldPos.x, worldPos.y, worldPos.z });
+}
+
 glm::vec3 getWorldPos(ChunkPos const& chunkPos, glm::vec3 blockOffset)
 {
     return glm::vec3{ (chunkPos.x * chunkSize) + blockOffset.x, blockOffset.y,
@@ -111,7 +116,7 @@ std::vector<Block const*> ChunkManager::getNearbyBlocks(glm::vec3 const& worldPo
                 continue;
             }
             for (Block const& block : it->second->blocks) {
-                if (glm::length(block.pos - worldPos) < radius) {
+                if (glm::length(tovec3(block.pos) - worldPos) < radius) {
                     result.push_back(&block);
                 }
             }

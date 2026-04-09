@@ -626,7 +626,7 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
                                                alreadySwung = true;
                                            }
                                        },
-                                       [&](bg::SneakAction& action) { game.player.setSneaking(true); },
+                                       [&](bg::SneakAction&) { game.player.setSneaking(true); },
                                        [&](bg::MoveAction& action) {
                                            // TODO: Allowing multiple actions means moving diagonally is faster than in
                                            // cardinal directions. Instead, the full move action bitwise should be

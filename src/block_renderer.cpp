@@ -116,6 +116,9 @@ void BlockRenderer::cleanup()
 
 void BlockRenderer::render(AppContext& ctx, Block const& block, float partialTick)
 {
+    static_cast<void>(ctx);
+    static_cast<void>(block);
+    static_cast<void>(partialTick);
     /*
 #ifdef BLOCKGAME_ENABLE_TRACY
     ZoneScopedN("SingleBlockRender");
@@ -160,17 +163,20 @@ void BlockRenderer::render(AppContext& ctx, Block const& block, float partialTic
 
 void BlockRenderer::render(AppContext& ctx, std::vector<Block> const& blocks, float partialTick)
 {
+    static_cast<void>(ctx);
+    static_cast<void>(partialTick);
+
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
     glDepthFunc(GL_LESS);
 
-    std::map<BlockType, std::vector<glm::vec3>> byType{};
+    std::map<BlockType, std::vector<ivec3>> byType{};
     for (auto const& block : blocks) {
         if (block.type == BlockType::BLOCK_AIR) {
             continue;
         }
-        byType[block.type].push_back(glm::vec3(block.pos));
+        byType[block.type].push_back(tovec3(block.pos));
     }
 
     glUseProgram(shaderId);

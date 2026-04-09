@@ -21,8 +21,17 @@ enum class BlockType : std::uint16_t {
     NUM_BLOCK_TYPES, ///< Meta
 };
 
+/// Integer vec3.
+using ivec3 = glm::tvec3<std::int32_t>;
+
+/// Convert integer vector to float vector.
+constexpr glm::vec3 tovec3(ivec3 const& v)
+{
+    return glm::vec3{ v.x, v.y, v.z };
+}
+
 struct Block {
-    glm::vec3 pos{};
+    ivec3 pos{};
     BlockType type{};
 };
 

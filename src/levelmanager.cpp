@@ -21,7 +21,7 @@ void LevelManager::registerOnBlockChanged(OnBlockChangedObserverFn fn)
     blockChangeObservers.push_back(fn);
 }
 
-void LevelManager::pushOnBlockChanged(glm::vec3 pos, BlockType oldType, BlockType newType)
+void LevelManager::pushOnBlockChanged(ivec3 pos, BlockType oldType, BlockType newType)
 {
     for (auto const& fn : blockChangeObservers) {
         fn(pos, oldType, newType);

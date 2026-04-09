@@ -22,8 +22,11 @@ namespace bg
 
 GameContext::GameContext()
 {
-    levelManager.registerOnBlockChanged(
-        [](glm::vec3 pos, BlockType oldType, BlockType newType) { ChunkRenderer::markChunkDirty(getChunkPos(pos)); });
+    levelManager.registerOnBlockChanged([](ivec3 pos, BlockType oldType, BlockType newType) {
+        static_cast<void>(oldType);
+        static_cast<void>(newType);
+        ChunkRenderer::markChunkDirty(getChunkPos(pos));
+    });
     // Move the player
     player.updatePos(glm::vec3{ 0, 55, 0 });
 }
@@ -47,7 +50,7 @@ void handleSwingAction(GameContext& game)
         }
 
         // Optimization: This skips checking the logic if the block is beyond the max hitrange.
-        if (glm::distance(camera.getPos(1.0), block.pos) > (maxHitRange + 1.f)) {
+        if (glm::distance(camera.getPos(1.0), tovec3(block.pos)) > (maxHitRange + 1.f)) {
             continue;
         }
 

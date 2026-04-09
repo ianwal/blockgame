@@ -18,7 +18,7 @@ namespace bg
 class LevelManager
 {
 public:
-    using OnBlockChangedObserverFn = std::function<void(glm::vec3 pos, BlockType oldType, BlockType newType)>;
+    using OnBlockChangedObserverFn = std::function<void(ivec3 pos, BlockType oldType, BlockType newType)>;
 
     LevelManager() = default;
 
@@ -26,7 +26,7 @@ public:
     void registerOnBlockChanged(OnBlockChangedObserverFn fn);
 
     /// Push that a block changed to all observers. Should only be called by the module that owns the blocks.
-    void pushOnBlockChanged(glm::vec3 pos, BlockType oldType, BlockType newType);
+    void pushOnBlockChanged(ivec3 pos, BlockType oldType, BlockType newType);
 
     /// Remove a block from the world. Will notify observers.
     ///
