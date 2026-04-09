@@ -111,6 +111,7 @@ struct Inputs {
     bool d{};
     bool z{};
     bool q{};
+    bool f{};
     bool f1{};
     bool f3{};
     bool f4{};

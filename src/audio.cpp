@@ -22,12 +22,13 @@ std::span<std::uint8_t> AudioResourceManager::get(std::string const& name)
 
 AudioResourceManager& AudioResourceManager::load(std::string const& name, std::string const& path)
 {
-    assertr(!audioFiles.contains(name));
+    assertr(!audioFiles.contains(name), name);
     if (!audioFiles.contains(name)) {
         std::size_t size{};
         std::uint8_t* loadedAudio = static_cast<std::uint8_t*>(SDL_LoadFile(path.c_str(), &size));
-        assertr(loadedAudio != nullptr);
+        assertr(loadedAudio != nullptr, path);
         audioFiles[name] = std::span{ loadedAudio, size };
+        logDebug("Loaded audio file: {} , size: {} bytes", path, size);
     }
     return *this;
 }

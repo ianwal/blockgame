@@ -7,9 +7,13 @@
 #include <GL/glew.h>
 #include <glm/vec3.hpp>
 
+#include <array>
 #include <cassert>
 #include <cstdint>
+#include <random>
+#include <span>
 #include <string>
+#include <string_view>
 
 namespace bg
 {
@@ -45,24 +49,42 @@ GLuint getBlockTexture(BlockType type)
     return bg::TextureResourceManagerSingleton::get().get(name);
 }
 
+static std::string_view getRandomBlockBreakSoundName(std::span<std::string_view> soundNames)
+{
+    static std::mt19937 gen{ std::random_device{}() };
+    std::uniform_int_distribution<> dist(0, soundNames.size() - 1);
+    return soundNames[dist(gen)];
+}
+
 std::string getBlockBreakSoundName(BlockType type)
 {
     std::string name{};
     switch (type) {
         case BlockType::BLOCK_COBBLE: {
-            name = "block.dig.cobble.1";
+            static auto names =
+                std::to_array({ std::string_view{ "block.dig.cobble.1" }, std::string_view{ "block.dig.cobble.2" },
+
+                                std::string_view{ "block.dig.cobble.3" }, std::string_view{ "block.dig.cobble.4" } });
+            name = getRandomBlockBreakSoundName(names);
         } break;
 
         case BlockType::BLOCK_LUCKY: {
-            name = "block.dig.cobble.1"; // TODO
+            name = "block.dig.cobble.1";
         } break;
 
         case BlockType::BLOCK_GRASS: {
-            name = "block.dig.grass.1";
+            static auto names =
+                std::to_array({ std::string_view{ "block.dig.grass.1" }, std::string_view{ "block.dig.grass.2" },
+
+                                std::string_view{ "block.dig.grass.3" }, std::string_view{ "block.dig.grass.4" } });
+            name = getRandomBlockBreakSoundName(names);
         } break;
 
         case BlockType::BLOCK_DIRT: {
-            name = "block.dig.dirt.1";
+            static auto names =
+                std::to_array({ std::string_view{ "block.dig.dirt.1" }, std::string_view{ "block.dig.dirt.2" },
+                                std::string_view{ "block.dig.dirt.3" }, std::string_view{ "block.dig.dirt.4" } });
+            name = getRandomBlockBreakSoundName(names);
         } break;
 
         case BlockType::BLOCK_AIR:

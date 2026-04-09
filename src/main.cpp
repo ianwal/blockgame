@@ -318,6 +318,8 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
                 logDebug("Player Pos: {}", glm::to_string(app.game->player.getPos(1.0)));
             });
 
+            app.game->input_manager.registerCallbackOnRelease(SDLK_F, [&app]() { toggleWindowFullscreen(app.window); });
+
             app.game->input_manager.registerCallbackOnRelease(
                 SDL_BUTTON_LEFT, [&app, &pendingActions]() { pendingActions.push_back(SwingAction{}); });
 
@@ -448,6 +450,15 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
             } else if ((input.type == SDL_EVENT_KEY_UP) && (input.key.key == SDLK_Q)) {
                 app.game->input_manager.queueInputOnRelease(SDLK_Q);
                 curr_inputs.q = false;
+            } else if ((input.type == SDL_EVENT_KEY_DOWN) && (input.key.key == SDLK_F)) {
+                if (!app.game->prev_inputs.f) {
+                    app.game->input_manager.queueInputOnDown(SDLK_F);
+                }
+                app.game->input_manager.queueInputOnHold(SDLK_F);
+                curr_inputs.f = true;
+            } else if ((input.type == SDL_EVENT_KEY_UP) && (input.key.key == SDLK_F)) {
+                app.game->input_manager.queueInputOnRelease(SDLK_F);
+                curr_inputs.f = false;
             } else if ((input.type == SDL_EVENT_KEY_DOWN) && (input.key.key == SDLK_F1)) {
                 if (!app.game->prev_inputs.f1) {
                     app.game->input_manager.queueInputOnDown(SDLK_F1);
