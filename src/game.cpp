@@ -31,15 +31,15 @@ GameContext::GameContext()
     player.updatePos(glm::vec3{ 0, 55, 0 });
 }
 
-void handleSwingAction(GameContext& game)
+std::optional<Block> getBlockPlayerIsLookingAt(ChunkManager const& chunkManager, Player const& player)
 {
-    // Use first person camera because swinging is done in first person.
-    auto& camera = game.player.fpCamera;
+    // Use first person camera because looking is done in first person.
+    auto& camera = player.fpCamera;
 
     glm::vec3 normalizedCameraFront = glm::normalize(camera.getFront(1.0));
     constexpr float maxHitRange     = 5.f;
 
-    auto blockCandidates = game.chunkManager.getNearbyBlocks(camera.getPos(1.0), maxHitRange);
+    auto blockCandidates = chunkManager.getNearbyBlocks(camera.getPos(1.0), maxHitRange);
     auto hitBlock        = blockCandidates.end();
     float closestT       = std::numeric_limits<float>::max();
 
@@ -67,10 +67,21 @@ void handleSwingAction(GameContext& game)
     }
 
     if (hitBlock != blockCandidates.end()) {
-        BlockType const blockType = (*hitBlock)->type;
-        game.levelManager.removeBlock(*hitBlock);
-        playSound2d(getBlockBreakSoundName(blockType));
+        return **hitBlock;
     }
+    return std::nullopt;
+}
+
+void handleSwingAction(GameContext& game)
+{
+    std::optional<Block> blockResult = getBlockPlayerIsLookingAt(game.chunkManager, game.player);
+    if (!blockResult) {
+        return;
+    }
+
+    Block const block = blockResult.value();
+    game.levelManager.removeBlock(block);
+    playSound2d(getBlockBreakSoundName(block.type));
 }
 
 void handleMoveAction(GameContext& game, MoveAction const& action)

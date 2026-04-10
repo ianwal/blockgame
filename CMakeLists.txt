@@ -113,6 +113,7 @@ PRIVATE
     src/renderer.cpp
     src/player.cpp
     src/main.cpp
+    src/linerenderer.cpp
     src/levelmanager.cpp
     src/img.cpp
     src/handrenderer.cpp

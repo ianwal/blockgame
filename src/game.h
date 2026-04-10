@@ -22,6 +22,7 @@
 #include <iomanip>
 #include <map>
 #include <memory>
+#include <optional>
 #include <sstream>
 #include <string>
 #include <variant>
@@ -198,6 +199,9 @@ public:
 private:
     static GameContext* game;
 };
+
+/// Get the block that the player is currently looking at, if there is one.
+std::optional<Block> getBlockPlayerIsLookingAt(ChunkManager const& chunkManager, Player const& player);
 
 void handleSwingAction(GameContext& game);
 

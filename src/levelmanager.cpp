@@ -28,11 +28,10 @@ void LevelManager::pushOnBlockChanged(ivec3 pos, BlockType oldType, BlockType ne
     }
 }
 
-void LevelManager::removeBlock(Block const* block)
+void LevelManager::removeBlock(Block const& block)
 {
-    Block const oldBlock = *block;
     if (GlobalGame::get().chunkManager.removeBlock(block)) {
-        pushOnBlockChanged(oldBlock.pos, oldBlock.type, BlockType::BLOCK_AIR);
+        pushOnBlockChanged(block.pos, block.type, BlockType::BLOCK_AIR);
     }
 }
 

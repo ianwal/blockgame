@@ -159,7 +159,7 @@ extern "C" SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
     // Load assets
 
     bg::ShaderManagerSingleton::get()
-        .load("vertex_shader", "assets/shaders/vertex_shader.glsl", "assets/shaders/vertex_shader.frag")
+        .load("line", "assets/shaders/line.glsl", "assets/shaders/line.frag")
         .load("cube", "assets/shaders/cube.glsl", "assets/shaders/cube.frag")
         .load("crosshair", "assets/shaders/crosshair.glsl", "assets/shaders/crosshair.frag");
 

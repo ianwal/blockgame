@@ -78,7 +78,7 @@ public:
 
     std::vector<Block const*> getNearbyBlocks(glm::vec3 const& worldPos, float radius) const;
 
-    bool removeBlock(Block const* block);
+    bool removeBlock(Block const& block);
 
     ChunkManagerStats getStats() const;
 

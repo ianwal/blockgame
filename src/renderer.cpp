@@ -10,6 +10,7 @@
 #include "src/crosshair_renderer.h"
 #include "src/game.h"
 #include "src/handrenderer.h"
+#include "src/linerenderer.h"
 #include "src/logger.h"
 #include "src/shaders.h"
 #include "src/time.h"
@@ -36,6 +37,7 @@
 #include <iostream>
 #include <string>
 #include <string_view>
+#include <vector>
 
 namespace bg
 {
@@ -56,6 +58,74 @@ std::int64_t calculate_fps(Timestamp previous_frame, Timestamp current_frame)
     return static_cast<std::int64_t>(fps);
 }
 
+/// @brief Get the lines for rendering the hovered block outline.
+std::vector<Line> getBlockOutline(Block const& block)
+{
+    std::vector<Line> result{};
+    result.reserve(12);
+    glm::vec3 const blockPos = tovec3(block.pos);
+    // Note:
+    // These lines are shifted a bit for all the axis so they actually appear, otherwise they would be in the crack
+    // between blocks.
+    float const width = 1.5f;
+    glm::vec4 const color{ 0.0f, 0.0f, 0.0f, 0.0f };
+
+    // X
+    result.push_back(Line{ .start = { blockPos + glm::vec3{ -0.5f, -0.49f, -1.5f } },
+                           .end   = { blockPos + glm::vec3{ -0.5f, -0.49f, -0.5f } },
+                           .width = width,
+                           .color = color });
+    result.push_back(Line{ .start = { blockPos + glm::vec3{ -0.5f, 0.51f, -1.5f } },
+                           .end   = { blockPos + glm::vec3{ -0.5f, 0.51f, -0.5f } },
+                           .width = width,
+                           .color = color });
+    result.push_back(Line{ .start = { blockPos + glm::vec3{ 0.5f, 0.51f, -1.5f } },
+                           .end   = { blockPos + glm::vec3{ 0.5f, 0.51f, -0.5f } },
+                           .width = width,
+                           .color = color });
+    result.push_back(Line{ .start = { blockPos + glm::vec3{ 0.5f, -0.49f, -1.5f } },
+                           .end   = { blockPos + glm::vec3{ 0.5f, -0.49f, -0.5f } },
+                           .width = width,
+                           .color = color });
+
+    // Z
+    result.push_back(Line{ .start = { blockPos + glm::vec3{ -0.5f, -0.49f, -0.5f } },
+                           .end   = { blockPos + glm::vec3{ 0.5f, -0.49f, -0.5f } },
+                           .width = width,
+                           .color = color });
+    result.push_back(Line{ .start = { blockPos + glm::vec3{ -0.5f, 0.51f, -0.5f } },
+                           .end   = { blockPos + glm::vec3{ 0.5f, 0.51f, -0.5f } },
+                           .width = width,
+                           .color = color });
+    result.push_back(Line{ .start = { blockPos + glm::vec3{ -0.5f, 0.51f, -1.5f } },
+                           .end   = { blockPos + glm::vec3{ 0.5f, 0.51f, -1.5f } },
+                           .width = width,
+                           .color = color });
+    result.push_back(Line{ .start = { blockPos + glm::vec3{ -0.5f, -0.49f, -1.5f } },
+                           .end   = { blockPos + glm::vec3{ 0.5f, -0.49f, -1.5f } },
+                           .width = width,
+                           .color = color });
+
+    // Y
+    result.push_back(Line{ .start = { blockPos + glm::vec3{ -0.5f, -0.5f, -0.5f } },
+                           .end   = { blockPos + glm::vec3{ -0.5f, 0.51f, -0.5f } },
+                           .width = width,
+                           .color = color });
+    result.push_back(Line{ .start = { blockPos + glm::vec3{ -0.5f, -0.5f, -1.5f } },
+                           .end   = { blockPos + glm::vec3{ -0.5f, 0.51f, -1.5f } },
+                           .width = width,
+                           .color = color });
+    result.push_back(Line{ .start = { blockPos + glm::vec3{ 0.5f, -0.5f, -0.5f } },
+                           .end   = { blockPos + glm::vec3{ 0.5f, 0.51f, -0.5f } },
+                           .width = width,
+                           .color = color });
+    result.push_back(Line{ .start = { blockPos + glm::vec3{ 0.5f, -0.5f, -1.5f } },
+                           .end   = { blockPos + glm::vec3{ 0.5f, 0.51f, -1.5f } },
+                           .width = width,
+                           .color = color });
+    return result;
+}
+
 GLuint Renderer::viewProjectionUboID;
 
 void Renderer::init()
@@ -68,6 +138,7 @@ void Renderer::init()
 
     // BlockRenderer::init();
     ChunkRenderer::init();
+    LineRenderer::init();
     CrosshairRenderer::init();
     HandRenderer::init();
 }
@@ -77,6 +148,7 @@ void Renderer::cleanup()
     glDeleteBuffers(1, &viewProjectionUboID);
     // BlockRenderer::cleanup();
     ChunkRenderer::cleanup();
+    LineRenderer::cleanup();
     CrosshairRenderer::cleanup();
     HandRenderer::cleanup();
 }
@@ -114,6 +186,14 @@ void Renderer::render(AppContext& ctx, float partialTick)
         ZoneScopedN("ChunkRenderer");
 #endif
         ChunkRenderer::render(ctx, ctx.game->chunkManager, partialTick);
+    }
+
+    // TODO: This is probably slow to compute every frame. Pre-compute per tick and get from the player instead?
+    std::optional<Block> const lookedAtBlock = getBlockPlayerIsLookingAt(ctx.game->chunkManager, ctx.game->player);
+    if (lookedAtBlock.has_value()) {
+        for (auto const& line : getBlockOutline(lookedAtBlock.value())) {
+            LineRenderer::render(line);
+        }
     }
 
     if (ctx.game->ingameHudVisible) {

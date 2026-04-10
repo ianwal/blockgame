@@ -126,15 +126,15 @@ std::vector<Block const*> ChunkManager::getNearbyBlocks(glm::vec3 const& worldPo
     return result;
 }
 
-bool ChunkManager::removeBlock(Block const* block)
+bool ChunkManager::removeBlock(Block const& block)
 {
     // Removing air blocks is not allowed.
-    if (block->type == BlockType::BLOCK_AIR) {
+    if (block.type == BlockType::BLOCK_AIR) {
         return false;
     }
 
     // Get the chunk that the block is in
-    ChunkPos chunkPos = getChunkPos(block->pos);
+    ChunkPos chunkPos = getChunkPos(block.pos);
     auto chunkIt      = loadedChunks.find(chunkPos);
     if (chunkIt == loadedChunks.end()) {
         logWarn("Tried to remove block but block was not found in loaded chunks.");
@@ -143,13 +143,19 @@ bool ChunkManager::removeBlock(Block const* block)
 
     auto& chunkBlocks = chunkIt->second->blocks;
     auto it           = std::find_if(chunkBlocks.begin(), chunkBlocks.end(),
-                                     [block](Block const& targetBlock) { return &targetBlock == block; });
-    if (it != chunkBlocks.end()) {
-        chunkBlocks.erase(it);
-    } else {
-        logWarn("Tried to remove block but block was not found in the target chunk.");
+                                     [block](Block const& targetBlock) { return targetBlock.pos == block.pos; });
+    if (it == chunkBlocks.end()) {
+        logWarn("Tried to remove block that doesn't exist or isn't currently loaded.");
+        return false;
     }
 
+    // Check type again in case caller didn't pass in the correct block type.
+    // Removing air blocks is not allowed.
+    if (it->type == BlockType::BLOCK_AIR) {
+        return false;
+    }
+
+    chunkBlocks.erase(it);
     return true;
 }
 
