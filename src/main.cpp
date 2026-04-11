@@ -329,6 +329,9 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
             app.game->input_manager.registerCallbackOnRelease(
                 SDL_BUTTON_LEFT, [&app, &pendingActions]() { pendingActions.push_back(SwingAction{}); });
 
+            app.game->input_manager.registerCallbackOnRelease(
+                SDL_BUTTON_RIGHT, [&app, &pendingActions]() { pendingActions.push_back(PlaceAction{}); });
+
             app.game->input_manager.registerCallbackOnRelease(SDLK_ESCAPE, [&app]() {
                 // Quit the game.
                 std::quick_exit(0); // TODO: Just for debugging for instant exit.
@@ -375,6 +378,18 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
             } else if ((input.type == SDL_EVENT_MOUSE_BUTTON_UP) && (input.button.button == SDL_BUTTON_LEFT)) {
                 app.game->input_manager.queueInputOnRelease(SDL_BUTTON_LEFT);
                 curr_inputs.mouse1 = false;
+            } else if ((input.type == SDL_EVENT_MOUSE_BUTTON_DOWN) && (input.button.button == SDL_BUTTON_RIGHT)) {
+                if (!app.game->prev_inputs.mouse2) {
+                    // TODO: This is not a mouse button, so converting to a SDL_Keycode is wrong. But it doesn't collide
+                    // any keycodes, so it's fine for now.
+                    app.game->input_manager.queueInputOnDown(SDL_BUTTON_RIGHT);
+                }
+                // TODO: This doesn't work. Button/mouse event is different than keyboard events.
+                app.game->input_manager.queueInputOnHold(SDL_BUTTON_RIGHT);
+                curr_inputs.mouse2 = true;
+            } else if ((input.type == SDL_EVENT_MOUSE_BUTTON_UP) && (input.button.button == SDL_BUTTON_RIGHT)) {
+                app.game->input_manager.queueInputOnRelease(SDL_BUTTON_RIGHT);
+                curr_inputs.mouse2 = false;
             } else if ((input.type == SDL_EVENT_KEY_DOWN) && (input.key.key == SDLK_A)) {
                 if (!app.game->prev_inputs.a) {
                     app.game->input_manager.queueInputOnDown(SDLK_A);
@@ -594,6 +609,7 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
 
         bool alreadySwung         = false;
         auto alreadyMovedBitfield = MoveAction::Direction::NONE;
+        bool alreadyPlaced        = false;
 
         {
 #ifdef BLOCKGAME_ENABLE_TRACY
@@ -636,6 +652,10 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
                                                alreadyMovedBitfield = static_cast<MoveAction::Direction>(
                                                    alreadyMovedBitfield | action.direction);
                                            }
+                                       },
+                                       [&](bg::PlaceAction&) {
+                                           handlePlaceAction(game);
+                                           alreadyPlaced = true;
                                        },
                                    },
                                    action);

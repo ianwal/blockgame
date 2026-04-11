@@ -9,6 +9,7 @@
 #include <functional>
 #include <map>
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -77,6 +78,11 @@ public:
     void updateChunks(glm::vec3 const& worldPos, std::int32_t chunkLoadRadius, std::uint64_t seed);
 
     std::vector<Block const*> getNearbyBlocks(glm::vec3 const& worldPos, float radius) const;
+
+    /// Return the block if the chunk that holds the block is currently loaded.
+    std::optional<Block> getBlock(ivec3 const& blockPos) const;
+
+    bool placeBlock(Block const& block, BlockType& oldBlockTypeOut);
 
     bool removeBlock(Block const& block);
 

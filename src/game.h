@@ -105,6 +105,7 @@ private:
 /// Inputs. True is pressed down, false is not pressed.
 struct Inputs {
     bool mouse1{};
+    bool mouse2{};
 
     bool w{};
     bool a{};
@@ -206,5 +207,7 @@ std::optional<Block> getBlockPlayerIsLookingAt(ChunkManager const& chunkManager,
 void handleSwingAction(GameContext& game);
 
 void handleMoveAction(GameContext& game, MoveAction const& action);
+
+void handlePlaceAction(GameContext& game);
 
 } // namespace bg

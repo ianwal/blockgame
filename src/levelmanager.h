@@ -28,8 +28,11 @@ public:
     /// Push that a block changed to all observers. Should only be called by the module that owns the blocks.
     void pushOnBlockChanged(ivec3 pos, BlockType oldType, BlockType newType);
 
+    /// Place a block in the world. Will notify observers.
+    bool placeBlock(Block const& block);
+
     /// Remove a block from the world. Will notify observers.
-    void removeBlock(Block const& block);
+    bool removeBlock(Block const& block);
 
 private:
     std::vector<OnBlockChangedObserverFn> blockChangeObservers{};

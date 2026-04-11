@@ -1,5 +1,6 @@
 #include "src/block.h"
 
+#include "src/aabb.h"
 #include "src/app_context.h"
 #include "src/logger.h"
 #include "src/shaders.h"
@@ -17,6 +18,18 @@
 
 namespace bg
 {
+
+AABB getBlockAABB(Block const& block)
+{
+    AABB aabb{};
+    aabb.minX = block.pos.x;
+    aabb.maxX = block.pos.x + 1.0f;
+    aabb.minY = block.pos.y;
+    aabb.maxY = block.pos.y + 1.0f; // todo: is minus?
+    aabb.minZ = block.pos.z;
+    aabb.maxZ = block.pos.z + 1.0f;
+    return aabb;
+}
 
 GLuint getBlockTexture(BlockType type)
 {

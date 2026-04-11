@@ -11,6 +11,7 @@
 #include <cstdint>
 #include <format>
 #include <map>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
@@ -126,6 +127,60 @@ std::vector<Block const*> ChunkManager::getNearbyBlocks(glm::vec3 const& worldPo
     return result;
 }
 
+std::optional<Block> ChunkManager::getBlock(ivec3 const& blockPos) const
+{
+    Block result{};
+
+    ChunkPos const chunk = getChunkPos(blockPos);
+
+    auto it = loadedChunks.find(chunk);
+    if (it == loadedChunks.end()) {
+        // Chunk not loaded.
+        return std::nullopt;
+    }
+
+    for (Block const& block : it->second->blocks) {
+        if (block.pos == blockPos) {
+            return block;
+        }
+    }
+
+    return std::nullopt;
+}
+
+bool ChunkManager::placeBlock(Block const& block, BlockType& oldBlockTypeOut)
+{
+    // Placing an air block is not allowed.
+    if (block.type == BlockType::BLOCK_AIR) {
+        return false;
+    }
+
+    // Get the chunk that the block is in
+    ChunkPos chunkPos = getChunkPos(block.pos);
+    auto chunkIt      = loadedChunks.find(chunkPos);
+    if (chunkIt == loadedChunks.end()) {
+        logWarn("Tried to place a block but block was not found in loaded chunks.");
+        return false;
+    }
+
+    auto& chunkBlocks = chunkIt->second->blocks;
+    auto it           = std::find_if(chunkBlocks.begin(), chunkBlocks.end(),
+                                     [block](Block const& targetBlock) { return targetBlock.pos == block.pos; });
+    if (it == chunkBlocks.end()) {
+        logWarn("Tried to place a block that doesn't exist or isn't currently loaded.");
+        return false;
+    }
+
+    // Check type again in case caller didn't pass in the correct block type.
+    // Replacing a non-air block is not allowed.
+    if (it->type != BlockType::BLOCK_AIR) {
+        return false;
+    }
+
+    it->type = block.type;
+    return true;
+}
+
 bool ChunkManager::removeBlock(Block const& block)
 {
     // Removing air blocks is not allowed.
@@ -155,7 +210,7 @@ bool ChunkManager::removeBlock(Block const& block)
         return false;
     }
 
-    chunkBlocks.erase(it);
+    it->type = BlockType::BLOCK_AIR;
     return true;
 }
 

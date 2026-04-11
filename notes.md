@@ -64,3 +64,7 @@ apply the model matrix to the vertices, they will be put into World Space
 Then, to move things relative to a camera, all vertices are translated relative to the camera position. This is called Camera Space.
 
 Then, the projection matrix is used to project the vertices onto the projection . This transforms the camera coordinates to homogeneous coordinates.
+
+## Coordinate System
+
+Blocks positions are integers, and the integer is the center of the block in world position. This should be changed to corner-centered.

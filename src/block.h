@@ -1,5 +1,6 @@
 #pragma once
 
+#include "src/aabb.h"
 #include "src/block.h"
 
 #include <GL/glew.h>
@@ -30,10 +31,20 @@ constexpr glm::vec3 tovec3(ivec3 const& v)
     return glm::vec3{ v.x, v.y, v.z };
 }
 
+/// Get the block position for the world position.
+///
+/// This is an information lossy operation. Many world points inside a block can be mapped to the single block position.
+constexpr ivec3 toBlockPos(glm::vec3 const& worldPos)
+{
+    return glm::round(worldPos);
+}
+
 struct Block {
     ivec3 pos{};
     BlockType type{};
 };
+
+AABB getBlockAABB(Block const& block);
 
 GLuint getBlockTexture(BlockType type);
 

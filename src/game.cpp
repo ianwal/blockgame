@@ -12,6 +12,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <optional>
 #include <utility>
 
 #define GLM_ENABLE_EXPERIMENTAL
@@ -19,6 +20,54 @@
 
 namespace bg
 {
+
+namespace
+{
+
+constexpr float maxHitRange = 5.0f;
+
+struct HitResult {
+    float t{};          /// Distance along ray
+    glm::vec3 normal{}; /// Face normal
+};
+
+constexpr std::optional<HitResult> rayIntersectsCube(glm::vec3 rayOrigin, glm::vec3 rayDir, glm::vec3 cubePos)
+{
+    // get min/max of the plane because the cube pos is in the center of the cube
+    glm::vec3 min = cubePos - 0.5f;
+    glm::vec3 max = cubePos + 0.5f;
+
+    // invert here to divide once to avoid dividing multiple times below
+    glm::vec3 invDir = 1.0f / rayDir;
+
+    // solve the vector/plane intersection problem
+    glm::vec3 t0 = (min - rayOrigin) * invDir; // entry t per axis
+    glm::vec3 t1 = (max - rayOrigin) * invDir; // exit  t per axis
+
+    glm::vec3 tMin = glm::min(t0, t1);
+    glm::vec3 tMax = glm::max(t0, t1);
+
+    float tEntry = glm::max(glm::max(tMin.x, tMin.y), tMin.z);
+    float tExit  = glm::min(glm::min(tMax.x, tMax.y), tMax.z);
+
+    if (tExit < 0.0f || tEntry > tExit) {
+        return std::nullopt; // no intersection
+    }
+
+    // Determine which face was hit (largest tMin component = entry face)
+    glm::vec3 normal(0.0f);
+    if (tMin.x > tMin.y && tMin.x > tMin.z) {
+        normal.x = (rayDir.x < 0) ? 1.0f : -1.0f;
+    } else if (tMin.y > tMin.z) {
+        normal.y = (rayDir.y < 0) ? 1.0f : -1.0f;
+    } else {
+        normal.z = (rayDir.z < 0) ? 1.0f : -1.0f;
+    }
+
+    return HitResult{ tEntry, normal };
+}
+
+} // namespace
 
 GameContext::GameContext()
 {
@@ -37,11 +86,13 @@ std::optional<Block> getBlockPlayerIsLookingAt(ChunkManager const& chunkManager,
     auto& camera = player.fpCamera;
 
     glm::vec3 normalizedCameraFront = glm::normalize(camera.getFront(1.0));
-    constexpr float maxHitRange     = 5.f;
 
     auto blockCandidates = chunkManager.getNearbyBlocks(camera.getPos(1.0), maxHitRange);
     auto hitBlock        = blockCandidates.end();
     float closestT       = std::numeric_limits<float>::max();
+
+    glm::vec3 rayOrigin = camera.getPos(1.0);
+    glm::vec3 rayDir    = glm::normalize(camera.getFront(1.0));
 
     for (auto block_it = blockCandidates.begin(); block_it != blockCandidates.end(); ++block_it) {
         auto const& block = **block_it;
@@ -54,15 +105,10 @@ std::optional<Block> getBlockPlayerIsLookingAt(ChunkManager const& chunkManager,
             continue;
         }
 
-        for (float t = 0; t < maxHitRange; t += 0.1f) {
-            glm::vec3 ray = camera.getPos(1.0) + (normalizedCameraFront * t);
-            if (isPointInCube(ray, block.pos)) {
-                if (t < closestT) {
-                    closestT = t;
-                    hitBlock = block_it;
-                }
-                break;
-            }
+        auto hit = rayIntersectsCube(rayOrigin, rayDir, tovec3(block.pos));
+        if (hit && hit->t >= 0.0f && hit->t < maxHitRange && hit->t < closestT) {
+            closestT = hit->t;
+            hitBlock = block_it;
         }
     }
 
@@ -70,6 +116,49 @@ std::optional<Block> getBlockPlayerIsLookingAt(ChunkManager const& chunkManager,
         return **hitBlock;
     }
     return std::nullopt;
+}
+
+std::optional<ivec3> getBlockPosToPlaceAt(ChunkManager const& chunkManager, Player const& player)
+{
+    // Use first person camera because looking is done in first person.
+    auto& camera = player.fpCamera;
+
+    glm::vec3 normalizedCameraFront = glm::normalize(camera.getFront(1.0));
+
+    auto blockCandidates = chunkManager.getNearbyBlocks(camera.getPos(1.0), maxHitRange);
+    auto hitBlock        = blockCandidates.end();
+    float closestT       = std::numeric_limits<float>::max();
+    glm::vec3 normal{};
+
+    glm::vec3 rayOrigin = camera.getPos(1.0);
+    glm::vec3 rayDir    = glm::normalize(camera.getFront(1.0));
+
+    for (auto block_it = blockCandidates.begin(); block_it != blockCandidates.end(); ++block_it) {
+        auto const& block = **block_it;
+        if (block.type == BlockType::BLOCK_AIR) {
+            continue;
+        }
+
+        // Optimization: This skips checking the logic if the block is beyond the max hitrange.
+        if (glm::distance(camera.getPos(1.0), tovec3(block.pos)) > (maxHitRange + 1.f)) {
+            continue;
+        }
+
+        auto hit = rayIntersectsCube(rayOrigin, rayDir, tovec3(block.pos));
+        if (hit && (hit->t >= 0.0f) && (hit->t < maxHitRange) && (hit->t < closestT)) {
+            closestT = hit->t;
+            hitBlock = block_it;
+            normal   = hit->normal;
+        }
+    }
+
+    if (hitBlock == blockCandidates.end()) {
+        return std::nullopt;
+    }
+
+    auto pos = (*hitBlock)->pos;
+    // Note: This assumes block size is 1.0 because the normal is 1.0
+    return toBlockPos(glm::vec3{ pos.x, pos.y, pos.z } + normal);
 }
 
 void handleSwingAction(GameContext& game)
@@ -220,6 +309,22 @@ void handleMoveAction(GameContext& game, MoveAction const& action)
                 // Do nothing.
             } break;
         }
+    }
+}
+
+void handlePlaceAction(GameContext& game)
+{
+    std::optional<ivec3> blockPosResult = getBlockPosToPlaceAt(game.chunkManager, game.player);
+    if (!blockPosResult) {
+        return;
+    }
+
+    Block block{};
+    block.pos  = blockPosResult.value();
+    block.type = BlockType::BLOCK_LUCKY;
+    if (game.levelManager.placeBlock(block)) {
+        game.player.swing();
+        playSound2d(getBlockBreakSoundName(block.type));
     }
 }
 

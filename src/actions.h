@@ -28,7 +28,10 @@ struct MoveAction {
 struct SneakAction {
 };
 
-using InputAction = std::variant<SwingAction, MoveAction, SneakAction>;
+struct PlaceAction {
+};
+
+using InputAction = std::variant<SwingAction, MoveAction, SneakAction, PlaceAction>;
 
 template <class... Ts>
 struct overloaded : Ts... {
