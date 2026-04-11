@@ -161,7 +161,8 @@ extern "C" SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
     bg::ShaderManagerSingleton::get()
         .load("line", "assets/shaders/line.glsl", "assets/shaders/line.frag")
         .load("cube", "assets/shaders/cube.glsl", "assets/shaders/cube.frag")
-        .load("crosshair", "assets/shaders/crosshair.glsl", "assets/shaders/crosshair.frag");
+        .load("crosshair", "assets/shaders/crosshair.glsl", "assets/shaders/crosshair.frag")
+        .load("droppedblock", "assets/shaders/droppedblock.glsl", "assets/shaders/droppedblock.frag");
 
     bg::TextureResourceManagerSingleton::get()
         .load("block.cobble", "assets/textures/cobble.png")
@@ -266,19 +267,6 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
     auto& pendingActions = game.pendingActions;
 
     try {
-        [[maybe_unused]] static bool _ = [&app]() {
-            auto const test_callback = []() { logInfo("Button pressed!"); };
-            bg::Button button{ test_callback };
-            SDL_FRect rect{ 100, 100, 100, 100 };
-            bg::VisibleButton visible_button{ button, rect };
-            app.game->gui_objects.add(std::move(visible_button));
-            bg::TextButton text_button{ bg::Text{ "test" }, bg::VisibleButton{ bg::Button{ test_callback },
-                                                                               SDL_FRect{ 200, 200, 50, 50 } } };
-            text_button.set_pos(SDL_Point{ 500, 500 });
-            app.game->gui_objects.add(std::move(text_button));
-            return true;
-        }();
-
         static bool gameInputManagerInitialized = false;
         if (!gameInputManagerInitialized) {
             app.game->input_manager.registerCallbackOnRelease(
@@ -355,11 +343,7 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
         // a key when the game is starting it won't be registered.
         bool mouse_updated = false;
         while (auto input_opt = app.game->input_event_buffer->consume()) {
-            auto& input            = input_opt.value();
-            static int input_count = 0;
-            auto& text_button      = std::get<bg::TextButton>(app.game->gui_objects.objects[1]);
-            text_button.update_text_str(std::to_string(input_count));
-            ++input_count;
+            auto& input = input_opt.value();
             // logDebug("Received event. Event type: {}", input.type);
 
             if ((input.type == SDL_EVENT_KEY_DOWN) && (input.key.key == SDLK_ESCAPE)) {
@@ -705,6 +689,11 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
                 }
 
                 game.player.tick();
+
+                game.levelManager.tick();
+
+                // TODO: Probably only need to do this periodically.
+                game.levelManager.cleanupDeadEntities();
 
                 pendingActions.clear();
 

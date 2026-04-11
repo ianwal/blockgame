@@ -19,16 +19,6 @@ namespace
 constexpr float playerWidth  = 0.6;
 constexpr float playerHeight = 1.8;
 
-/// Round the given vector to zero if its length is near zero.
-void roundToZero(glm::vec3 v)
-{
-    if (!isZeroVector(v)) {
-        if (glm::length(v) < 0.02) {
-            v = glm::vec3{ 0.0f, 0.0f, 0.0f };
-        }
-    }
-}
-
 } // namespace
 
 Player::Player()

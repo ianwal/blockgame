@@ -12,14 +12,12 @@ namespace bg
 
 std::uint32_t PlayerInventory::addItem(ItemStack itemStack)
 {
+    // Try to add to an existing stack.
     for (auto& row : inventorySlots) {
         for (auto& slot : row) {
             if (!slot.has_value()) {
-                // TODO: Add item amounts only up to the stack amount.
-                slot = itemStack;
-                return itemStack.amount;
+                continue;
             }
-
             if (slot->item == itemStack.item) {
                 // TODO: Add item amounts only up to the stack amount.
                 slot->amount += itemStack.amount;
@@ -27,6 +25,18 @@ std::uint32_t PlayerInventory::addItem(ItemStack itemStack)
             }
         }
     }
+
+    // If no existing item stacks of the same type, then try to add to an empty slot.
+    for (auto& row : inventorySlots) {
+        for (auto& slot : row) {
+            if (!slot.has_value()) {
+                // TODO: Add item amounts only up to the stack amount.
+                slot = itemStack;
+                return itemStack.amount;
+            }
+        }
+    }
+
     return 0U;
 }
 

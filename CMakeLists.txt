@@ -121,6 +121,10 @@ PRIVATE
     src/handrenderer.cpp
     src/game.cpp
     src/font.cpp
+    src/entitydroppeditemrenderer.cpp
+    src/entityrenderermanager.cpp
+    src/entitydroppeditem.cpp
+    src/entity.cpp
     src/crosshair_renderer.cpp
     src/common.cpp
     src/chunkrenderer.cpp

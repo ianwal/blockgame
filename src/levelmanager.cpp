@@ -16,6 +16,27 @@
 namespace bg
 {
 
+void LevelManager::tick()
+{
+    for (auto& entity : loadedEntities) {
+        entity->tick();
+    }
+}
+
+void LevelManager::cleanupDeadEntities()
+{
+    std::vector<IEntity*> deadEntities{};
+    for (auto& entity : loadedEntities) {
+        if (entity->isDead()) {
+            deadEntities.push_back(entity.get());
+        }
+    }
+    for (auto* deadEntity : deadEntities) {
+        loadedEntities.erase(std::find_if(loadedEntities.begin(), loadedEntities.end(),
+                                          [&deadEntity](auto& entity) { return entity.get() == deadEntity; }));
+    }
+}
+
 void LevelManager::registerOnBlockChanged(OnBlockChangedObserverFn fn)
 {
     blockChangeObservers.push_back(fn);
@@ -45,6 +66,19 @@ bool LevelManager::removeBlock(Block const& block)
         return true;
     }
     return false;
+}
+
+void LevelManager::addEntity(std::unique_ptr<IEntity> entity)
+{
+    entity->setId(nextUniqueEntityId);
+    ++nextUniqueEntityId;
+
+    loadedEntities.push_back(std::move(entity));
+}
+
+std::vector<std::unique_ptr<IEntity>> const& LevelManager::getEntities()
+{
+    return loadedEntities;
 }
 
 } // namespace bg

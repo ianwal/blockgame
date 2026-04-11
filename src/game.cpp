@@ -5,6 +5,9 @@
 #include "src/block.h"
 #include "src/camera.h"
 #include "src/chunkrenderer.h"
+#include "src/entity.h"
+#include "src/entitydroppeditem.h"
+#include "src/entitydroppeditemrenderer.h"
 #include "src/logger.h"
 
 #include <SDL3/SDL.h>
@@ -13,6 +16,7 @@
 #include <algorithm>
 #include <limits>
 #include <optional>
+#include <random>
 #include <utility>
 
 #define GLM_ENABLE_EXPERIMENTAL
@@ -76,6 +80,8 @@ GameContext::GameContext()
         static_cast<void>(newType);
         ChunkRenderer::markChunkDirty(getChunkPos(pos));
     });
+
+    entityRendererManager.addRenderer(EntityType::DROPPED_ITEM, std::make_unique<EntityDroppedItemRenderer>());
 
     // Move the player
     player.updatePos(glm::vec3{ 0, 55, 0 });
@@ -175,6 +181,22 @@ void handleSwingAction(GameContext& game)
 
     Block const block = blockResult.value();
     game.levelManager.removeBlock(block);
+    auto droppedItemTypeResult = toDroppedItemType(block.type);
+    if (droppedItemTypeResult.has_value()) {
+        auto droppedItem = std::make_unique<EntityDroppedItem>();
+        droppedItem->setItemType(droppedItemTypeResult.value());
+        droppedItem->updatePos(block.pos);
+        static std::mt19937 gen{ std::random_device{}() };
+        static std::uniform_int_distribution<int> dist(0, 10);
+        static std::uniform_int_distribution<int> distPositive(0, 1);
+        float const randomX = 0.1 * dist(gen) * (distPositive(gen) ? 1.0f : -1.0f);
+        float const randomY = 0.01 * dist(gen); // Always goes up.
+        float const randomZ = 0.1 * dist(gen) * (distPositive(gen) ? 1.0f : -1.0f);
+        auto vel            = glm::normalize(glm::vec3{ randomX, 0.0f, randomZ }) * 0.1f;
+        vel += glm::vec3{ 0.0f, randomY, 0.0f };
+        droppedItem->setVelocity(vel);
+        game.levelManager.addEntity(std::move(droppedItem));
+    }
     playSound2d(getBlockBreakSoundName(block.type));
 }
 
@@ -350,6 +372,12 @@ void handleDropItemAction(GameContext& game)
 {
     auto heldItemResult = game.playerInventory.getCurrentHeldItem();
     if (heldItemResult.has_value()) {
+        ItemStack const heldItem = heldItemResult.value();
+        auto droppedItem         = std::make_unique<EntityDroppedItem>();
+        droppedItem->setItemType(heldItem.item);
+        droppedItem->updatePos(game.player.fpCamera.getPos(1.0f) + (game.player.fpCamera.getFront(1.0f) * 0.2f));
+        droppedItem->setVelocity(game.player.fpCamera.getFront(1.0f) * 0.2f);
+        game.levelManager.addEntity(std::move(droppedItem));
         game.playerInventory.removeItem(InventorySlot{ 0, game.playerInventory.getCurrentHotbarSlot() }, 1U);
     }
 }

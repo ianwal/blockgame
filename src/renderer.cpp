@@ -8,6 +8,7 @@
 #include "src/button.h"
 #include "src/chunkrenderer.h"
 #include "src/crosshair_renderer.h"
+#include "src/entitydroppeditemrenderer.h"
 #include "src/game.h"
 #include "src/handrenderer.h"
 #include "src/linerenderer.h"
@@ -155,6 +156,7 @@ void Renderer::cleanup()
 
 void Renderer::render(AppContext& ctx, float partialTick)
 {
+    auto& game = *ctx.game;
     // Clear context, draw background
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor(0.25, 0.6, 1, 1);
@@ -173,7 +175,7 @@ void Renderer::render(AppContext& ctx, float partialTick)
         near_clipping_plane, far_clipping_plane);
     glm::mat4 view = glm::lookAt(cameraPos,               // Camera is at this coordinate in world space
                                  cameraPos + cameraFront, // Camera looks at this coordinate.
-                                 cameraUp                 // Camera head is up (0, -1, 0) would be looking upside-down)
+                                 cameraUp                 // Camera head is up <0, -1, 0> would be looking upside-down)
     );
 
     // Upload projection and view matrices to be used by the other renderers.
@@ -186,6 +188,10 @@ void Renderer::render(AppContext& ctx, float partialTick)
         ZoneScopedN("ChunkRenderer");
 #endif
         ChunkRenderer::render(ctx, ctx.game->chunkManager, partialTick);
+    }
+
+    for (auto const& entity : game.levelManager.getEntities()) {
+        game.entityRendererManager.renderEntity(*entity, partialTick);
     }
 
     // TODO: This is probably slow to compute every frame. Pre-compute per tick and get from the player instead?

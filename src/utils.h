@@ -24,6 +24,16 @@ namespace bg
     return v.x == 0.0f && v.y == 0.0f && v.z == 0.0f;
 }
 
+/// Round the given vector to zero if its length is near zero.
+constexpr void roundToZero(glm::vec3& v)
+{
+    if (!isZeroVector(v)) {
+        if (glm::length(v) < 0.02) {
+            v = glm::vec3{ 0.0f, 0.0f, 0.0f };
+        }
+    }
+}
+
 /// Scale a vector to a specific length without changing its direction.
 [[nodiscard]] constexpr glm::vec3 setLength(glm::vec3 const& v, float length)
 {

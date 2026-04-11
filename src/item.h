@@ -49,4 +49,22 @@ constexpr std::optional<BlockType> toBlockType(ItemType itemType)
     }
 }
 
+/// Get the item drop type that corresponds with the broken block type.
+///
+/// Not all blocks drop items when broken.
+constexpr std::optional<ItemType> toDroppedItemType(BlockType const blockType)
+{
+    switch (blockType) {
+        case BlockType::BLOCK_GRASS:
+            return ItemType::GRASS_BLOCK;
+        case BlockType::BLOCK_DIRT:
+            return ItemType::DIRT_BLOCK;
+        case BlockType::BLOCK_LUCKY:
+            return ItemType::LUCKY_BLOCK;
+        default: {
+            return std::nullopt;
+        } break;
+    }
+}
+
 } // namespace bg

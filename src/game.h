@@ -6,6 +6,8 @@
 #include "src/button.h"
 #include "src/camera.h"
 #include "src/chunk.h"
+#include "src/entity.h"
+#include "src/entityrenderermanager.h"
 #include "src/event_handling.h"
 #include "src/game.h"
 #include "src/input_manager.h"
@@ -50,57 +52,6 @@ struct GuiObjects {
     }
 
     std::deque<Gui_object_var_t> objects{};
-};
-
-/// Interface for entity rendering information.
-class IEntityRenderInfo
-{
-public:
-    virtual ~IEntityRenderInfo() = default;
-};
-
-/// Interface for entities.
-class IEntity
-{
-public:
-    enum class EntityType {
-        BLOCK,
-    };
-
-    virtual EntityType getEntityType() const = 0;
-
-    virtual ~IEntity() = default;
-};
-
-/// Interface for an entity renderer.
-class IEntityRenderer
-{
-public:
-    virtual void render(IEntityRenderInfo const& renderInfo) = 0;
-
-    virtual ~IEntityRenderer() = default;
-};
-
-class EntityRendererManager
-{
-public:
-    EntityRendererManager() = default;
-
-    void addRenderer(IEntity::EntityType entityType, std::unique_ptr<IEntityRenderer> renderer)
-    {
-        assertr(!mEntityRendererMap.contains(entityType));
-        mEntityRendererMap[entityType] = std::move(renderer);
-    }
-
-    void renderEntity(IEntity const& entity) const
-    {
-        auto it = mEntityRendererMap.find(entity.getEntityType());
-        assertr(it != mEntityRendererMap.end());
-        it->second->render({});
-    }
-
-private:
-    std::map<IEntity::EntityType, std::unique_ptr<IEntityRenderer>> mEntityRendererMap{};
 };
 
 /// Inputs. True is pressed down, false is not pressed.
@@ -164,8 +115,6 @@ inline std::string to_str(glm::vec3 const& v)
 struct GameContext {
     GameContext();
 
-    std::vector<IEntity> entities{};
-
     EntityRendererManager entityRendererManager{};
 
     Player player{};
@@ -187,7 +136,6 @@ struct GameContext {
 
     PlayerInventory playerInventory{};
 
-    GuiObjects gui_objects{};
     std::unique_ptr<EventBuffer> input_event_buffer{ std::make_unique<EventBuffer>() };
     InputManager input_manager{};
     std::vector<InputAction> pendingActions{};
