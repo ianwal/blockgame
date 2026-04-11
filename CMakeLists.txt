@@ -111,10 +111,12 @@ PRIVATE
     src/time.cpp
     src/shaders.cpp
     src/renderer.cpp
+    src/playerinventory.cpp
     src/player.cpp
     src/main.cpp
     src/linerenderer.cpp
     src/levelmanager.cpp
+    src/item.cpp
     src/img.cpp
     src/handrenderer.cpp
     src/game.cpp

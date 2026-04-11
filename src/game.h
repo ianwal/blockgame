@@ -11,6 +11,7 @@
 #include "src/input_manager.h"
 #include "src/levelmanager.h"
 #include "src/player.h"
+#include "src/playerinventory.h"
 #include "src/time.h"
 
 #include <SDL3/SDL.h>
@@ -107,6 +108,10 @@ struct Inputs {
     bool mouse1{};
     bool mouse2{};
 
+    bool num1{};
+    bool num2{};
+    bool num3{};
+
     bool w{};
     bool a{};
     bool s{};
@@ -180,6 +185,8 @@ struct GameContext {
 
     LevelManager levelManager{};
 
+    PlayerInventory playerInventory{};
+
     GuiObjects gui_objects{};
     std::unique_ptr<EventBuffer> input_event_buffer{ std::make_unique<EventBuffer>() };
     InputManager input_manager{};
@@ -209,5 +216,9 @@ void handleSwingAction(GameContext& game);
 void handleMoveAction(GameContext& game, MoveAction const& action);
 
 void handlePlaceAction(GameContext& game);
+
+void handleDropItemAction(GameContext& game);
+
+void handleChangeHotbarPosAction(GameContext& game, ChangeHotbarPosAction const& action);
 
 } // namespace bg

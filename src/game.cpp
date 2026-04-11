@@ -76,8 +76,13 @@ GameContext::GameContext()
         static_cast<void>(newType);
         ChunkRenderer::markChunkDirty(getChunkPos(pos));
     });
+
     // Move the player
     player.updatePos(glm::vec3{ 0, 55, 0 });
+
+    // Add some items
+    playerInventory.addItem(ItemStack{ ItemType::DIRT_BLOCK, 10 });
+    playerInventory.addItem(ItemStack{ ItemType::LUCKY_BLOCK, 10 });
 }
 
 std::optional<Block> getBlockPlayerIsLookingAt(ChunkManager const& chunkManager, Player const& player)
@@ -319,15 +324,41 @@ void handlePlaceAction(GameContext& game)
         return;
     }
 
+    auto const heldItemResult = game.playerInventory.getCurrentHeldItem();
+    if (!heldItemResult.has_value()) {
+        return;
+    }
+
+    auto blockTypeResult = toBlockType(heldItemResult->item);
+    if (!blockTypeResult.has_value()) {
+        return;
+    }
+
     Block block{};
     block.pos  = blockPosResult.value();
-    block.type = BlockType::BLOCK_LUCKY;
+    block.type = *blockTypeResult;
 
-    // TODO: This should check if any entity is in the current block, not just the player.
+    // TODO: This should check if any entity with a physical AABB is in the current block, not just the player.
     if (!game.player.getAABB().intersects(getBlockAABB(block)) && game.levelManager.placeBlock(block)) {
+        game.playerInventory.removeItem(InventorySlot{ 0, game.playerInventory.getCurrentHotbarSlot() }, 1U);
         game.player.swing();
         playSound2d(getBlockBreakSoundName(block.type));
     }
+}
+
+void handleDropItemAction(GameContext& game)
+{
+    auto heldItemResult = game.playerInventory.getCurrentHeldItem();
+    if (heldItemResult.has_value()) {
+        game.playerInventory.removeItem(InventorySlot{ 0, game.playerInventory.getCurrentHotbarSlot() }, 1U);
+    }
+}
+
+void handleChangeHotbarPosAction(GameContext& game, ChangeHotbarPosAction const& action)
+{
+    game.playerInventory.setCurrentHotbarSlot(action.index);
+    // TODO: Add change item animation where the item dips out of view and changes to the new one if the new held item
+    // is different.
 }
 
 GameContext* GlobalGame::game = nullptr;

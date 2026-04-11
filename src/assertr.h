@@ -7,6 +7,7 @@ namespace bg
 {
 
 inline static constexpr bool config_asserts_enabled = true;
+inline static constexpr bool config_asserts_crash   = true;
 
 void assertr(bool condition, std::source_location const& location = std::source_location::current());
 

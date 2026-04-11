@@ -31,7 +31,16 @@ struct SneakAction {
 struct PlaceAction {
 };
 
-using InputAction = std::variant<SwingAction, MoveAction, SneakAction, PlaceAction>;
+struct DropItemAction {
+    // TODO: Add entire stack bool for CTRL+Q
+};
+
+struct ChangeHotbarPosAction {
+    std::uint32_t index{};
+};
+
+using InputAction =
+    std::variant<SwingAction, MoveAction, SneakAction, PlaceAction, DropItemAction, ChangeHotbarPosAction>;
 
 template <class... Ts>
 struct overloaded : Ts... {

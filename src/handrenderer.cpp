@@ -172,10 +172,22 @@ void HandRenderer::render(AppContext& ctx, float partialTick)
     glm::vec3 o = camera.getPos(partialTick) + (vel * 0.1f) + (fixedUp * -0.3f) + (fixedRight * 0.4f) +
                   (forward * 0.05f) + ((right * 0.1f) * (2.0f * -f1)) + up * (-0.6f + f1 * 0.05f - f2 * 0.15f);
 
+    auto const heldItemResult = ctx.game->playerInventory.getCurrentHeldItem();
+
     // size
-    float const width  = 0.3f;
-    float const height = 0.2f;
-    float const depth  = 0.5f;
+    float width{};
+    float height{};
+    float depth{};
+    if (heldItemResult.has_value()) {
+        width  = 0.3f;
+        height = 0.3f;
+        depth  = 0.3f;
+    } else {
+        // Hand
+        width  = 0.3f;
+        height = 0.2f;
+        depth  = 0.5f;
+    }
 
     // basis vectors scaled to cube size
     glm::vec3 r = right * width;
@@ -193,9 +205,18 @@ void HandRenderer::render(AppContext& ctx, float partialTick)
     glm::vec3 ruf = o + r + u + f;
 
     glEnable(GL_DEPTH_TEST);
+
     glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, TextureResourceManagerSingleton::get().get("player.hand"));
-    // glColor3f(0.68, 0.42, 0.23);
+    // TODO:
+    // Non-block types should be shown in hand, but this function only renders blocks and hand right now so no need to
+    // handle this here.
+    GLuint textureId{};
+    if (heldItemResult.has_value() && toBlockType(heldItemResult->item).has_value()) {
+        textureId = getBlockTexture(toBlockType(heldItemResult->item).value());
+    } else {
+        textureId = TextureResourceManagerSingleton::get().get("player.hand");
+    }
+    glBindTexture(GL_TEXTURE_2D, textureId);
 
     // Clear the buffer bit so that the hand is always rendered in front of the world.
     glClear(GL_DEPTH_BUFFER_BIT);

@@ -319,10 +319,15 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
                 app.game->player.setSneaking(false);
             });
 
-            app.game->input_manager.registerCallbackOnRelease(SDLK_Q, [&app]() {
-                // Debug
-                logDebug("Player Pos: {}", glm::to_string(app.game->player.getPos(1.0)));
-            });
+            app.game->input_manager.registerCallbackOnRelease(
+                SDLK_1, [&pendingActions]() { pendingActions.push_back(ChangeHotbarPosAction{ 0 }); });
+            app.game->input_manager.registerCallbackOnRelease(
+                SDLK_2, [&pendingActions]() { pendingActions.push_back(ChangeHotbarPosAction{ 1 }); });
+            app.game->input_manager.registerCallbackOnRelease(
+                SDLK_3, [&pendingActions]() { pendingActions.push_back(ChangeHotbarPosAction{ 2 }); });
+
+            app.game->input_manager.registerCallbackOnRelease(
+                SDLK_Q, [&pendingActions]() { pendingActions.push_back(DropItemAction{}); });
 
             app.game->input_manager.registerCallbackOnRelease(SDLK_F, [&app]() { toggleWindowFullscreen(app.window); });
 
@@ -390,6 +395,33 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
             } else if ((input.type == SDL_EVENT_MOUSE_BUTTON_UP) && (input.button.button == SDL_BUTTON_RIGHT)) {
                 app.game->input_manager.queueInputOnRelease(SDL_BUTTON_RIGHT);
                 curr_inputs.mouse2 = false;
+            } else if ((input.type == SDL_EVENT_KEY_DOWN) && (input.key.key == SDLK_1)) {
+                if (!app.game->prev_inputs.num1) {
+                    app.game->input_manager.queueInputOnDown(SDLK_1);
+                }
+                app.game->input_manager.queueInputOnHold(SDLK_1);
+                curr_inputs.num1 = true;
+            } else if ((input.type == SDL_EVENT_KEY_UP) && (input.key.key == SDLK_1)) {
+                app.game->input_manager.queueInputOnRelease(SDLK_1);
+                curr_inputs.num1 = false;
+            } else if ((input.type == SDL_EVENT_KEY_DOWN) && (input.key.key == SDLK_2)) {
+                if (!app.game->prev_inputs.num2) {
+                    app.game->input_manager.queueInputOnDown(SDLK_2);
+                }
+                app.game->input_manager.queueInputOnHold(SDLK_2);
+                curr_inputs.num2 = true;
+            } else if ((input.type == SDL_EVENT_KEY_UP) && (input.key.key == SDLK_2)) {
+                app.game->input_manager.queueInputOnRelease(SDLK_2);
+                curr_inputs.num2 = false;
+            } else if ((input.type == SDL_EVENT_KEY_DOWN) && (input.key.key == SDLK_3)) {
+                if (!app.game->prev_inputs.num3) {
+                    app.game->input_manager.queueInputOnDown(SDLK_3);
+                }
+                app.game->input_manager.queueInputOnHold(SDLK_3);
+                curr_inputs.num3 = true;
+            } else if ((input.type == SDL_EVENT_KEY_UP) && (input.key.key == SDLK_3)) {
+                app.game->input_manager.queueInputOnRelease(SDLK_3);
+                curr_inputs.num3 = false;
             } else if ((input.type == SDL_EVENT_KEY_DOWN) && (input.key.key == SDLK_A)) {
                 if (!app.game->prev_inputs.a) {
                     app.game->input_manager.queueInputOnDown(SDLK_A);
@@ -607,9 +639,11 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
             }
         }
 
-        bool alreadySwung         = false;
-        auto alreadyMovedBitfield = MoveAction::Direction::NONE;
-        bool alreadyPlaced        = false;
+        bool alreadySwung            = false;
+        auto alreadyMovedBitfield    = MoveAction::Direction::NONE;
+        bool alreadyPlaced           = false;
+        bool alreadyDroppedItem      = false;
+        bool alreadyChangedHotbarPos = false;
 
         {
 #ifdef BLOCKGAME_ENABLE_TRACY
@@ -657,6 +691,14 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
                                            handlePlaceAction(game);
                                            alreadyPlaced = true;
                                        },
+                                       [&](bg::DropItemAction&) {
+                                           handleDropItemAction(game);
+                                           alreadyDroppedItem = true;
+                                       },
+                                       [&](bg::ChangeHotbarPosAction& action) {
+                                           handleChangeHotbarPosAction(game, action);
+                                           alreadyChangedHotbarPos = true;
+                                       },
                                    },
                                    action);
                     }
@@ -703,6 +745,8 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
                 ImGui::Text("%s", std::format("Grounded: {}", game.player.isGrounded()).c_str());
                 ImGui::Text("%s", std::format("Flying: {}", game.player.isFlying()).c_str());
                 ImGui::Text("%s", std::format("Noclip: {}", game.player.isNoclip()).c_str());
+                ImGui::Text("%s", std::format("Hand Item: {}", game.playerInventory.getCurrentHeldItem().has_value() ? std::format("{} {}", to_string(game.playerInventory.getCurrentHeldItem().value().item), game.playerInventory.getCurrentHeldItem().value().amount) : std::string{"None"}).c_str());
+                ImGui::Text("%s", std::format("Hotbar Slot: {}", game.playerInventory.getCurrentHotbarSlot()).c_str());
                 ImGui::Text(" ");
                 ImGui::Text("%s", std::format("Loaded Chunk Count: {}", chunkManagerStats.loadedChunkCount).c_str());
                 ImGui::Text("%s", std::format("World Chunk Count: {}", chunkManagerStats.worldChunkCount).c_str());
