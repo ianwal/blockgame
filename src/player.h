@@ -52,9 +52,9 @@ public:
 
     float getSwingProgress(float partialTick);
 
-private:
     [[nodiscard]] AABB getAABB() const;
 
+private:
     glm::vec3 pos{};         ///< Position.
     glm::vec3 prevPos = pos; ///< Position on the previous tick.
     glm::vec3 vel{};         ///< Velocity.

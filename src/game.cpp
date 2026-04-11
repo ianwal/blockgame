@@ -322,7 +322,9 @@ void handlePlaceAction(GameContext& game)
     Block block{};
     block.pos  = blockPosResult.value();
     block.type = BlockType::BLOCK_LUCKY;
-    if (game.levelManager.placeBlock(block)) {
+
+    // TODO: This should check if any entity is in the current block, not just the player.
+    if (!game.player.getAABB().intersects(getBlockAABB(block)) && game.levelManager.placeBlock(block)) {
         game.player.swing();
         playSound2d(getBlockBreakSoundName(block.type));
     }
