@@ -25,6 +25,7 @@
 // clang-format off
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/string_cast.hpp>
+#include <glm/gtx/euler_angles.hpp>
 // clang-format on
 
 namespace bg
@@ -81,6 +82,8 @@ static constexpr GLfloat g_block_vertex_buffer_data[] = {
 struct InstanceData {
     glm::vec3 pos;
     float scale;
+    glm::mat3 rot;
+    float _pad;
 };
 
 EntityDroppedItemRenderer::EntityDroppedItemRenderer()
@@ -114,6 +117,14 @@ EntityDroppedItemRenderer::EntityDroppedItemRenderer()
     glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(InstanceData), (void*) offsetof(InstanceData, scale));
     glVertexAttribDivisor(3, 1);
 
+    // instanceRotation (location 4)
+    for (int i = 0; i < 3; i++) {
+        glVertexAttribPointer(4 + i, 3, GL_FLOAT, GL_FALSE, sizeof(InstanceData),
+                              (void*) (offsetof(InstanceData, rot) + i * sizeof(glm::vec3)));
+        glVertexAttribDivisor(4 + i, 1);
+        glEnableVertexAttribArray(4 + i);
+    }
+
     glBindVertexArray(0);
 
     shaderId          = bg::ShaderManagerSingleton::get().get("droppedblock");
@@ -128,53 +139,6 @@ EntityDroppedItemRenderer::~EntityDroppedItemRenderer()
     glDeleteBuffers(1, &vertexbuffer);
 }
 
-/*
-void EntityDroppedItemRenderer::render(AppContext& ctx, Block const& block, float partialTick)
-{
-static_cast<void>(ctx);
-static_cast<void>(block);
-static_cast<void>(partialTick);
-#ifdef BLOCKGAME_ENABLE_TRACY
-ZoneScopedN("SingleBlockRender");
-#endif
-if (block.type == BlockType::BLOCK_AIR) {
-    return;
-}
-
-glm::mat4 model =
-    glm::translate(glm::mat4(1.0f), glm::vec3((float) block.pos.x, (float) block.pos.y, (float) block.pos.z));
-
-glBindVertexArray(vao);
-// TODO: Back face culling seems to work but it's not necessary right now so it's disabled.
-glEnable(GL_CULL_FACE);
-glCullFace(GL_BACK);
-
-glDepthFunc(GL_LESS);
-glEnable(GL_DEPTH_TEST);
-glUseProgram(shaderId);
-
-// Texture
-glActiveTexture(GL_TEXTURE0);
-glBindTexture(GL_TEXTURE_2D, getBlockTexture(block.type));
-
-// Note:
-// Setting the texture ID here isn't necessary since the blocks only have one texture. But
-// do it anyway.
-GLuint texId = glGetUniformLocation(shaderId, "tex");
-glUniform1i(texId, 0);
-
-// Send the transformation to the currently bound shader.
-glUniformMatrix4fv(matrixId, 1, GL_FALSE, glm::value_ptr(model));
-
-// Draw the triangles
-glDrawArrays(GL_TRIANGLES, 0, 6*6); // 3 vertices per triangle, 2 triangles per face, 6 faces
-
-glDisable(GL_DEPTH_TEST);
-glDisable(GL_CULL_FACE);
-glBindVertexArray(0);
-}
-*/
-
 void EntityDroppedItemRenderer::render(IEntity const& ientity, float partialTick)
 {
     auto const& entity = dynamic_cast<EntityDroppedItem const&>(ientity);
@@ -187,10 +151,10 @@ void EntityDroppedItemRenderer::render(IEntity const& ientity, float partialTick
     auto blockTypeResult = toBlockType(entity.getItemType());
     if (blockTypeResult.has_value()) {
         assertr(blockTypeResult.value() != BlockType::BLOCK_AIR);
-        ItemType const itemType = entity.getItemType();
         std::map<BlockType, std::vector<InstanceData>> byType{};
         InstanceData d{};
-        d.pos   = entity.getPos(partialTick);
+        d.pos   = entity.getRenderPos(partialTick);
+        d.rot   = glm::mat3_cast(glm::quat(entity.getRenderRotation(partialTick)));
         d.scale = 0.25f;
         byType[blockTypeResult.value()].push_back(d);
 

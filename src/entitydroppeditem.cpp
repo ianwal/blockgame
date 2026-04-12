@@ -125,7 +125,7 @@ glm::vec3 EntityDroppedItem::getPos(float partialTick) const
 glm::vec3 EntityDroppedItem::getRotation(float partialTick) const
 {
     assertr(false);
-    return {};
+    return glm::vec3{};
 }
 
 EntityType EntityDroppedItem::getEntityType() const
@@ -191,6 +191,19 @@ void EntityDroppedItem::setItemType(ItemType itemType)
 [[nodiscard]] ItemType EntityDroppedItem::getItemType() const
 {
     return itemType;
+}
+
+glm::vec3 EntityDroppedItem::getRenderPos(float partialTick) const
+{
+    return getPos(partialTick) +
+           lerp(glm::vec3{ 0, std::sin((static_cast<float>(ticksAlive) - 1.0f) / 10.0f) * 0.1f, 0 },
+                glm::vec3{ 0, std::sin(static_cast<float>(ticksAlive) / 10.0f) * 0.1f, 0 }, partialTick);
+}
+
+glm::vec3 EntityDroppedItem::getRenderRotation(float partialTick) const
+{
+    static_cast<void>(partialTick);
+    return glm::vec3{ 0, glm::radians(static_cast<float>(ticksAlive % 360U)), 0 };
 }
 
 } // namespace bg

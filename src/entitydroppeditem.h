@@ -49,6 +49,12 @@ public:
 
     [[nodiscard]] ItemType getItemType() const;
 
+    /// Get the position only for rendering.
+    [[nodiscard]] glm::vec3 getRenderPos(float partialTick) const;
+
+    /// Get the rotation only for rendering.
+    [[nodiscard]] glm::vec3 getRenderRotation(float partialTick) const;
+
 private:
     glm::vec3 pos{};         ///< Position.
     glm::vec3 prevPos = pos; ///< Position on the previous tick.
