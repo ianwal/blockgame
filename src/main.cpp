@@ -622,7 +622,7 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
         }
 
         bool alreadySwung            = false;
-        auto alreadyMovedBitfield    = MoveAction::Direction::NONE;
+        auto movesBitfield           = MoveAction::Direction::NONE;
         bool alreadyPlaced           = false;
         bool alreadyDroppedItem      = false;
         bool alreadyChangedHotbarPos = false;
@@ -663,14 +663,8 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
                                        },
                                        [&](bg::SneakAction&) { game.player.setSneaking(true); },
                                        [&](bg::MoveAction& action) {
-                                           // TODO: Allowing multiple actions means moving diagonally is faster than in
-                                           // cardinal directions. Instead, the full move action bitwise should be
-                                           // passed to handleMoveAction and it should be normalized there.
-                                           if ((alreadyMovedBitfield & action.direction) == 0) {
-                                               handleMoveAction(game, action);
-                                               alreadyMovedBitfield = static_cast<MoveAction::Direction>(
-                                                   alreadyMovedBitfield | action.direction);
-                                           }
+                                           movesBitfield =
+                                               static_cast<MoveAction::Direction>(movesBitfield | action.direction);
                                        },
                                        [&](bg::PlaceAction&) {
                                            handlePlaceAction(game);
@@ -687,6 +681,7 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
                                    },
                                    action);
                     }
+                    handleMoveAction(game, MoveAction{ movesBitfield });
                 }
 
                 game.player.tick();

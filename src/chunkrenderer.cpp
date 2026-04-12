@@ -184,10 +184,10 @@ void ChunkRenderer::render(AppContext& ctx, ChunkManager const& chunkManager, fl
 
                 // Face textures and their vertex ranges
                 // Front face (0), Back face (1), Right face (2), Left face (3), Top face (4), Bottom face (5)
-                const GLuint faceTextures[] = { faceConfig.front, faceConfig.back,   faceConfig.right,
-                                                faceConfig.left,  faceConfig.top,    faceConfig.bottom };
+                const GLuint faceTextures[]   = { faceConfig.front, faceConfig.back, faceConfig.right,
+                                                  faceConfig.left,  faceConfig.top,  faceConfig.bottom };
                 const int faceStartVertices[] = { 0, 6, 12, 18, 24, 30 };
-                const int verticesPerFace    = 6;
+                const int verticesPerFace     = 6;
 
                 for (int face = 0; face < 6; ++face) {
                     glBindTexture(GL_TEXTURE_2D, faceTextures[face]);

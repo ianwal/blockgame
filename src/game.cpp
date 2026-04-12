@@ -200,39 +200,31 @@ void handleSwingAction(GameContext& game)
 
 void handleMoveAction(GameContext& game, MoveAction const& action)
 {
-    // logDebug("Tick {} Move Dir: {}", game.tick, std::to_underlying(action.direction));
-
     // Use first person camera because moving is done relative to the first person camera.
     auto& currentCamera = game.player.fpCamera;
     auto& player        = game.player;
 
     if (player.isFlying()) {
+        glm::vec3 moveDirXZ{ 0.0f, 0.0f, 0.0f };
         float const moveSpeed = (0.2 * player.getMoveSpeedMultiplier()) * (game.fastNoClipSpeed ? 2.0f : 1.0f);
-        auto moveLeft         = [&player, &currentCamera, &moveSpeed]() {
-            // Add velocity in the direction.
+        auto moveLeft         = [&player, &currentCamera, &moveDirXZ]() {
             glm::vec3 const dir = glm::normalize(glm::cross(currentCamera.getFront(1.0), currentCamera.getUp()));
-            glm::vec3 const newVelocity = (player.getVelocity() - (moveSpeed * dir));
-            player.setVelocity(newVelocity);
+            moveDirXZ -= dir;
         };
 
-        auto moveRight = [&player, &currentCamera, &moveSpeed]() {
-            // Add velocity in the direction.
+        auto moveRight = [&currentCamera, &moveDirXZ]() {
             glm::vec3 const dir = glm::normalize(glm::cross(currentCamera.getFront(1.0), currentCamera.getUp()));
-            glm::vec3 const newVelocity = (player.getVelocity() + (moveSpeed * dir));
-            player.setVelocity(newVelocity);
+            moveDirXZ += dir;
         };
 
-        auto moveForward = [&player, &currentCamera, &moveSpeed]() {
-            // Add velocity in the direction.
-            glm::vec3 const dir         = currentCamera.getFront(1.0);
-            glm::vec3 const newVelocity = (player.getVelocity() + (moveSpeed * dir));
-            player.setVelocity(newVelocity);
+        auto moveForward = [&currentCamera, &moveDirXZ]() {
+            glm::vec3 const dir = currentCamera.getFront(1.0);
+            moveDirXZ += dir;
         };
 
-        auto moveBackward = [&player, &currentCamera, &moveSpeed]() {
-            glm::vec3 const dir         = currentCamera.getFront(1.0);
-            glm::vec3 const newVelocity = (player.getVelocity() - (moveSpeed * dir));
-            player.setVelocity(newVelocity);
+        auto moveBackward = [&currentCamera, &moveDirXZ]() {
+            glm::vec3 const dir = currentCamera.getFront(1.0);
+            moveDirXZ -= dir;
         };
 
         auto moveUp = [&player, &currentCamera, &moveSpeed]() {
@@ -247,62 +239,74 @@ void handleMoveAction(GameContext& game, MoveAction const& action)
             player.setVelocity(newVelocity);
         };
 
-        switch (action.direction) {
-            case MoveAction::Direction::LEFT: {
-                moveLeft();
-            } break;
-            case MoveAction::Direction::RIGHT: {
-                moveRight();
-            } break;
-            case MoveAction::Direction::UP: {
-                moveUp();
-            } break;
-            case MoveAction::Direction::DOWN: {
-                moveDown();
-            } break;
-            case MoveAction::Direction::FORWARD: {
-                moveForward();
-            } break;
-            case MoveAction::Direction::BACKWARD: {
-                moveBackward();
-            } break;
-            case MoveAction::Direction::NONE: {
-                // Do nothing.
-            } break;
+        std::uint8_t i{ 0 };
+        auto act = action;
+        while (act.direction != 0) {
+            auto dir = static_cast<MoveAction::Direction>(act.direction & (1U << i));
+            switch (dir) {
+                case MoveAction::Direction::LEFT: {
+                    moveLeft();
+                } break;
+                case MoveAction::Direction::RIGHT: {
+                    moveRight();
+                } break;
+                case MoveAction::Direction::UP: {
+                    moveUp();
+                } break;
+                case MoveAction::Direction::DOWN: {
+                    moveDown();
+                } break;
+                case MoveAction::Direction::FORWARD: {
+                    moveForward();
+                } break;
+                case MoveAction::Direction::BACKWARD: {
+                    moveBackward();
+                } break;
+                case MoveAction::Direction::NONE: {
+                    // Do nothing.
+                } break;
+                default: {
+                    assertr(false);
+                } break;
+            }
+            act.direction = static_cast<MoveAction::Direction>(act.direction & (~(1U << i)));
+            ++i;
         }
+
+        if (!isZeroVector(moveDirXZ)) {
+            moveDirXZ = glm::normalize(moveDirXZ);
+        }
+        player.setVelocity(player.getVelocity() + (moveDirXZ * moveSpeed));
     } else {
+        glm::vec3 moveDirXZ{ 0.0f, 0.0f, 0.0f };
         // TODO: The non-grounded movement is janky and needs to be fixed.
-        float const moveSpeed = (0.1 * player.getMoveSpeedMultiplier() * (player.isGrounded() ? 1.0f : 0.8f));
-        auto moveLeft         = [&player, &currentCamera, &moveSpeed]() {
+        float const moveSpeed = (0.15f * player.getMoveSpeedMultiplier() * (player.isGrounded() ? 1.0f : 0.5f));
+        auto moveLeft         = [&currentCamera, &moveDirXZ]() {
             // Add velocity in the direction.
             glm::vec3 const dir = glm::normalize(glm::cross(currentCamera.getFront(1.0), currentCamera.getUp()));
-            glm::vec3 const newVelocity = (player.getVelocity() - (moveSpeed * dir));
-            player.setVelocity(newVelocity);
+            moveDirXZ -= dir;
         };
 
-        auto moveRight = [&player, &currentCamera, &moveSpeed]() {
+        auto moveRight = [&currentCamera, &moveDirXZ]() {
             // Add velocity in the direction.
             glm::vec3 const dir = glm::normalize(glm::cross(currentCamera.getFront(1.0), currentCamera.getUp()));
-            glm::vec3 const newVelocity = (player.getVelocity() + (moveSpeed * dir));
-            player.setVelocity(newVelocity);
+            moveDirXZ += dir;
         };
 
-        auto moveForward = [&player, &currentCamera, &moveSpeed]() {
+        auto moveForward = [&currentCamera, &moveDirXZ]() {
             // Add velocity in the direction.
             glm::vec3 const dir = glm::normalize(
                 glm::cross(glm::cross(currentCamera.getFront(1.0), currentCamera.getUp()), currentCamera.getUp()));
-            glm::vec3 const newVelocity = (player.getVelocity() - (moveSpeed * dir));
-            player.setVelocity(newVelocity);
+            moveDirXZ -= dir;
         };
 
-        auto moveBackward = [&player, &currentCamera, &moveSpeed]() {
+        auto moveBackward = [&currentCamera, &moveDirXZ]() {
             glm::vec3 const dir = glm::normalize(
                 glm::cross(glm::cross(currentCamera.getFront(1.0), currentCamera.getUp()), currentCamera.getUp()));
-            glm::vec3 const newVelocity = (player.getVelocity() + (moveSpeed * dir));
-            player.setVelocity(newVelocity);
+            moveDirXZ += dir;
         };
 
-        auto moveUp = [&player, &currentCamera, &moveSpeed]() {
+        auto moveUp = [&player]() {
             if (player.isGrounded()) {
                 float jumpMultiplier        = 0.4;
                 glm::vec3 const dir         = glm::vec3{ 0, 1, 0 };
@@ -311,29 +315,44 @@ void handleMoveAction(GameContext& game, MoveAction const& action)
             }
         };
 
-        switch (action.direction) {
-            case MoveAction::Direction::LEFT: {
-                moveLeft();
-            } break;
-            case MoveAction::Direction::RIGHT: {
-                moveRight();
-            } break;
-            case MoveAction::Direction::UP: {
-                moveUp();
-            } break;
-            case MoveAction::Direction::DOWN: {
-                // Do nothing.
-            } break;
-            case MoveAction::Direction::FORWARD: {
-                moveForward();
-            } break;
-            case MoveAction::Direction::BACKWARD: {
-                moveBackward();
-            } break;
-            case MoveAction::Direction::NONE: {
-                // Do nothing.
-            } break;
+        std::uint8_t i{ 0 };
+        auto act = action;
+        while (act.direction != 0) {
+            auto dir = static_cast<MoveAction::Direction>(act.direction & (1U << i));
+            switch (dir) {
+                case MoveAction::Direction::LEFT: {
+                    moveLeft();
+                } break;
+                case MoveAction::Direction::RIGHT: {
+                    moveRight();
+                } break;
+                case MoveAction::Direction::UP: {
+                    moveUp();
+                } break;
+                case MoveAction::Direction::DOWN: {
+                    // Do nothing.
+                } break;
+                case MoveAction::Direction::FORWARD: {
+                    moveForward();
+                } break;
+                case MoveAction::Direction::BACKWARD: {
+                    moveBackward();
+                } break;
+                case MoveAction::Direction::NONE: {
+                    // Do nothing.
+                } break;
+                default: {
+                    assertr(false);
+                } break;
+            }
+            act.direction = static_cast<MoveAction::Direction>(act.direction & (~(1U << i)));
+            ++i;
         }
+
+        if (!isZeroVector(moveDirXZ)) {
+            moveDirXZ = glm::normalize(moveDirXZ);
+        }
+        player.setVelocity(player.getVelocity() + (moveDirXZ * moveSpeed));
     }
 }
 
