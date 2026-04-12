@@ -10,6 +10,7 @@
 #include "src/chunk.h"
 #include "src/game.h"
 #include "src/input_manager.h"
+#include "src/lib/json.hpp"
 #include "src/logger.h"
 #include "src/renderer.h"
 #include "src/shaders.h"
@@ -30,6 +31,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <format>
+#include <fstream>
 #include <random>
 #include <string>
 #include <vector>
@@ -154,20 +156,21 @@ extern "C" SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
     bg::global_font_init();
 
     // Load assets
+    {
+        std::ifstream shaderFiles{ "assets/data/shaders.json" };
+        nlohmann::json const shaderData = nlohmann::json::parse(shaderFiles);
+        for (auto& shader : shaderData["shaders"]) {
+            bg::ShaderManagerSingleton::get().load(shader["name"], shader["vertex"], shader["frag"]);
+        }
+    }
 
-    bg::ShaderManagerSingleton::get()
-        .load("line", "assets/shaders/line.glsl", "assets/shaders/line.frag")
-        .load("cube", "assets/shaders/cube.glsl", "assets/shaders/cube.frag")
-        .load("crosshair", "assets/shaders/crosshair.glsl", "assets/shaders/crosshair.frag")
-        .load("droppedblock", "assets/shaders/droppedblock.glsl", "assets/shaders/droppedblock.frag");
-
-    bg::TextureResourceManagerSingleton::get()
-        .load("block.cobble", "assets/textures/cobble.png")
-        .load("block.grass", "assets/textures/grass.png")
-        .load("block.dirt", "assets/textures/dirt.png")
-        .load("block.lucky", "assets/textures/lucky.png")
-        .load("block.grass.side", "assets/textures/grass-side.png")
-        .load("player.hand", "assets/textures/hand.png");
+    {
+        std::ifstream textureFiles{ "assets/data/textures.json" };
+        nlohmann::json const textureData = nlohmann::json::parse(textureFiles);
+        for (auto& texture : textureData["textures"]) {
+            bg::TextureResourceManagerSingleton::get().load(texture["name"], texture["path"]);
+        }
+    }
 
     bg::Renderer::init();
 

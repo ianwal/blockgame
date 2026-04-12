@@ -95,7 +95,7 @@ def main():
             [
                 p
                 for p in dir.rglob("*")
-                if p.suffix in [".cpp", ".c", ".h", ".hpp"] and p.name not in ("CImg.h", "PerlinNoise.hpp")
+                if p.suffix in [".cpp", ".c", ".h", ".hpp"] and p.parent.name != "lib"
             ]
         )
     for file in input_files:

@@ -1,0 +1,25 @@
+{
+  "shaders":
+  [
+    {
+      "name": "line",
+      "vertex": "assets/shaders/line.glsl",
+      "frag": "assets/shaders/line.frag"
+    },
+    {
+      "name": "cube",
+      "vertex": "assets/shaders/cube.glsl",
+      "frag": "assets/shaders/cube.frag"
+    },
+    {
+      "name": "crosshair",
+      "vertex": "assets/shaders/crosshair.glsl",
+      "frag": "assets/shaders/crosshair.frag"
+    },
+    {
+      "name": "droppedblock",
+      "vertex": "assets/shaders/droppedblock.glsl",
+      "frag": "assets/shaders/droppedblock.frag"
+    }
+  ]
+}

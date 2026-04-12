@@ -1,0 +1,57 @@
+{
+  "sounds":
+  [
+    {
+      "name": "block.dig.cobble.1",
+      "path": "assets/audio/sounds/block/stone/break/stone1.ogg"
+    },
+    {
+      "name": "block.dig.cobble.2",
+      "path": "assets/audio/sounds/block/stone/break/stone2.ogg"
+    },
+    {
+      "name": "block.dig.cobble.3",
+      "path": "assets/audio/sounds/block/stone/break/stone3.ogg"
+    },
+    {
+      "name": "block.dig.cobble.4",
+      "path": "assets/audio/sounds/block/stone/break/stone4.ogg"
+    },
+    {
+      "name": "block.dig.grass.1",
+      "path": "assets/audio/sounds/block/grass/break/grass1.ogg"
+    },
+    {
+      "name": "block.dig.grass.2",
+      "path": "assets/audio/sounds/block/grass/break/grass2.ogg"
+    },
+    {
+      "name": "block.dig.grass.3",
+      "path": "assets/audio/sounds/block/grass/break/grass3.ogg"
+    },
+    {
+      "name": "block.dig.grass.4",
+      "path": "assets/audio/sounds/block/grass/break/grass4.ogg"
+    },
+    {
+      "name": "block.dig.dirt.1",
+      "path": "assets/audio/sounds/block/dirt/break/dirt1.ogg"
+    },
+    {
+      "name": "block.dig.dirt.2",
+      "path": "assets/audio/sounds/block/dirt/break/dirt2.ogg"
+    },
+    {
+      "name": "block.dig.dirt.3",
+      "path": "assets/audio/sounds/block/dirt/break/dirt3.ogg"
+    },
+    {
+      "name": "block.dig.dirt.4",
+      "path": "assets/audio/sounds/block/dirt/break/dirt4.ogg"
+    },
+    {
+      "name": "pop",
+      "path": "assets/audio/sounds/misc/pop.opus"
+    }
+  ]
+}

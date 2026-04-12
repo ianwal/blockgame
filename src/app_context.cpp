@@ -1,10 +1,12 @@
 #include "src/app_context.h"
 
 #include "src/common.h"
+#include "src/lib/json.hpp"
 
 #include <SDL3/SDL.h>
 
 #include <cassert>
+#include <fstream>
 
 namespace bg
 {
@@ -14,19 +16,12 @@ AppContext::AppContext(SDL_Window* window) : window{ window }
     assert(this->window != nullptr);
     mixer = MIX_CreateMixerDevice(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, nullptr);
     track = MIX_CreateTrack(mixer);
-    audioResourceManager.load("block.dig.cobble.1", "assets/audio/sounds/block/stone/break/stone1.ogg")
-        .load("block.dig.cobble.2", "assets/audio/sounds/block/stone/break/stone2.ogg")
-        .load("block.dig.cobble.3", "assets/audio/sounds/block/stone/break/stone3.ogg")
-        .load("block.dig.cobble.4", "assets/audio/sounds/block/stone/break/stone4.ogg")
-        .load("block.dig.grass.1", "assets/audio/sounds/block/grass/break/grass1.ogg")
-        .load("block.dig.grass.2", "assets/audio/sounds/block/grass/break/grass2.ogg")
-        .load("block.dig.grass.3", "assets/audio/sounds/block/grass/break/grass3.ogg")
-        .load("block.dig.grass.4", "assets/audio/sounds/block/grass/break/grass4.ogg")
-        .load("block.dig.dirt.1", "assets/audio/sounds/block/dirt/break/dirt1.ogg")
-        .load("block.dig.dirt.2", "assets/audio/sounds/block/dirt/break/dirt2.ogg")
-        .load("block.dig.dirt.3", "assets/audio/sounds/block/dirt/break/dirt3.ogg")
-        .load("block.dig.dirt.4", "assets/audio/sounds/block/dirt/break/dirt4.ogg")
-        .load("pop", "assets/audio/sounds/misc/pop.opus");
+
+    std::ifstream soundFiles{ "assets/data/sounds.json" };
+    nlohmann::json const soundData = nlohmann::json::parse(soundFiles);
+    for (auto const& sound : soundData["sounds"]) {
+        audioResourceManager.load(sound["name"], sound["path"]);
+    }
 }
 
 Dim2d getWindowSize(AppContext& ctx)

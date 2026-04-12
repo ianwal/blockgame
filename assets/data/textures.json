@@ -1,0 +1,29 @@
+{
+  "textures":
+  [
+    {
+      "name": "block.cobble",
+      "path": "assets/textures/cobble.png"
+    },
+    {
+      "name": "block.grass",
+      "path": "assets/textures/grass.png"
+    },
+    {
+      "name": "block.grass.side",
+      "path": "assets/textures/grass-side.png"
+    },
+    {
+      "name": "block.dirt",
+      "path": "assets/textures/dirt.png"
+    },
+    {
+      "name": "block.lucky",
+      "path": "assets/textures/lucky.png"
+    },
+    {
+      "name": "player.hand",
+      "path": "assets/textures/hand.png"
+    }
+  ]
+}
