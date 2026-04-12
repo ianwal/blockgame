@@ -24,7 +24,7 @@ pacman -Syyu
 pacman -S mingw-w64-ucrt-x86_64-gcc # Select all if prompted
 pacman -S mingw-w64-ucrt-x86_64-python mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-ninja git
 # Game dependencies
-pacman -S mingw-w64-ucrt-x86_64-freetype mingw-w64-ucrt-x86_64-libjpeg-turbo mingw-w64-x86_64-glew mingw-w64-ucrt-x86_64-harfbuzz mingw-w64-ucrt-x86_64-mesa
+pacman -S mingw-w64-ucrt-x86_64-freetype mingw-w64-ucrt-x86_64-libjpeg-turbo mingw-w64-x86_64-glew mingw-w64-ucrt-x86_64-harfbuzz mingw-w64-ucrt-x86_64-mesa mingw-w64-ucrt-x86_64-opusfile mingw-w64-ucrt-x86_64-opus mingw-w64-ucrt-x86_64-libogg
 ```
 
 Init submodules:

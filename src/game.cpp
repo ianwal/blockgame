@@ -375,7 +375,7 @@ void handleDropItemAction(GameContext& game)
         ItemStack const heldItem = heldItemResult.value();
         auto droppedItem         = std::make_unique<EntityDroppedItem>();
         droppedItem->setItemType(heldItem.item);
-        droppedItem->updatePos(game.player.fpCamera.getPos(1.0f) + (game.player.fpCamera.getFront(1.0f) * 0.2f));
+        droppedItem->updatePos(game.player.fpCamera.getPos(1.0f) + (game.player.fpCamera.getFront(1.0f) * 0.3f));
         droppedItem->setVelocity(game.player.fpCamera.getFront(1.0f) * 0.2f);
         game.levelManager.addEntity(std::move(droppedItem));
         game.playerInventory.removeItem(InventorySlot{ 0, game.playerInventory.getCurrentHotbarSlot() }, 1U);

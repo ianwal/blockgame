@@ -1,6 +1,7 @@
 #include "src/entitydroppeditem.h"
 
 #include "src/aabb.h"
+#include "src/audio.h"
 #include "src/entity.h"
 #include "src/game.h"
 #include "src/logger.h"
@@ -104,10 +105,15 @@ void EntityDroppedItem::tick()
     //////////////////
 
     // Block Pickup logic
-    if (GlobalGame::get().player.getAABB().intersects(getAABB())) {
+    if ((ticksAlive > numTicksUntilCanPickup) && GlobalGame::get().player.getAABB().intersects(getAABB())) {
         if (GlobalGame::get().playerInventory.addItem(ItemStack{ itemType, 1 }) == 1U) {
+            playSound2d("pop");
             setDead();
         }
+    }
+
+    if (!isDead()) {
+        ++ticksAlive;
     }
 }
 

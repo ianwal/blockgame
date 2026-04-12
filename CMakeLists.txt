@@ -180,6 +180,7 @@ target_compile_options(${EXECUTABLE_NAME} PRIVATE
     -Wpedantic
 )
 
+# SDL3 options
 set(SDL_X11_XCURSOR OFF CACHE BOOL "" FORCE)
 set(SDL_X11_XINPUT OFF CACHE BOOL "" FORCE)
 set(SDL_X11_XFIXES OFF CACHE BOOL "" FORCE)
@@ -187,6 +188,10 @@ set(SDL_X11_XRANDR OFF CACHE BOOL "" FORCE)
 set(SDL_X11_XSCRNSAVER OFF CACHE BOOL "" FORCE)
 set(SDL_X11_XTEST OFF CACHE BOOL "" FORCE)
 set(SDL_MAIN_USE_CALLBACKS ON CACHE BOOL "" FORCE)
+
+# SDL_mixer options
+set(SDLMIXER_OPUS ON CACHE BOOL "" FORCE)
+set(SDLMIXER_OPUS_SHARED OFF CACHE BOOL "" FORCE)
 
 # Configure SDL by calling its CMake file.
 # we use EXCLUDE_FROM_ALL so that its install targets and configs don't
@@ -325,6 +330,9 @@ if(WIN32)
             "${MSYS2_BIN}/libharfbuzz-0.dll"
             "${MSYS2_BIN}/libiconv-2.dll"
             "${MSYS2_BIN}/libintl-8.dll"
+            "${MSYS2_BIN}/libogg-0.dll"
+            "${MSYS2_BIN}/libopus-0.dll"
+            "${MSYS2_BIN}/libopusfile-0.dll"
             "${MSYS2_BIN}/libpcre2-8-0.dll"
             "${MSYS2_BIN}/libpng16-16.dll"
             "${MSYS2_BIN}/libstdc++-6.dll"

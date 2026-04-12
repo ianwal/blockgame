@@ -61,6 +61,9 @@ private:
     static constexpr float gravityScale{ 0.04 };
 
     ItemType itemType{};
+
+    static constexpr std::uint32_t numTicksUntilCanPickup{ 10 };
+    std::uint32_t ticksAlive{ 0U };
 };
 
 } // namespace bg

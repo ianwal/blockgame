@@ -761,7 +761,7 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
             SDL_Delay(1);
         }
     } catch (const std::exception& e) {
-        logInfo("{}", e.what());
+        logCritical("Uncaught exception in main loop: {}", e.what());
         app.app_quit = SDL_APP_FAILURE;
     }
 

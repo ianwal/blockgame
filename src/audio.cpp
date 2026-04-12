@@ -50,7 +50,12 @@ void playSound2d(std::string const& sound)
 {
     auto soundFile   = App::get().audioResourceManager.get(sound);
     MIX_Audio* audio = MIX_LoadAudioNoCopy(App::get().mixer, soundFile.data(), soundFile.size_bytes(), true);
-    assertr(audio != nullptr);
+    if (audio == nullptr) {
+        logError("Failed to load sound: {}", SDL_GetError());
+        assertr(audio != nullptr);
+        return;
+    }
+
     MIX_SetTrackAudio(App::get().track, audio);
     bool const playResult = MIX_PlayTrack(App::get().track, {});
     if (!playResult) {
