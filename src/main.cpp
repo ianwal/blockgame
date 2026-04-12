@@ -14,6 +14,7 @@
 #include "src/renderer.h"
 #include "src/shaders.h"
 #include "src/time.h"
+#include "src/utils.h"
 
 #include <GL/glew.h>
 #include <SDL3/SDL.h>
@@ -31,11 +32,6 @@
 #include <format>
 #include <string>
 #include <vector>
-
-// clang-format off
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/string_cast.hpp>
-// clang-format on
 
 #ifdef BLOCKGAME_ENABLE_TRACY
 #include <tracy/Tracy.hpp>
@@ -642,7 +638,7 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
 
                 // Load chunks, generating as needed.
                 constexpr std::uint64_t worldSeed = 123;
-                game.chunkManager.updateChunks(game.player.getPos(1.0), game.chunkLoadRadius, worldSeed);
+                game.levelManager.updateChunks(game.player.getPos(1.0), game.chunkLoadRadius, worldSeed);
 
                 // TODO: This is bad. Sneaking should be updated before processing move actions always.
                 if (game.player.isSneaking()) {

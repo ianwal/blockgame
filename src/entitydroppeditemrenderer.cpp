@@ -8,6 +8,7 @@
 #include "src/logger.h"
 #include "src/shaders.h"
 #include "src/time.h"
+#include "src/utils.h"
 
 #include <GL/glew.h>
 #include <SDL3/SDL.h>
@@ -21,12 +22,6 @@
 #ifdef BLOCKGAME_ENABLE_TRACY
 #include <tracy/Tracy.hpp>
 #endif
-
-// clang-format off
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/string_cast.hpp>
-#include <glm/gtx/euler_angles.hpp>
-// clang-format on
 
 namespace bg
 {

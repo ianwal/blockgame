@@ -43,9 +43,16 @@ glm::vec3 getWorldPos(ChunkPos const& chunkPos, glm::vec3 blockOffset)
                       (chunkPos.z * chunkSize) + blockOffset.z };
 }
 
-void ChunkManager::updateChunks(glm::vec3 const& worldPos, std::int32_t const chunkLoadRadius, std::uint64_t const seed)
+ChunkUpdates ChunkManager::updateChunks(glm::vec3 const& worldPos, std::int32_t const chunkLoadRadius,
+                                        std::uint64_t const seed)
 {
     static_cast<void>(seed); // TODO: Use seed for chunk gen.
+
+    // Get the chunks that are currently loaded before any updates.
+    std::vector<ChunkPos> prevLoadedChunks{};
+    prevLoadedChunks.reserve(loadedChunks.size());
+    std::transform(loadedChunks.begin(), loadedChunks.end(), std::back_inserter(prevLoadedChunks),
+                   [](const auto& pair) { return pair.first; });
 
     loadedChunks.clear();
     ChunkPos startChunkPos = getChunkPos(worldPos);
@@ -97,6 +104,27 @@ void ChunkManager::updateChunks(glm::vec3 const& worldPos, std::int32_t const ch
             }
         }
     }
+
+    // Get the chunks that are currently loaded after all updates.
+    std::vector<ChunkPos> currLoadedChunks{};
+    currLoadedChunks.reserve(loadedChunks.size());
+    std::transform(loadedChunks.begin(), loadedChunks.end(), std::back_inserter(currLoadedChunks),
+                   [](const auto& pair) { return pair.first; });
+
+    ChunkUpdates chunkUpdates{};
+    for (auto const& currLoadedChunk : currLoadedChunks) {
+        if (!std::ranges::contains(prevLoadedChunks, currLoadedChunk)) {
+            chunkUpdates.newlyLoadedChunks.push_back(currLoadedChunk);
+        }
+    }
+
+    for (auto const& prevLoadedChunk : prevLoadedChunks) {
+        if (!std::ranges::contains(currLoadedChunks, prevLoadedChunk)) {
+            chunkUpdates.newlyUnloadedChunks.push_back(prevLoadedChunk);
+        }
+    }
+
+    return chunkUpdates;
 }
 
 std::vector<Block const*> ChunkManager::getNearbyBlocks(glm::vec3 const& worldPos, float const radius) const

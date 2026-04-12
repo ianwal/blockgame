@@ -112,6 +112,12 @@ inline std::string to_str(glm::vec3 const& v)
     return ss.str();
 }
 
+/// If an entity has fallen out of the world.
+constexpr bool isOutOfWorld(glm::vec3 const& pos)
+{
+    return pos.y < 0.0f;
+}
+
 struct GameContext {
     GameContext();
 

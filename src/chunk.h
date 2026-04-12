@@ -70,12 +70,17 @@ struct ChunkManagerStats {
     std::uint32_t worldChunkCount{};
 };
 
+struct ChunkUpdates {
+    std::vector<ChunkPos> newlyUnloadedChunks{};
+    std::vector<ChunkPos> newlyLoadedChunks{};
+};
+
 class ChunkManager
 {
 public:
     ChunkManager() = default;
 
-    void updateChunks(glm::vec3 const& worldPos, std::int32_t chunkLoadRadius, std::uint64_t seed);
+    ChunkUpdates updateChunks(glm::vec3 const& worldPos, std::int32_t chunkLoadRadius, std::uint64_t seed);
 
     std::vector<Block const*> getNearbyBlocks(glm::vec3 const& worldPos, float radius) const;
 

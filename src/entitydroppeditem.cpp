@@ -112,6 +112,11 @@ void EntityDroppedItem::tick()
         }
     }
 
+    if (isOutOfWorld(pos)) {
+        logInfo("Entity {} fell out of world at pos: {}", getId(), glm::to_string(pos));
+        setDead();
+    }
+
     if (!isDead()) {
         ++ticksAlive;
     }

@@ -9,6 +9,7 @@
 #include "src/entitydroppeditem.h"
 #include "src/entitydroppeditemrenderer.h"
 #include "src/logger.h"
+#include "src/utils.h"
 
 #include <SDL3/SDL.h>
 #include <glm/glm.hpp>
@@ -18,9 +19,6 @@
 #include <optional>
 #include <random>
 #include <utility>
-
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/string_cast.hpp>
 
 namespace bg
 {

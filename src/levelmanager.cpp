@@ -2,12 +2,15 @@
 
 #include "src/block.h"
 #include "src/game.h"
+#include "src/logger.h"
 
 #include <glm/glm.hpp>
 
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <functional>
+#include <list>
 #include <map>
 #include <memory>
 #include <string>
@@ -20,6 +23,57 @@ void LevelManager::tick()
 {
     for (auto& entity : loadedEntities) {
         entity->tick();
+    }
+}
+
+void LevelManager::updateChunks(glm::vec3 const& worldPos, std::int32_t chunkLoadRadius, std::uint64_t seed)
+{
+    ChunkUpdates const chunkUpdates = GlobalGame::get().chunkManager.updateChunks(worldPos, chunkLoadRadius, seed);
+
+    if (!chunkUpdates.newlyLoadedChunks.empty() || !chunkUpdates.newlyUnloadedChunks.empty()) {
+        // Note: This load/unload code is pretty badly written and poorly optimized.
+
+        // If there's any chunk updates then load any unloaded entities and unload entities in chunks that were
+        // unloaded. Only persistent entities are saved when unloading chunks.
+        std::list<std::unique_ptr<IEntity>> entitiesToUnload{};
+        for (auto& entity : loadedEntities) {
+            assertr(entity != nullptr);
+            ChunkPos const entityChunk = getChunkPos(entity->getPos(1.0f));
+            if (std::ranges::contains(chunkUpdates.newlyUnloadedChunks, entityChunk)) {
+                if (!entity->isPersistent() || entity->isDead()) {
+                    // Non-persistent entities and dead entities are deleted when unloaded.
+                    entity.reset();
+                } else {
+                    // entity is safe to move while iterating over loadedEntities because it doesn't modify
+                    // loadedEntities.
+                    entitiesToUnload.push_back(std::move(entity));
+                }
+            }
+        }
+
+        std::list<std::unique_ptr<IEntity>> entitiesToLoad{};
+        for (auto& entity : unloadedPersistentEntities) {
+            assertr(entity != nullptr);
+            ChunkPos const entityChunk = getChunkPos(entity->getPos(1.0f));
+            if (std::ranges::contains(chunkUpdates.newlyLoadedChunks, entityChunk)) {
+                // Note: This is safe to move while iterating over loadedEntities because it doesn't modify
+                // loadedEntities.
+                entitiesToLoad.push_back(std::move(entity));
+            }
+        }
+
+        // Remove any entities in loadedEntities that are now nullptr due to the unload operation above.
+        std::erase_if(loadedEntities, [](auto& e) { return e == nullptr; });
+
+        // Remove any entities in unloadedPersistentEntities that are now nullptr due to the load operation above.
+        std::erase_if(unloadedPersistentEntities, [](auto& e) { return e == nullptr; });
+
+        for (auto& entity : entitiesToUnload) {
+            unloadedPersistentEntities.push_back(std::move(entity));
+        }
+        for (auto& entity : entitiesToLoad) {
+            loadedEntities.push_back(std::move(entity));
+        }
     }
 }
 

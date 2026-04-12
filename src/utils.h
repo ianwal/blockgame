@@ -2,6 +2,14 @@
 
 #include <glm/glm.hpp>
 
+// Include GLM experimental headers to be used transitively by other files because adding this define in every file is
+// annoying and it adds extra maintenance.
+// clang-format off
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/string_cast.hpp>
+#include <glm/gtx/euler_angles.hpp>
+// clang-format on
+
 namespace bg
 {
 

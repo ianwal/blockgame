@@ -26,6 +26,8 @@ public:
 
     void tick();
 
+    void updateChunks(glm::vec3 const& worldPos, std::int32_t chunkLoadRadius, std::uint64_t seed);
+
     void cleanupDeadEntities();
 
     /// Add callback for when a block is changed.
@@ -48,6 +50,7 @@ private:
     std::vector<OnBlockChangedObserverFn> blockChangeObservers{};
 
     std::vector<std::unique_ptr<IEntity>> loadedEntities{};
+    std::vector<std::unique_ptr<IEntity>> unloadedPersistentEntities{};
 
     EntityId nextUniqueEntityId{};
 };
