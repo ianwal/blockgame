@@ -15,6 +15,7 @@ enum class ItemType : std::uint16_t {
     DIRT_BLOCK,
     LUCKY_BLOCK,
     COBBLE_BLOCK,
+    OAK_BLOCK,
 };
 
 constexpr std::string_view to_string(ItemType itemType)
@@ -28,6 +29,8 @@ constexpr std::string_view to_string(ItemType itemType)
             return "Lucky Block";
         case ItemType::COBBLE_BLOCK:
             return "Cobblestone";
+        case ItemType::OAK_BLOCK:
+            return "Oak Wood";
         default: {
             return "Unknown";
         } break;
@@ -48,6 +51,8 @@ constexpr std::optional<BlockType> toBlockType(ItemType itemType)
             return BlockType::BLOCK_LUCKY;
         case ItemType::COBBLE_BLOCK:
             return BlockType::BLOCK_COBBLE;
+        case ItemType::OAK_BLOCK:
+            return BlockType::BLOCK_OAK;
         default: {
             return std::nullopt;
         } break;
@@ -68,6 +73,8 @@ constexpr std::optional<ItemType> toDroppedItemType(BlockType const blockType)
             return ItemType::LUCKY_BLOCK;
         case BlockType::BLOCK_COBBLE:
             return ItemType::COBBLE_BLOCK;
+        case BlockType::BLOCK_OAK:
+            return ItemType::OAK_BLOCK;
         default: {
             return std::nullopt;
         } break;

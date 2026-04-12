@@ -51,6 +51,10 @@ GLuint getBlockTexture(BlockType type)
             name = "block.dirt";
         } break;
 
+        case BlockType::BLOCK_OAK: {
+            name = "block.oak";
+        } break;
+
         case BlockType::BLOCK_AIR:
         default: {
             // Block type texture not added to lookup table. Add it.
@@ -87,15 +91,15 @@ BlockFaceConfig getBlockFaceConfig(BlockType type)
         } break;
 
         case BlockType::BLOCK_GRASS: {
-            GLuint grass     = bg::TextureResourceManagerSingleton::get().get("block.grass");
-            GLuint grassSide = bg::TextureResourceManagerSingleton::get().get("block.grass.side");
-            GLuint dirt      = bg::TextureResourceManagerSingleton::get().get("block.dirt");
-            config.top       = grass;
-            config.bottom    = dirt;
-            config.front     = grassSide;
-            config.back      = grassSide;
-            config.left      = grassSide;
-            config.right     = grassSide;
+            GLuint grass       = bg::TextureResourceManagerSingleton::get().get("block.grass");
+            GLuint grassSide   = bg::TextureResourceManagerSingleton::get().get("block.grass.side");
+            GLuint grassBottom = bg::TextureResourceManagerSingleton::get().get("block.dirt");
+            config.top         = grass;
+            config.bottom      = grassBottom;
+            config.front       = grassSide;
+            config.back        = grassSide;
+            config.left        = grassSide;
+            config.right       = grassSide;
         } break;
 
         case BlockType::BLOCK_DIRT: {
@@ -106,6 +110,17 @@ BlockFaceConfig getBlockFaceConfig(BlockType type)
             config.back   = dirt;
             config.left   = dirt;
             config.right  = dirt;
+        } break;
+
+        case BlockType::BLOCK_OAK: {
+            GLuint bottom = bg::TextureResourceManagerSingleton::get().get("block.oak.bottom");
+            GLuint side   = bg::TextureResourceManagerSingleton::get().get("block.oak.side");
+            config.top    = bottom;
+            config.bottom = bottom;
+            config.front  = side;
+            config.back   = side;
+            config.left   = side;
+            config.right  = side;
         } break;
 
         case BlockType::BLOCK_AIR:
@@ -156,11 +171,17 @@ std::string getBlockBreakSoundName(BlockType type)
             name = getRandomBlockBreakSoundName(names);
         } break;
 
+        case BlockType::BLOCK_OAK: {
+            static auto names =
+                std::to_array({ std::string_view{ "block.dig.cobble.1" }, std::string_view{ "block.dig.cobble.2" },
+                                std::string_view{ "block.dig.cobble.3" }, std::string_view{ "block.dig.cobble.4" } });
+            name = getRandomBlockBreakSoundName(names);
+        } break;
+
         case BlockType::BLOCK_AIR:
         default: {
             // Block type not added to lookup table. Add it.
-            logError("{} failed. Block type has no texture: {}", __func__, static_cast<int>(type));
-            assertr(false);
+            logError("{} failed. Block type has no sound break name: {}", __func__, static_cast<int>(type));
         } break;
     };
 

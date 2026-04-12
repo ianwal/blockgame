@@ -52,7 +52,6 @@ void playSound2d(std::string const& sound)
     MIX_Audio* audio = MIX_LoadAudioNoCopy(App::get().mixer, soundFile.data(), soundFile.size_bytes(), true);
     if (audio == nullptr) {
         logError("Failed to load sound: {}", SDL_GetError());
-        assertr(audio != nullptr);
         return;
     }
 

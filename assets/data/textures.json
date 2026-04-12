@@ -22,6 +22,18 @@
       "path": "assets/textures/lucky.png"
     },
     {
+      "name": "block.oak",
+      "path": "assets/textures/oak-side.png"
+    },
+    {
+      "name": "block.oak.bottom",
+      "path": "assets/textures/oak-bottom.png"
+    },
+    {
+      "name": "block.oak.side",
+      "path": "assets/textures/oak-side.png"
+    },
+    {
       "name": "player.hand",
       "path": "assets/textures/hand.png"
     }

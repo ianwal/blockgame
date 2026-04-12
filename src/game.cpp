@@ -85,7 +85,7 @@ GameContext::GameContext()
     player.updatePos(glm::vec3{ 0, 100, 0 });
 
     // Add some items
-    playerInventory.addItem(ItemStack{ ItemType::DIRT_BLOCK, 10 });
+    playerInventory.addItem(ItemStack{ ItemType::OAK_BLOCK, 10 });
     playerInventory.addItem(ItemStack{ ItemType::LUCKY_BLOCK, 10 });
 }
 
