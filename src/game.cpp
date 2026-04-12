@@ -82,7 +82,7 @@ GameContext::GameContext()
     entityRendererManager.addRenderer(EntityType::DROPPED_ITEM, std::make_unique<EntityDroppedItemRenderer>());
 
     // Move the player
-    player.updatePos(glm::vec3{ 0, 55, 0 });
+    player.updatePos(glm::vec3{ 0, 100, 0 });
 
     // Add some items
     playerInventory.addItem(ItemStack{ ItemType::DIRT_BLOCK, 10 });
