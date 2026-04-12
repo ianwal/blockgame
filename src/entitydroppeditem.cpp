@@ -33,7 +33,7 @@ void EntityDroppedItem::tick()
     glm::vec3 newPos{};
     auto aabb = getAABB();
     {
-        auto collideCandidates = GlobalGame::get().chunkManager.getNearbyBlocks(pos, 30);
+        auto collideCandidates = GlobalGame::get().chunkManager.getNearbyBlocks(pos, 2);
         for (auto block : collideCandidates) {
             if (block->type == BlockType::BLOCK_AIR) {
                 continue;

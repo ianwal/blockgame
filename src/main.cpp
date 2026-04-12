@@ -737,6 +737,8 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
                 ImGui::Text("%s", std::format("Hand Item: {}", game.playerInventory.getCurrentHeldItem().has_value() ? std::format("{} {}", to_string(game.playerInventory.getCurrentHeldItem().value().item), game.playerInventory.getCurrentHeldItem().value().amount) : std::string{"None"}).c_str());
                 ImGui::Text("%s", std::format("Hotbar Slot: {}", game.playerInventory.getCurrentHotbarSlot()).c_str());
                 ImGui::Text(" ");
+                ImGui::Text("%s", std::format("Loaded Entity Count: {}", game.levelManager.getEntities().size()).c_str());
+                ImGui::Text(" ");
                 ImGui::Text("%s", std::format("Loaded Chunk Count: {}", chunkManagerStats.loadedChunkCount).c_str());
                 ImGui::Text("%s", std::format("World Chunk Count: {}", chunkManagerStats.worldChunkCount).c_str());
                 // clang-format on
