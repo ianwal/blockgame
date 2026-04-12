@@ -62,6 +62,62 @@ GLuint getBlockTexture(BlockType type)
     return bg::TextureResourceManagerSingleton::get().get(name);
 }
 
+BlockFaceConfig getBlockFaceConfig(BlockType type)
+{
+    BlockFaceConfig config{};
+    switch (type) {
+        case BlockType::BLOCK_COBBLE: {
+            GLuint cobble  = bg::TextureResourceManagerSingleton::get().get("block.cobble");
+            config.top     = cobble;
+            config.bottom  = cobble;
+            config.front   = cobble;
+            config.back    = cobble;
+            config.left    = cobble;
+            config.right   = cobble;
+        } break;
+
+        case BlockType::BLOCK_LUCKY: {
+            GLuint lucky   = bg::TextureResourceManagerSingleton::get().get("block.lucky");
+            config.top     = lucky;
+            config.bottom  = lucky;
+            config.front   = lucky;
+            config.back    = lucky;
+            config.left    = lucky;
+            config.right   = lucky;
+        } break;
+
+        case BlockType::BLOCK_GRASS: {
+            GLuint grass   = bg::TextureResourceManagerSingleton::get().get("block.grass");
+            GLuint grassSide    = bg::TextureResourceManagerSingleton::get().get("block.grass.side");
+            GLuint dirt    = bg::TextureResourceManagerSingleton::get().get("block.dirt");
+            config.top     = grass;
+            config.bottom  = dirt;
+            config.front   = grassSide;
+            config.back    = grassSide;
+            config.left    = grassSide;
+            config.right   = grassSide;
+        } break;
+
+        case BlockType::BLOCK_DIRT: {
+            GLuint dirt    = bg::TextureResourceManagerSingleton::get().get("block.dirt");
+            config.top     = dirt;
+            config.bottom  = dirt;
+            config.front   = dirt;
+            config.back    = dirt;
+            config.left    = dirt;
+            config.right   = dirt;
+        } break;
+
+        case BlockType::BLOCK_AIR:
+        default: {
+            logError("{} failed. Block type has no face config: {}", __func__, static_cast<int>(type));
+            assertr(false);
+        } break;
+    };
+
+    return config;
+}
+
 static std::string_view getRandomBlockBreakSoundName(std::span<std::string_view> soundNames)
 {
     static std::mt19937 gen{ std::random_device{}() };

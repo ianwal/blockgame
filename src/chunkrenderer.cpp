@@ -28,53 +28,54 @@ GLuint ChunkRenderer::shaderId;
 GLuint ChunkRenderer::matrixId;
 GLuint ChunkRenderer::vbo;
 std::vector<ChunkPos> ChunkRenderer::dirtyChunks;
-std::unordered_map<ChunkPos, std::map<BlockType, std::vector<glm::vec3>>> ChunkRenderer::blockPosData;
+std::unordered_map<ChunkPos, std::map<BlockType, std::map<BlockFaceConfig, std::vector<glm::vec3>>>>
+    ChunkRenderer::blockPosData;
 
 // clang-format off
 static constexpr GLfloat g_vertex_buffer_data[] = {
-    // X      Y      Z      U     V
-    // Front (z = +0.5)
-    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-    0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-    0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-    0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-    -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-    // Back (z = -0.5)
-    0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-    -0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-    -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-    0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-    -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-    0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-    // Right (x = +0.5)
-    0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-    0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-    0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-    0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-    0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-    0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-    // Left (x = -0.5)
-    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-    -0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-    -0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-    -0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-    // Top (y = +0.5)
-    -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-    0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-    0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-    -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-    0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-    // Bottom (y = -0.5)
-    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-    0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-    0.5f, -0.5f,  0.5f,  1.0f, 1.0f,
-    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-    0.5f, -0.5f,  0.5f,  1.0f, 1.0f,
-    -0.5f, -0.5f,  0.5f,  0.0f, 1.0f,
+    // X      Y      Z      U     V     FaceID
+    // Front (z = +0.5) - Face 0
+    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,  0.0f,
+    0.5f, -0.5f,  0.5f,  1.0f, 0.0f,  0.0f,
+    0.5f,  0.5f,  0.5f,  1.0f, 1.0f,  0.0f,
+    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,  0.0f,
+    0.5f,  0.5f,  0.5f,  1.0f, 1.0f,  0.0f,
+    -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,  0.0f,
+    // Back (z = -0.5) - Face 1
+    0.5f, -0.5f, -0.5f,  0.0f, 0.0f,  1.0f,
+    -0.5f, -0.5f, -0.5f,  1.0f, 0.0f,  1.0f,
+    -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,  1.0f,
+    0.5f, -0.5f, -0.5f,  0.0f, 0.0f,  1.0f,
+    -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,  1.0f,
+    0.5f,  0.5f, -0.5f,  0.0f, 1.0f,  1.0f,
+    // Right (x = +0.5) - Face 2
+    0.5f, -0.5f,  0.5f,  0.0f, 0.0f,  2.0f,
+    0.5f, -0.5f, -0.5f,  1.0f, 0.0f,  2.0f,
+    0.5f,  0.5f, -0.5f,  1.0f, 1.0f,  2.0f,
+    0.5f, -0.5f,  0.5f,  0.0f, 0.0f,  2.0f,
+    0.5f,  0.5f, -0.5f,  1.0f, 1.0f,  2.0f,
+    0.5f,  0.5f,  0.5f,  0.0f, 1.0f,  2.0f,
+    // Left (x = -0.5) - Face 3
+    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,  3.0f,
+    -0.5f, -0.5f,  0.5f,  1.0f, 0.0f,  3.0f,
+    -0.5f,  0.5f,  0.5f,  1.0f, 1.0f,  3.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,  3.0f,
+    -0.5f,  0.5f,  0.5f,  1.0f, 1.0f,  3.0f,
+    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,  3.0f,
+    // Top (y = +0.5) - Face 4
+    -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,  4.0f,
+    0.5f,  0.5f,  0.5f,  1.0f, 0.0f,  4.0f,
+    0.5f,  0.5f, -0.5f,  1.0f, 1.0f,  4.0f,
+    -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,  4.0f,
+    0.5f,  0.5f, -0.5f,  1.0f, 1.0f,  4.0f,
+    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,  4.0f,
+    // Bottom (y = -0.5) - Face 5
+    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,  5.0f,
+    0.5f, -0.5f, -0.5f,  1.0f, 0.0f,  5.0f,
+    0.5f, -0.5f,  0.5f,  1.0f, 1.0f,  5.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,  5.0f,
+    0.5f, -0.5f,  0.5f,  1.0f, 1.0f,  5.0f,
+    -0.5f, -0.5f,  0.5f,  0.0f, 1.0f,  5.0f,
 };
 // clang-format on
 
@@ -89,11 +90,13 @@ void ChunkRenderer::init()
     // cube verts -> vertexbuffer
     glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
     glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
-    constexpr int stride = 5 * sizeof(GLfloat);
+    constexpr int stride = 6 * sizeof(GLfloat);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, nullptr);
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, stride, (void*) (3 * sizeof(GLfloat)));
+    glEnableVertexAttribArray(3);
+    glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, stride, (void*) (5 * sizeof(GLfloat)));
 
     // instance positions -> vbo
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -132,7 +135,8 @@ void ChunkRenderer::render(AppContext& ctx, ChunkManager const& chunkManager, fl
             if (block.type == BlockType::BLOCK_AIR) {
                 continue;
             }
-            blockPosData[chunkPos][block.type].push_back(glm::vec3(block.pos));
+            BlockFaceConfig faceConfig = getBlockFaceConfig(block.type);
+            blockPosData[chunkPos][block.type][faceConfig].push_back(glm::vec3(block.pos));
         }
     }
     dirtyChunks.clear(); // Chunk data rebuilt, so clear it.
@@ -144,7 +148,8 @@ void ChunkRenderer::render(AppContext& ctx, ChunkManager const& chunkManager, fl
                 if (block.type == BlockType::BLOCK_AIR) {
                     continue;
                 }
-                blockPosData[chunkPos][block.type].push_back(glm::vec3(block.pos));
+                BlockFaceConfig faceConfig = getBlockFaceConfig(block.type);
+                blockPosData[chunkPos][block.type][faceConfig].push_back(glm::vec3(block.pos));
             }
         }
     }
@@ -169,14 +174,26 @@ void ChunkRenderer::render(AppContext& ctx, ChunkManager const& chunkManager, fl
     glActiveTexture(GL_TEXTURE0);
 
     for (auto const& [chunkPos, data] : blockPosData) {
-        for (auto& [type, positions] : data) {
-            if (positions.empty()) {
-                continue;
+        for (auto& [type, faceConfigData] : data) {
+            for (auto& [faceConfig, positions] : faceConfigData) {
+                if (positions.empty()) {
+                    continue;
+                }
+                glBindBuffer(GL_ARRAY_BUFFER, vbo);
+                glBufferData(GL_ARRAY_BUFFER, positions.size() * sizeof(glm::vec3), positions.data(), GL_DYNAMIC_DRAW);
+
+                // Face textures and their vertex ranges
+                // Front face (0), Back face (1), Right face (2), Left face (3), Top face (4), Bottom face (5)
+                const GLuint faceTextures[] = { faceConfig.front, faceConfig.back,   faceConfig.right,
+                                                faceConfig.left,  faceConfig.top,    faceConfig.bottom };
+                const int faceStartVertices[] = { 0, 6, 12, 18, 24, 30 };
+                const int verticesPerFace    = 6;
+
+                for (int face = 0; face < 6; ++face) {
+                    glBindTexture(GL_TEXTURE_2D, faceTextures[face]);
+                    glDrawArraysInstanced(GL_TRIANGLES, faceStartVertices[face], verticesPerFace, positions.size());
+                }
             }
-            glBindTexture(GL_TEXTURE_2D, getBlockTexture(type));
-            glBindBuffer(GL_ARRAY_BUFFER, vbo);
-            glBufferData(GL_ARRAY_BUFFER, positions.size() * sizeof(glm::vec3), positions.data(), GL_DYNAMIC_DRAW);
-            glDrawArraysInstanced(GL_TRIANGLES, 0, 36, positions.size());
         }
     }
 

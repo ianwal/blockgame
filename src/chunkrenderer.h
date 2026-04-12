@@ -35,9 +35,10 @@ private:
 
     /// Map of chunks to render and the blocks inside of them.
     ///
-    /// The second map is keyed by the block type because blocks are rendered in batches by their block type for each
-    /// chunk.
-    static std::unordered_map<ChunkPos, std::map<BlockType, std::vector<glm::vec3>>> blockPosData;
+    /// The second map is keyed by block type, and the third by face textures.
+    /// Blocks are rendered in batches by their block type and face texture configuration for each chunk.
+    static std::unordered_map<ChunkPos, std::map<BlockType, std::map<BlockFaceConfig, std::vector<glm::vec3>>>>
+        blockPosData;
 };
 
 } // namespace bg
