@@ -641,12 +641,7 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
 
                 game.player.updatePos(game.player.getPos(1.0));
 
-                // Load chunks, generating as needed.
-                static std::mt19937 gen{ std::random_device{}() };
-                static std::uniform_int_distribution<> dist(0, 10000000);
-                static std::uint64_t worldSeed = dist(gen);
-
-                game.levelManager.updateChunks(game.player.getPos(1.0), game.chunkLoadRadius, worldSeed);
+                game.levelManager.updateChunks(game.player.getPos(1.0), game.chunkLoadRadius, game.worldSeed);
 
                 // TODO: This is bad. Sneaking should be updated before processing move actions always.
                 if (game.player.isSneaking()) {

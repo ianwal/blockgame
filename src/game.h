@@ -142,6 +142,8 @@ struct GameContext {
 
     PlayerInventory playerInventory{};
 
+    std::uint64_t worldSeed{};
+
     std::unique_ptr<EventBuffer> input_event_buffer{ std::make_unique<EventBuffer>() };
     InputManager input_manager{};
     std::vector<InputAction> pendingActions{};

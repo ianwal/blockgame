@@ -2,11 +2,13 @@
 
 #include "src/common.h"
 #include "src/lib/json.hpp"
+#include "src/logger.h"
 
 #include <SDL3/SDL.h>
 
 #include <cassert>
 #include <fstream>
+#include <random>
 
 namespace bg
 {
@@ -22,6 +24,12 @@ AppContext::AppContext(SDL_Window* window) : window{ window }
     for (auto const& sound : soundData["sounds"]) {
         audioResourceManager.load(sound["name"], sound["path"]);
     }
+
+    std::mt19937 gen{ std::random_device{}() };
+    std::uniform_int_distribution<> dist(0, 10000000);
+    std::uint64_t const worldSeed = dist(gen);
+    logInfo("World Seed: {}", worldSeed);
+    game->worldSeed = worldSeed;
 }
 
 Dim2d getWindowSize(AppContext& ctx)
