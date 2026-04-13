@@ -75,6 +75,9 @@ private:
     std::uint32_t swingProgressTicks{ 0 };
     static constexpr std::uint32_t swingDurationTicks{ 6 };
 
+    std::uint32_t footstepProgressTicks{ 0 };
+    static constexpr std::uint32_t footstepDurationTicks{ 12 };
+
     static constexpr float gravityScale{ 0.04 };
 };
 

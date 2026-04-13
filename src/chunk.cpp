@@ -97,7 +97,11 @@ ChunkUpdates ChunkManager::updateChunks(glm::vec3 const& worldPos, std::int32_t 
                                 }
                             } else if (j == surfaceY) {
                                 // The surface.
-                                blockType = BlockType::BLOCK_GRASS;
+                                if (surfaceY >= sealevel) {
+                                    blockType = BlockType::BLOCK_GRASS;
+                                } else {
+                                    blockType = BlockType::BLOCK_DIRT;
+                                }
                             } else if (j > surfaceY) {
                                 // Above the surface.
                                 if (j <= sealevel) {

@@ -1,6 +1,7 @@
 #include "src/player.h"
 
 #include "src/aabb.h"
+#include "src/audio.h"
 #include "src/game.h"
 #include "src/logger.h"
 #include "src/utils.h"
@@ -77,6 +78,10 @@ void Player::tick()
             vel.x = 0;
         }
 
+        if (!grounded) {
+            footstepProgressTicks = footstepDurationTicks - 1;
+        }
+
         grounded = false; // reset before possibly setting below
         if (vel.y != originalVel.y) {
             vel.y = 0;
@@ -114,6 +119,21 @@ void Player::tick()
         glm::vec3 const gravityDir = glm::vec3{ 0.0f, -1.0f, 0.0f };
         static_assert(gravityScale > minVelocityToZero);
         vel += gravityDir * gravityScale;
+
+        // Footsteps
+        if (!isZeroVector(vel)) {
+            if (isGrounded() && ((std::abs(vel.x) > 0.0f) || (std::abs(vel.z) > 0.0f))) {
+                ++footstepProgressTicks;
+                if (footstepProgressTicks >= footstepDurationTicks) {
+                    auto blockStandingOnResult = GlobalGame::get().chunkManager.getBlock(
+                        ivec3{ std::floor(pos.x), std::floor(pos.y) - 1, std::floor(pos.z) });
+                    if (blockStandingOnResult.has_value()) {
+                        playSound2d(getBlockBreakSoundName(blockStandingOnResult.value().type));
+                    }
+                    footstepProgressTicks = 0;
+                }
+            }
+        }
 
         // Add ground resistance
         if (!isZeroVector(vel)) {
