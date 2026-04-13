@@ -1,5 +1,6 @@
 #include "src/chunk.h"
 
+#include "src/assertr.h"
 #include "src/block.h"
 #include "src/lib/PerlinNoise.hpp"
 #include "src/logger.h"
@@ -76,29 +77,38 @@ ChunkUpdates ChunkManager::updateChunks(glm::vec3 const& worldPos, std::int32_t 
                     for (int j = 0; j < chunkHeight; ++j) {
                         for (int k = 0; k < chunkSize; ++k) {
                             Block block{};
-                            block.pos                  = getWorldPos(targetChunkPos, glm::vec3{ i, j, k });
+                            block.pos                  = getWorldPos(targetChunkPos, ivec3{ i, j, k });
                             float const smoothFactor   = 40.0f;
                             std::int32_t const octaves = 3;
-                            float const surfaceY =
+                            auto const surfaceY        = static_cast<std::int32_t>(
                                 75 + (perlin.octave2D_11(static_cast<float>(block.pos.x) / smoothFactor,
-                                                         static_cast<float>(block.pos.z) / smoothFactor, octaves) *
-                                      20.0f);
+                                                                static_cast<float>(block.pos.z) / smoothFactor, octaves) *
+                                      20.0f));
 
                             if (block.pos.y < surfaceY) {
-                                if ((block.pos.y < surfaceY - 1.0) && (block.pos.y > surfaceY - 2.0)) {
+                                // Below the surface.
+                                if (block.pos.y > (surfaceY - 5)) {
                                     block.type = BlockType::BLOCK_DIRT;
-                                } else if (block.pos.y < (surfaceY - 5.0)) {
+                                } else if (block.pos.y <= (surfaceY - 5)) {
                                     block.type = BlockType::BLOCK_COBBLE;
                                 } else {
-                                    block.type = BlockType::BLOCK_GRASS;
+                                    block.type = BlockType::BLOCK_AIR;
                                 }
+                            } else if (block.pos.y == surfaceY) {
+                                // The surface.
+                                block.type = BlockType::BLOCK_GRASS;
                             } else {
+                                // Above the surface.
                                 block.type = BlockType::BLOCK_AIR;
                             }
                             chunk->blocks.push_back(block);
                         }
                     }
                 }
+
+                assertr(chunk->blocks.size() == (chunkSize * chunkHeight * chunkSize),
+                        std::format("Chunk had {} blocks but should have {} blocks", chunk->blocks.size(),
+                                    (chunkSize * chunkHeight * chunkSize)));
                 allChunks.insert({ targetChunkPos, std::move(chunk) });
             }
         }
