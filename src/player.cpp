@@ -45,30 +45,30 @@ void Player::tick()
         auto aabb = getAABB();
         {
             auto collideCandidates = GlobalGame::get().chunkManager.getNearbyBlocks(pos, 30);
-            for (auto block : collideCandidates) {
-                if (block->type == BlockType::BLOCK_AIR) {
+            for (auto const& block : collideCandidates) {
+                if (block.type == BlockType::BLOCK_AIR) {
                     continue;
                 }
 
-                vel.y = aabb.getNearestClipY(getBlockAABB(*block), vel.y);
+                vel.y = aabb.getNearestClipY(getBlockAABB(block), vel.y);
             }
             aabb.translate(glm::vec3{ 0.0f, vel.y, 0.0f });
 
-            for (auto block : collideCandidates) {
-                if (block->type == BlockType::BLOCK_AIR) {
+            for (auto const& block : collideCandidates) {
+                if (block.type == BlockType::BLOCK_AIR) {
                     continue;
                 }
 
-                vel.x = aabb.getNearestClipX(getBlockAABB(*block), vel.x);
+                vel.x = aabb.getNearestClipX(getBlockAABB(block), vel.x);
             }
             aabb.translate(glm::vec3{ vel.x, 0.0f, 0.0f });
 
-            for (auto block : collideCandidates) {
-                if (block->type == BlockType::BLOCK_AIR) {
+            for (auto const& block : collideCandidates) {
+                if (block.type == BlockType::BLOCK_AIR) {
                     continue;
                 }
 
-                vel.z = aabb.getNearestClipZ(getBlockAABB(*block), vel.z);
+                vel.z = aabb.getNearestClipZ(getBlockAABB(block), vel.z);
             }
             aabb.translate(glm::vec3{ 0.0f, 0.0f, vel.z });
         }

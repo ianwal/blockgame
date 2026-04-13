@@ -131,23 +131,31 @@ void ChunkRenderer::render(AppContext& ctx, ChunkManager const& chunkManager, fl
         blockPosData[chunkPos] = {};
 
         assertr(chunkManager.loadedChunks.contains(chunkPos));
-        for (auto const& block : chunkManager.loadedChunks.find(chunkPos)->second->blocks) {
+        auto const& chunk = *chunkManager.loadedChunks.find(chunkPos)->second;
+        for (std::size_t i = 0; i < chunk.blocks.size(); ++i) {
+            Block block{};
+            block.type = chunk.blocks[i];
             if (block.type == BlockType::BLOCK_AIR) {
                 continue;
             }
+            block.pos                  = ChunkManager::getBlockWorldPos(chunkPos, i);
             BlockFaceConfig faceConfig = getBlockFaceConfig(block.type);
             blockPosData[chunkPos][block.type][faceConfig].push_back(glm::vec3(block.pos));
         }
     }
+
     dirtyChunks.clear(); // Chunk data rebuilt, so clear it.
 
     // Get any loaded chunks
     for (auto const& [chunkPos, chunk] : chunkManager.loadedChunks) {
         if (!blockPosData.contains(chunkPos)) {
-            for (auto const& block : chunkManager.loadedChunks.find(chunkPos)->second->blocks) {
+            for (std::size_t i = 0; i < chunk->blocks.size(); ++i) {
+                Block block{};
+                block.type = chunk->blocks[i];
                 if (block.type == BlockType::BLOCK_AIR) {
                     continue;
                 }
+                block.pos                  = ChunkManager::getBlockWorldPos(chunkPos, i);
                 BlockFaceConfig faceConfig = getBlockFaceConfig(block.type);
                 blockPosData[chunkPos][block.type][faceConfig].push_back(glm::vec3(block.pos));
             }

@@ -82,7 +82,7 @@ public:
 
     ChunkUpdates updateChunks(glm::vec3 const& worldPos, std::int32_t chunkLoadRadius, std::uint64_t seed);
 
-    std::vector<Block const*> getNearbyBlocks(glm::vec3 const& worldPos, float radius) const;
+    std::vector<Block> getNearbyBlocks(glm::vec3 const& worldPos, float radius) const;
 
     /// Return the block if the chunk that holds the block is currently loaded.
     std::optional<Block> getBlock(ivec3 const& blockPos) const;
@@ -95,8 +95,38 @@ public:
 
 private:
     struct Chunk {
-        std::vector<Block> blocks{};
+        /// Blocks as a 1D array.
+        ///
+        /// The index of the block corresponds with the block position.
+        std::vector<BlockType> blocks{};
     };
+
+    /// Get the type of the target block.
+    [[nodiscard]] static BlockType& getBlockType(ChunkPos chunkPos, Chunk& chunk, ivec3 const& blockWorldPos)
+    {
+        std::int32_t localX = blockWorldPos.x - (chunkPos.x * chunkSize);
+        std::int32_t localY = blockWorldPos.y;
+        std::int32_t localZ = blockWorldPos.z - (chunkPos.z * chunkSize);
+        return chunk.blocks[localX + chunkSize * (localZ + chunkSize * localY)];
+    }
+
+    /// Get the type of the target block.
+    [[nodiscard]] static BlockType getBlockType(ChunkPos chunkPos, Chunk const& chunk, ivec3 const& blockWorldPos)
+    {
+        std::int32_t localX = blockWorldPos.x - (chunkPos.x * chunkSize);
+        std::int32_t localY = blockWorldPos.y;
+        std::int32_t localZ = blockWorldPos.z - (chunkPos.z * chunkSize);
+        return chunk.blocks[localX + chunkSize * (localZ + chunkSize * localY)];
+    }
+
+    [[nodiscard]] static ivec3 getBlockWorldPos(ChunkPos chunkPos, std::size_t index)
+    {
+        int localY = index / (chunkSize * chunkSize);
+        int localZ = (index / chunkSize) % chunkSize;
+        int localX = index % chunkSize;
+
+        return { localX + chunkPos.x * chunkSize, localY, localZ + chunkPos.z * chunkSize };
+    }
 
     std::unordered_map<ChunkPos, Chunk*>
         loadedChunks{}; // TODO: Make pointer to the iterator in allChunks and refresh every tick?

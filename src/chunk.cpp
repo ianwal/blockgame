@@ -68,40 +68,39 @@ ChunkUpdates ChunkManager::updateChunks(glm::vec3 const& worldPos, std::int32_t 
             if (allChunks.contains(targetChunkPos)) {
                 loadedChunks.insert({ targetChunkPos, allChunks[targetChunkPos].get() });
             } else {
-                // Generate chunk
+                // If chunk is not loaded then generate it.
                 // logDebug("Generating chunk: {}", to_string(targetChunkPos));
 
-                // If chunk is not loaded, generate it.
-                auto chunk = std::make_unique<Chunk>();
+                auto chunk    = std::make_unique<Chunk>();
+                chunk->blocks = std::vector<BlockType>(chunkSize * chunkSize * chunkHeight, BlockType::BLOCK_AIR);
                 for (int i = 0; i < chunkSize; ++i) {
                     for (int j = 0; j < chunkHeight; ++j) {
                         for (int k = 0; k < chunkSize; ++k) {
-                            Block block{};
-                            block.pos                  = getWorldPos(targetChunkPos, ivec3{ i, j, k });
+                            auto pos                   = getWorldPos(targetChunkPos, ivec3{ i, j, k });
                             float const smoothFactor   = 40.0f;
                             std::int32_t const octaves = 3;
                             auto const surfaceY        = static_cast<std::int32_t>(
-                                75 + (perlin.octave2D_11(static_cast<float>(block.pos.x) / smoothFactor,
-                                                                static_cast<float>(block.pos.z) / smoothFactor, octaves) *
+                                75 + (perlin.octave2D_11(static_cast<float>(pos.x) / smoothFactor,
+                                                                static_cast<float>(pos.z) / smoothFactor, octaves) *
                                       20.0f));
+                            auto& blockType = getBlockType(targetChunkPos, *chunk, pos);
 
-                            if (block.pos.y < surfaceY) {
+                            if (j < surfaceY) {
                                 // Below the surface.
-                                if (block.pos.y > (surfaceY - 5)) {
-                                    block.type = BlockType::BLOCK_DIRT;
-                                } else if (block.pos.y <= (surfaceY - 5)) {
-                                    block.type = BlockType::BLOCK_COBBLE;
+                                if (j > (surfaceY - 5)) {
+                                    blockType = BlockType::BLOCK_DIRT;
+                                } else if (j <= (surfaceY - 5)) {
+                                    blockType = BlockType::BLOCK_COBBLE;
                                 } else {
-                                    block.type = BlockType::BLOCK_AIR;
+                                    blockType = BlockType::BLOCK_AIR;
                                 }
-                            } else if (block.pos.y == surfaceY) {
+                            } else if (j == surfaceY) {
                                 // The surface.
-                                block.type = BlockType::BLOCK_GRASS;
+                                blockType = BlockType::BLOCK_GRASS;
                             } else {
                                 // Above the surface.
-                                block.type = BlockType::BLOCK_AIR;
+                                blockType = BlockType::BLOCK_AIR;
                             }
-                            chunk->blocks.push_back(block);
                         }
                     }
                 }
@@ -136,9 +135,9 @@ ChunkUpdates ChunkManager::updateChunks(glm::vec3 const& worldPos, std::int32_t 
     return chunkUpdates;
 }
 
-std::vector<Block const*> ChunkManager::getNearbyBlocks(glm::vec3 const& worldPos, float const radius) const
+std::vector<Block> ChunkManager::getNearbyBlocks(glm::vec3 const& worldPos, float const radius) const
 {
-    std::vector<Block const*> result{};
+    std::vector<Block> result{};
 
     glm::vec3 const minPos = worldPos - radius;
     glm::vec3 const maxPos = worldPos + radius;
@@ -153,9 +152,13 @@ std::vector<Block const*> ChunkManager::getNearbyBlocks(glm::vec3 const& worldPo
             if (it == loadedChunks.end()) {
                 continue;
             }
-            for (Block const& block : it->second->blocks) {
+            // TODO: There's no need to iterate over every block. The exact blocks can be calculated beforehand.
+            for (std::size_t i = 0; i < it->second->blocks.size(); ++i) {
+                Block block{};
+                block.pos = getBlockWorldPos(chunkPos, i);
                 if (glm::length(tovec3(block.pos) - worldPos) < radius) {
-                    result.push_back(&block);
+                    block.type = getBlockType(chunkPos, *it->second, block.pos);
+                    result.push_back(block);
                 }
             }
         }
@@ -166,23 +169,19 @@ std::vector<Block const*> ChunkManager::getNearbyBlocks(glm::vec3 const& worldPo
 
 std::optional<Block> ChunkManager::getBlock(ivec3 const& blockPos) const
 {
-    Block result{};
+    ChunkPos const chunkPos = getChunkPos(blockPos);
 
-    ChunkPos const chunk = getChunkPos(blockPos);
-
-    auto it = loadedChunks.find(chunk);
-    if (it == loadedChunks.end()) {
+    auto chunkIt = loadedChunks.find(chunkPos);
+    if (chunkIt == loadedChunks.end()) {
         // Chunk not loaded.
         return std::nullopt;
     }
 
-    for (Block const& block : it->second->blocks) {
-        if (block.pos == blockPos) {
-            return block;
-        }
-    }
-
-    return std::nullopt;
+    Block block{};
+    block.pos          = blockPos;
+    Chunk const& chunk = *chunkIt->second;
+    block.type         = getBlockType(chunkPos, chunk, blockPos);
+    return block;
 }
 
 bool ChunkManager::placeBlock(Block const& block, BlockType& oldBlockTypeOut)
@@ -193,28 +192,22 @@ bool ChunkManager::placeBlock(Block const& block, BlockType& oldBlockTypeOut)
     }
 
     // Get the chunk that the block is in
-    ChunkPos chunkPos = getChunkPos(block.pos);
-    auto chunkIt      = loadedChunks.find(chunkPos);
+    ChunkPos const chunkPos = getChunkPos(block.pos);
+    auto chunkIt            = loadedChunks.find(chunkPos);
     if (chunkIt == loadedChunks.end()) {
         logWarn("Tried to place a block but block was not found in loaded chunks.");
         return false;
     }
 
-    auto& chunkBlocks = chunkIt->second->blocks;
-    auto it           = std::find_if(chunkBlocks.begin(), chunkBlocks.end(),
-                                     [block](Block const& targetBlock) { return targetBlock.pos == block.pos; });
-    if (it == chunkBlocks.end()) {
-        logWarn("Tried to place a block that doesn't exist or isn't currently loaded.");
-        return false;
-    }
-
+    Chunk& chunk    = *chunkIt->second;
+    oldBlockTypeOut = getBlockType(chunkPos, chunk, block.pos);
     // Check type again in case caller didn't pass in the correct block type.
     // Replacing a non-air block is not allowed.
-    if (it->type != BlockType::BLOCK_AIR) {
+    if (oldBlockTypeOut != BlockType::BLOCK_AIR) {
         return false;
     }
 
-    it->type = block.type;
+    getBlockType(chunkPos, chunk, block.pos) = block.type;
     return true;
 }
 
@@ -226,28 +219,21 @@ bool ChunkManager::removeBlock(Block const& block)
     }
 
     // Get the chunk that the block is in
-    ChunkPos chunkPos = getChunkPos(block.pos);
-    auto chunkIt      = loadedChunks.find(chunkPos);
+    ChunkPos const chunkPos = getChunkPos(block.pos);
+    auto chunkIt            = loadedChunks.find(chunkPos);
     if (chunkIt == loadedChunks.end()) {
-        logWarn("Tried to remove block but block was not found in loaded chunks.");
+        logWarn("Tried to place a block but block was not found in loaded chunks.");
         return false;
     }
 
-    auto& chunkBlocks = chunkIt->second->blocks;
-    auto it           = std::find_if(chunkBlocks.begin(), chunkBlocks.end(),
-                                     [block](Block const& targetBlock) { return targetBlock.pos == block.pos; });
-    if (it == chunkBlocks.end()) {
-        logWarn("Tried to remove block that doesn't exist or isn't currently loaded.");
-        return false;
-    }
-
-    // Check type again in case caller didn't pass in the correct block type.
+    Chunk& chunk = *chunkIt->second;
+    // Check type in case caller didn't pass in the correct block type.
     // Removing air blocks is not allowed.
-    if (it->type == BlockType::BLOCK_AIR) {
+    if (getBlockType(chunkPos, chunk, block.pos) == BlockType::BLOCK_AIR) {
         return false;
     }
 
-    it->type = BlockType::BLOCK_AIR;
+    getBlockType(chunkPos, chunk, block.pos) = BlockType::BLOCK_AIR;
     return true;
 }
 

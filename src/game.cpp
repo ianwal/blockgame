@@ -104,7 +104,7 @@ std::optional<Block> getBlockPlayerIsLookingAt(ChunkManager const& chunkManager,
     glm::vec3 rayDir    = glm::normalize(camera.getFront(1.0));
 
     for (auto block_it = blockCandidates.begin(); block_it != blockCandidates.end(); ++block_it) {
-        auto const& block = **block_it;
+        auto const& block = *block_it;
         if (block.type == BlockType::BLOCK_AIR) {
             continue;
         }
@@ -122,7 +122,7 @@ std::optional<Block> getBlockPlayerIsLookingAt(ChunkManager const& chunkManager,
     }
 
     if (hitBlock != blockCandidates.end()) {
-        return **hitBlock;
+        return *hitBlock;
     }
     return std::nullopt;
 }
@@ -143,7 +143,7 @@ std::optional<ivec3> getBlockPosToPlaceAt(ChunkManager const& chunkManager, Play
     glm::vec3 rayDir    = glm::normalize(camera.getFront(1.0));
 
     for (auto block_it = blockCandidates.begin(); block_it != blockCandidates.end(); ++block_it) {
-        auto const& block = **block_it;
+        auto const& block = *block_it;
         if (block.type == BlockType::BLOCK_AIR) {
             continue;
         }
@@ -165,7 +165,7 @@ std::optional<ivec3> getBlockPosToPlaceAt(ChunkManager const& chunkManager, Play
         return std::nullopt;
     }
 
-    auto pos = (*hitBlock)->pos;
+    auto pos = hitBlock->pos;
     // Note: This assumes block size is 1.0 because the normal is 1.0
     return toBlockPos(glm::vec3{ pos.x, pos.y, pos.z } + normal);
 }
