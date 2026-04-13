@@ -105,7 +105,7 @@ std::optional<Block> getBlockPlayerIsLookingAt(ChunkManager const& chunkManager,
 
     for (auto block_it = blockCandidates.begin(); block_it != blockCandidates.end(); ++block_it) {
         auto const& block = *block_it;
-        if (block.type == BlockType::BLOCK_AIR) {
+        if (block.type == BlockType::BLOCK_AIR || block.type == BlockType::BLOCK_WATER) {
             continue;
         }
 
@@ -144,7 +144,7 @@ std::optional<ivec3> getBlockPosToPlaceAt(ChunkManager const& chunkManager, Play
 
     for (auto block_it = blockCandidates.begin(); block_it != blockCandidates.end(); ++block_it) {
         auto const& block = *block_it;
-        if (block.type == BlockType::BLOCK_AIR) {
+        if (block.type == BlockType::BLOCK_AIR || block.type == BlockType::BLOCK_WATER) {
             continue;
         }
 

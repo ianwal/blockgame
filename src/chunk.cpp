@@ -85,6 +85,7 @@ ChunkUpdates ChunkManager::updateChunks(glm::vec3 const& worldPos, std::int32_t 
                                       20.0f));
                             auto& blockType = getBlockType(targetChunkPos, *chunk, pos);
 
+                            std::int32_t const sealevel = 70;
                             if (j < surfaceY) {
                                 // Below the surface.
                                 if (j > (surfaceY - 5)) {
@@ -99,7 +100,7 @@ ChunkUpdates ChunkManager::updateChunks(glm::vec3 const& worldPos, std::int32_t 
                                 blockType = BlockType::BLOCK_GRASS;
                             } else if (j > surfaceY) {
                                 // Above the surface.
-                                if (surfaceY < 60 && j < 62) {
+                                if (j <= sealevel) {
                                     blockType = BlockType::BLOCK_WATER;
                                 } else {
                                     blockType = BlockType::BLOCK_AIR;
@@ -207,7 +208,7 @@ bool ChunkManager::placeBlock(Block const& block, BlockType& oldBlockTypeOut)
     oldBlockTypeOut = getBlockType(chunkPos, chunk, block.pos);
     // Check type again in case caller didn't pass in the correct block type.
     // Replacing a non-air block is not allowed.
-    if (oldBlockTypeOut != BlockType::BLOCK_AIR || oldBlockTypeOut != BlockType::BLOCK_WATER) {
+    if (oldBlockTypeOut != BlockType::BLOCK_AIR && oldBlockTypeOut != BlockType::BLOCK_WATER) {
         return false;
     }
 
@@ -234,7 +235,7 @@ bool ChunkManager::removeBlock(Block const& block)
     // Check type in case caller didn't pass in the correct block type.
     // Removing certain blocks is not allowed.
     auto const oldBlockType = getBlockType(chunkPos, chunk, block.pos);
-    if (oldBlockType == BlockType::BLOCK_AIR || oldBlockType == BlockType::BLOCK_WATER) {
+    if (oldBlockType == BlockType::BLOCK_AIR && oldBlockType == BlockType::BLOCK_WATER) {
         return false;
     }
 
