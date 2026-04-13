@@ -3,51 +3,51 @@
   [
     {
       "name": "block.dig.cobble.1",
-      "path": "assets/audio/sounds/block/stone/break/stone1.ogg"
+      "path": "assets/audio/sounds/block/stone/break/stone1.opus"
     },
     {
       "name": "block.dig.cobble.2",
-      "path": "assets/audio/sounds/block/stone/break/stone2.ogg"
+      "path": "assets/audio/sounds/block/stone/break/stone2.opus"
     },
     {
       "name": "block.dig.cobble.3",
-      "path": "assets/audio/sounds/block/stone/break/stone3.ogg"
+      "path": "assets/audio/sounds/block/stone/break/stone3.opus"
     },
     {
       "name": "block.dig.cobble.4",
-      "path": "assets/audio/sounds/block/stone/break/stone4.ogg"
+      "path": "assets/audio/sounds/block/stone/break/stone4.opus"
     },
     {
       "name": "block.dig.grass.1",
-      "path": "assets/audio/sounds/block/grass/break/grass1.ogg"
+      "path": "assets/audio/sounds/block/grass/break/grass1.opus"
     },
     {
       "name": "block.dig.grass.2",
-      "path": "assets/audio/sounds/block/grass/break/grass2.ogg"
+      "path": "assets/audio/sounds/block/grass/break/grass2.opus"
     },
     {
       "name": "block.dig.grass.3",
-      "path": "assets/audio/sounds/block/grass/break/grass3.ogg"
+      "path": "assets/audio/sounds/block/grass/break/grass3.opus"
     },
     {
       "name": "block.dig.grass.4",
-      "path": "assets/audio/sounds/block/grass/break/grass4.ogg"
+      "path": "assets/audio/sounds/block/grass/break/grass4.opus"
     },
     {
       "name": "block.dig.dirt.1",
-      "path": "assets/audio/sounds/block/dirt/break/dirt1.ogg"
+      "path": "assets/audio/sounds/block/dirt/break/dirt1.opus"
     },
     {
       "name": "block.dig.dirt.2",
-      "path": "assets/audio/sounds/block/dirt/break/dirt2.ogg"
+      "path": "assets/audio/sounds/block/dirt/break/dirt2.opus"
     },
     {
       "name": "block.dig.dirt.3",
-      "path": "assets/audio/sounds/block/dirt/break/dirt3.ogg"
+      "path": "assets/audio/sounds/block/dirt/break/dirt3.opus"
     },
     {
       "name": "block.dig.dirt.4",
-      "path": "assets/audio/sounds/block/dirt/break/dirt4.ogg"
+      "path": "assets/audio/sounds/block/dirt/break/dirt4.opus"
     },
     {
       "name": "pop",
