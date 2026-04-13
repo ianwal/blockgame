@@ -14,11 +14,13 @@ namespace bg
 
 enum class BlockType : std::uint16_t {
     BLOCK_AIR = 0, ///< Placeholder, not really a block.
+    BLOCK_STONE,
     BLOCK_COBBLE,
     BLOCK_GRASS,
     BLOCK_DIRT,
     BLOCK_LUCKY,
     BLOCK_OAK,
+    BLOCK_WATER,
 
     NUM_BLOCK_TYPES, ///< Meta
 };

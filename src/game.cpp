@@ -177,8 +177,11 @@ void handleSwingAction(GameContext& game)
         return;
     }
 
-    Block const block = blockResult.value();
-    game.levelManager.removeBlock(block);
+    Block const block            = blockResult.value();
+    bool const removeBlockResult = game.levelManager.removeBlock(block);
+    if (!removeBlockResult) {
+        return;
+    }
     auto droppedItemTypeResult = toDroppedItemType(block.type);
     if (droppedItemTypeResult.has_value()) {
         auto droppedItem = std::make_unique<EntityDroppedItem>();

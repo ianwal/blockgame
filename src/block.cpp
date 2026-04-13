@@ -35,6 +35,10 @@ GLuint getBlockTexture(BlockType type)
 {
     std::string name{};
     switch (type) {
+        case BlockType::BLOCK_STONE: {
+            name = "block.stone";
+        } break;
+
         case BlockType::BLOCK_COBBLE: {
             name = "block.cobble";
         } break;
@@ -55,6 +59,10 @@ GLuint getBlockTexture(BlockType type)
             name = "block.oak";
         } break;
 
+        case BlockType::BLOCK_WATER: {
+            name = "block.water";
+        } break;
+
         case BlockType::BLOCK_AIR:
         default: {
             // Block type texture not added to lookup table. Add it.
@@ -70,6 +78,16 @@ BlockFaceConfig getBlockFaceConfig(BlockType type)
 {
     BlockFaceConfig config{};
     switch (type) {
+        case BlockType::BLOCK_STONE: {
+            GLuint side   = bg::TextureResourceManagerSingleton::get().get("block.stone");
+            config.top    = side;
+            config.bottom = side;
+            config.front  = side;
+            config.back   = side;
+            config.left   = side;
+            config.right  = side;
+        } break;
+
         case BlockType::BLOCK_COBBLE: {
             GLuint cobble = bg::TextureResourceManagerSingleton::get().get("block.cobble");
             config.top    = cobble;
@@ -123,6 +141,16 @@ BlockFaceConfig getBlockFaceConfig(BlockType type)
             config.right  = side;
         } break;
 
+        case BlockType::BLOCK_WATER: {
+            GLuint side   = bg::TextureResourceManagerSingleton::get().get("block.water");
+            config.top    = side;
+            config.bottom = side;
+            config.front  = side;
+            config.back   = side;
+            config.left   = side;
+            config.right  = side;
+        } break;
+
         case BlockType::BLOCK_AIR:
         default: {
             logError("{} failed. Block type has no face config: {}", __func__, static_cast<int>(type));
@@ -144,6 +172,8 @@ std::string getBlockBreakSoundName(BlockType type)
 {
     std::string name{};
     switch (type) {
+        case BlockType::BLOCK_OAK:
+        case BlockType::BLOCK_STONE:
         case BlockType::BLOCK_COBBLE: {
             static auto names =
                 std::to_array({ std::string_view{ "block.dig.cobble.1" }, std::string_view{ "block.dig.cobble.2" },
@@ -171,17 +201,16 @@ std::string getBlockBreakSoundName(BlockType type)
             name = getRandomBlockBreakSoundName(names);
         } break;
 
-        case BlockType::BLOCK_OAK: {
-            static auto names =
-                std::to_array({ std::string_view{ "block.dig.cobble.1" }, std::string_view{ "block.dig.cobble.2" },
-                                std::string_view{ "block.dig.cobble.3" }, std::string_view{ "block.dig.cobble.4" } });
-            name = getRandomBlockBreakSoundName(names);
-        } break;
-
         case BlockType::BLOCK_AIR:
         default: {
             // Block type not added to lookup table. Add it.
-            logError("{} failed. Block type has no sound break name: {}", __func__, static_cast<int>(type));
+            logWarn("{} failed. Using default sounds instead. Block type has no sound break name: {}", __func__,
+                    static_cast<int>(type));
+            static auto names =
+                std::to_array({ std::string_view{ "block.dig.cobble.1" }, std::string_view{ "block.dig.cobble.2" },
+
+                                std::string_view{ "block.dig.cobble.3" }, std::string_view{ "block.dig.cobble.4" } });
+            name = getRandomBlockBreakSoundName(names);
         } break;
     };
 

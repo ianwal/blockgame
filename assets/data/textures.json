@@ -2,6 +2,10 @@
   "textures":
   [
     {
+      "name": "block.stone",
+      "path": "assets/textures/stone.png"
+    },
+    {
       "name": "block.cobble",
       "path": "assets/textures/cobble.png"
     },
@@ -32,6 +36,10 @@
     {
       "name": "block.oak.side",
       "path": "assets/textures/oak-side.png"
+    },
+    {
+      "name": "block.water",
+      "path": "assets/textures/water.png"
     },
     {
       "name": "player.hand",

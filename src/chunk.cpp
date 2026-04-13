@@ -90,16 +90,20 @@ ChunkUpdates ChunkManager::updateChunks(glm::vec3 const& worldPos, std::int32_t 
                                 if (j > (surfaceY - 5)) {
                                     blockType = BlockType::BLOCK_DIRT;
                                 } else if (j <= (surfaceY - 5)) {
-                                    blockType = BlockType::BLOCK_COBBLE;
+                                    blockType = BlockType::BLOCK_STONE;
                                 } else {
                                     blockType = BlockType::BLOCK_AIR;
                                 }
                             } else if (j == surfaceY) {
                                 // The surface.
                                 blockType = BlockType::BLOCK_GRASS;
-                            } else {
+                            } else if (j > surfaceY) {
                                 // Above the surface.
-                                blockType = BlockType::BLOCK_AIR;
+                                if (surfaceY < 60 && j < 62) {
+                                    blockType = BlockType::BLOCK_WATER;
+                                } else {
+                                    blockType = BlockType::BLOCK_AIR;
+                                }
                             }
                         }
                     }
@@ -203,7 +207,7 @@ bool ChunkManager::placeBlock(Block const& block, BlockType& oldBlockTypeOut)
     oldBlockTypeOut = getBlockType(chunkPos, chunk, block.pos);
     // Check type again in case caller didn't pass in the correct block type.
     // Replacing a non-air block is not allowed.
-    if (oldBlockTypeOut != BlockType::BLOCK_AIR) {
+    if (oldBlockTypeOut != BlockType::BLOCK_AIR || oldBlockTypeOut != BlockType::BLOCK_WATER) {
         return false;
     }
 
@@ -213,8 +217,8 @@ bool ChunkManager::placeBlock(Block const& block, BlockType& oldBlockTypeOut)
 
 bool ChunkManager::removeBlock(Block const& block)
 {
-    // Removing air blocks is not allowed.
-    if (block.type == BlockType::BLOCK_AIR) {
+    // Removing certain blocks is not allowed.
+    if (block.type == BlockType::BLOCK_AIR || block.type == BlockType::BLOCK_WATER) {
         return false;
     }
 
@@ -228,8 +232,9 @@ bool ChunkManager::removeBlock(Block const& block)
 
     Chunk& chunk = *chunkIt->second;
     // Check type in case caller didn't pass in the correct block type.
-    // Removing air blocks is not allowed.
-    if (getBlockType(chunkPos, chunk, block.pos) == BlockType::BLOCK_AIR) {
+    // Removing certain blocks is not allowed.
+    auto const oldBlockType = getBlockType(chunkPos, chunk, block.pos);
+    if (oldBlockType == BlockType::BLOCK_AIR || oldBlockType == BlockType::BLOCK_WATER) {
         return false;
     }
 

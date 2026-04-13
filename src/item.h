@@ -11,7 +11,8 @@ namespace bg
 {
 
 enum class ItemType : std::uint16_t {
-    GRASS_BLOCK = 0,
+    STONE_BLOCK = 0,
+    GRASS_BLOCK,
     DIRT_BLOCK,
     LUCKY_BLOCK,
     COBBLE_BLOCK,
@@ -21,6 +22,8 @@ enum class ItemType : std::uint16_t {
 constexpr std::string_view to_string(ItemType itemType)
 {
     switch (itemType) {
+        case ItemType::STONE_BLOCK:
+            return "Stone";
         case ItemType::GRASS_BLOCK:
             return "Grass Block";
         case ItemType::DIRT_BLOCK:
@@ -43,6 +46,8 @@ constexpr std::string_view to_string(ItemType itemType)
 constexpr std::optional<BlockType> toBlockType(ItemType itemType)
 {
     switch (itemType) {
+        case ItemType::STONE_BLOCK:
+            return BlockType::BLOCK_STONE;
         case ItemType::GRASS_BLOCK:
             return BlockType::BLOCK_GRASS;
         case ItemType::DIRT_BLOCK:
@@ -65,6 +70,8 @@ constexpr std::optional<BlockType> toBlockType(ItemType itemType)
 constexpr std::optional<ItemType> toDroppedItemType(BlockType const blockType)
 {
     switch (blockType) {
+        case BlockType::BLOCK_STONE:
+            return ItemType::STONE_BLOCK;
         case BlockType::BLOCK_GRASS:
             return ItemType::GRASS_BLOCK;
         case BlockType::BLOCK_DIRT:
