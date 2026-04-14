@@ -118,7 +118,14 @@ void HandRenderer::render(AppContext& ctx, float partialTick)
 {
     GLint saveProgram{};
     glGetIntegerv(GL_CURRENT_PROGRAM, &saveProgram);
-    glUseProgram(0);
+
+    // Use hand shader instead of cube shader
+    GLuint handShaderId = bg::ShaderManagerSingleton::get().get("hand");
+    glUseProgram(handShaderId);
+
+    auto const heldItemResult = ctx.game->playerInventory.getCurrentHeldItem();
+    auto const renderAsHand   = !heldItemResult.has_value();
+    auto const renderAsBlock  = !renderAsHand && toBlockType(heldItemResult->item).has_value();
 
     auto& camera = ctx.game->player.fpCamera;
 
@@ -138,12 +145,6 @@ void HandRenderer::render(AppContext& ctx, float partialTick)
                                  cameraPos + cameraFront, // Camera looks at this coordinate.
                                  cameraUp                 // Camera head is up (0, -1, 0) would be looking upside-down)
     );
-
-    glMatrixMode(GL_PROJECTION);
-    glLoadMatrixf(glm::value_ptr(projection));
-
-    glMatrixMode(GL_MODELVIEW);
-    glLoadMatrixf(glm::value_ptr(view));
 
     glm::vec3 forward = glm::normalize(camera.getFront(partialTick));
     glm::vec3 right   = glm::normalize(glm::cross(forward, glm::vec3(0, 1, 0)));
@@ -169,24 +170,22 @@ void HandRenderer::render(AppContext& ctx, float partialTick)
     up      = glm::normalize(glm::vec3(rot * glm::vec4(up, 0.0f)));
 
     // hand position in world space
-    glm::vec3 o = camera.getPos(partialTick) + (vel * 0.1f) + (fixedUp * -0.3f) + (fixedRight * 0.4f) +
+    glm::vec3 o = camera.getPos(partialTick) + (vel * 0.1f) + (fixedUp * -0.1f) + (fixedRight * 0.4f) +
                   (forward * 0.05f) + ((right * 0.1f) * (2.0f * -f1)) + up * (-0.6f + f1 * 0.05f - f2 * 0.15f);
-
-    auto const heldItemResult = ctx.game->playerInventory.getCurrentHeldItem();
 
     // size
     float width{};
     float height{};
     float depth{};
-    if (heldItemResult.has_value()) {
-        width  = 0.3f;
-        height = 0.3f;
-        depth  = 0.3f;
-    } else {
-        // Hand
+    if (renderAsHand) {
         width  = 0.3f;
         height = 0.2f;
         depth  = 0.5f;
+    } else {
+        // Block
+        width  = 0.3f;
+        height = 0.3f;
+        depth  = 0.3f;
     }
 
     // basis vectors scaled to cube size
@@ -194,67 +193,64 @@ void HandRenderer::render(AppContext& ctx, float partialTick)
     glm::vec3 u = up * height;
     glm::vec3 f = forward * depth;
 
-    // 8 corners of the oriented cube
-    glm::vec3 ldb = o;
-    glm::vec3 rdb = o + r;
-    glm::vec3 lub = o + u;
-    glm::vec3 rub = o + r + u;
-    glm::vec3 ldf = o + f;
-    glm::vec3 rdf = o + r + f;
-    glm::vec3 luf = o + u + f;
-    glm::vec3 ruf = o + r + u + f;
+    glm::mat4 model{};
+    if (renderAsBlock)
+        // If rendering as block, rotate by 90 degrees so that the top of the block the right way correctly.
+        // TODO: This might not actually be correct, it might need to shift all the faces here to the right.
+        model = glm::mat4(glm::vec4(r, 0.0f), glm::vec4(f, 0.0f), glm::vec4(u, 0.0f), glm::vec4(o, 1.0f));
+    else {
+        model = glm::mat4(glm::vec4(r, 0.0f), glm::vec4(u, 0.0f), glm::vec4(f, 0.0f), glm::vec4(o, 1.0f));
+    }
 
     glEnable(GL_DEPTH_TEST);
-
     glEnable(GL_TEXTURE_2D);
+
     // TODO:
     // Non-block types should be shown in hand, but this function only renders blocks and hand right now so no need to
     // handle this here.
     GLuint textureId{};
-    if (heldItemResult.has_value() && toBlockType(heldItemResult->item).has_value()) {
-        textureId = getBlockTexture(toBlockType(heldItemResult->item).value());
-    } else {
+    BlockFaceConfig faceConfig{};
+    if (renderAsBlock) {
+        auto const blockType = toBlockType(heldItemResult->item).value();
+        textureId            = getBlockTexture(blockType);
+        faceConfig           = getBlockFaceConfig(blockType);
+    } else if (renderAsHand) {
         textureId = TextureResourceManagerSingleton::get().get("player.hand");
+    } else {
+        // TODO
     }
-    glBindTexture(GL_TEXTURE_2D, textureId);
+
+    // Face textures and their vertex ranges
+    // Front face (0), Back face (1), Right face (2), Left face (3), Top face (4), Bottom face (5)
+    const GLuint faceTextures[]   = { faceConfig.front, faceConfig.back, faceConfig.right,
+                                      faceConfig.left,  faceConfig.top,  faceConfig.bottom };
+    const int faceStartVertices[] = { 0, 6, 12, 18, 24, 30 };
+    const int verticesPerFace     = 6;
 
     // Clear the buffer bit so that the hand is always rendered in front of the world.
     glClear(GL_DEPTH_BUFFER_BIT);
 
-    // clang-format off
-    glBegin(GL_QUADS);
-    // front
-    glTexCoord2f(0,0); glVertex3fv(glm::value_ptr(ldf));
-    glTexCoord2f(1,0); glVertex3fv(glm::value_ptr(rdf));
-    glTexCoord2f(1,1); glVertex3fv(glm::value_ptr(ruf));
-    glTexCoord2f(0,1); glVertex3fv(glm::value_ptr(luf));
-    // back
-    glTexCoord2f(0,0); glVertex3fv(glm::value_ptr(rdb));
-    glTexCoord2f(1,0); glVertex3fv(glm::value_ptr(ldb));
-    glTexCoord2f(1,1); glVertex3fv(glm::value_ptr(lub));
-    glTexCoord2f(0,1); glVertex3fv(glm::value_ptr(rub));
-    // left
-    glTexCoord2f(0,0); glVertex3fv(glm::value_ptr(ldb));
-    glTexCoord2f(1,0); glVertex3fv(glm::value_ptr(ldf));
-    glTexCoord2f(1,1); glVertex3fv(glm::value_ptr(luf));
-    glTexCoord2f(0,1); glVertex3fv(glm::value_ptr(lub));
-    // right
-    glTexCoord2f(0,0); glVertex3fv(glm::value_ptr(rdf));
-    glTexCoord2f(1,0); glVertex3fv(glm::value_ptr(rdb));
-    glTexCoord2f(1,1); glVertex3fv(glm::value_ptr(rub));
-    glTexCoord2f(0,1); glVertex3fv(glm::value_ptr(ruf));
-    // top
-    glTexCoord2f(0,0); glVertex3fv(glm::value_ptr(luf));
-    glTexCoord2f(1,0); glVertex3fv(glm::value_ptr(ruf));
-    glTexCoord2f(1,1); glVertex3fv(glm::value_ptr(rub));
-    glTexCoord2f(0,1); glVertex3fv(glm::value_ptr(lub));
-    // bottom
-    glTexCoord2f(0,0); glVertex3fv(glm::value_ptr(ldb));
-    glTexCoord2f(1,0); glVertex3fv(glm::value_ptr(rdb));
-    glTexCoord2f(1,1); glVertex3fv(glm::value_ptr(rdf));
-    glTexCoord2f(0,1); glVertex3fv(glm::value_ptr(ldf));
-    glEnd();
-    // clang-format on
+    glBindVertexArray(vao);
+    glActiveTexture(GL_TEXTURE0);
+
+    // Set up uniforms for the hand shader
+    GLuint modelId      = glGetUniformLocation(handShaderId, "model");
+    GLuint projectionId = glGetUniformLocation(handShaderId, "projection");
+    GLuint viewId       = glGetUniformLocation(handShaderId, "view");
+
+    glUniformMatrix4fv(modelId, 1, GL_FALSE, glm::value_ptr(model));
+    glUniformMatrix4fv(projectionId, 1, GL_FALSE, glm::value_ptr(projection));
+    glUniformMatrix4fv(viewId, 1, GL_FALSE, glm::value_ptr(view));
+    glUniform1i(glGetUniformLocation(handShaderId, "tex"), 0);
+
+    for (int face = 0; face < 6; ++face) {
+        if (renderAsBlock) {
+            glBindTexture(GL_TEXTURE_2D, faceTextures[face]);
+        } else {
+            glBindTexture(GL_TEXTURE_2D, textureId);
+        }
+        glDrawArrays(GL_TRIANGLES, faceStartVertices[face], verticesPerFace);
+    }
 
     glDisable(GL_TEXTURE_2D);
     glDisable(GL_DEPTH_TEST);

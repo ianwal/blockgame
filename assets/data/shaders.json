@@ -19,6 +19,11 @@
       "name": "droppedblock",
       "vertex": "assets/shaders/droppedblock.glsl",
       "frag": "assets/shaders/droppedblock.frag"
+    },
+    {
+      "name": "hand",
+      "vertex": "assets/shaders/hand.glsl",
+      "frag": "assets/shaders/hand.frag"
     }
   ]
 }
