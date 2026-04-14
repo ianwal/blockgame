@@ -25,6 +25,7 @@ enum class BlockType : std::uint16_t {
     BLOCK_OAK,
     BLOCK_WATER,
     BLOCK_OAKLEAF,
+    BLOCK_BEDROCK,
 
     NUM_BLOCK_TYPES, ///< Meta
 };

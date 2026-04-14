@@ -27,6 +27,10 @@
     {
       "blockName": "block.oakleaf",
       "itemName": "block.oakleaf"
+    },
+    {
+      "blockName": "block.bedrock",
+      "itemName": "block.bedrock"
     }
   ]
 }

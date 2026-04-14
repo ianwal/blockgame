@@ -103,7 +103,11 @@ ChunkUpdates ChunkManager::updateChunks(glm::vec3 const& worldPos, std::int32_t 
                                 if (j > (surfaceY - 5)) {
                                     blockType = BlockType::BLOCK_DIRT;
                                 } else if (j <= (surfaceY - 5)) {
-                                    blockType = BlockType::BLOCK_STONE;
+                                    if (j == 0) {
+                                        blockType = BlockType::BLOCK_BEDROCK;
+                                    } else {
+                                        blockType = BlockType::BLOCK_STONE;
+                                    }
                                 } else {
                                     blockType = BlockType::BLOCK_AIR;
                                 }

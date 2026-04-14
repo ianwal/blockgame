@@ -34,6 +34,11 @@
       "id": 6,
       "name": "block.oakleaf",
       "prettyName": "Oak Leaf"
+    },
+    {
+      "id": 7,
+      "name": "block.bedrock",
+      "prettyName": "Bedrock"
     }
   ]
 }

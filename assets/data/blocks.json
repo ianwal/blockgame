@@ -87,6 +87,17 @@
         "block.dig.grass.3",
         "block.dig.grass.4"
       ]
+    },
+    {
+      "id": 9,
+      "name": "block.bedrock",
+      "prettyName": "Bedrock",
+      "breakSounds": [
+        "block.dig.cobble.1",
+        "block.dig.cobble.2",
+        "block.dig.cobble.3",
+        "block.dig.cobble.4"
+      ]
     }
   ]
 }

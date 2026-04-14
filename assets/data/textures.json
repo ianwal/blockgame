@@ -1,6 +1,10 @@
 {
   "textures": [
     {
+      "name": "player.hand",
+      "path": "assets/textures/hand.png"
+    },
+    {
       "name": "block.stone",
       "path": "assets/textures/stone.png"
     },
@@ -45,8 +49,8 @@
       "path": "assets/textures/oakleaf.png"
     },
     {
-      "name": "player.hand",
-      "path": "assets/textures/hand.png"
+      "name": "block.bedrock",
+      "path": "assets/textures/bedrock.png"
     }
   ]
 }
