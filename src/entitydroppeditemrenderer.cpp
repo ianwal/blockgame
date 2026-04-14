@@ -143,8 +143,9 @@ void EntityDroppedItemRenderer::render(IEntity const& ientity, float partialTick
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
 
-    auto blockTypeResult = toBlockType(entity.getItemType());
-    if (blockTypeResult.has_value()) {
+    auto blockTypeResult     = toBlockType(entity.getItemType());
+    auto const renderAsBlock = blockTypeResult.has_value();
+    if (renderAsBlock) {
         assertr(blockTypeResult.value() != BlockType::BLOCK_AIR);
         std::map<BlockType, std::vector<InstanceData>> byType{};
         InstanceData d{};
@@ -155,13 +156,24 @@ void EntityDroppedItemRenderer::render(IEntity const& ientity, float partialTick
 
         glUseProgram(shaderId);
         glBindVertexArray(vao);
-
+        glActiveTexture(GL_TEXTURE0);
         for (auto& [type, instances] : byType) {
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, getBlockTexture(type));
             glBindBuffer(GL_ARRAY_BUFFER, vbo);
             glBufferData(GL_ARRAY_BUFFER, instances.size() * sizeof(InstanceData), instances.data(), GL_DYNAMIC_DRAW);
-            glDrawArraysInstanced(GL_TRIANGLES, 0, 36, instances.size());
+
+            BlockFaceConfig faceConfig{};
+            faceConfig = getBlockFaceConfig(type);
+            // Face textures and their vertex ranges
+            // Front face (0), Back face (1), Right face (2), Left face (3), Top face (4), Bottom face (5)
+            const GLuint faceTextures[]   = { faceConfig.front, faceConfig.back, faceConfig.right,
+                                              faceConfig.left,  faceConfig.top,  faceConfig.bottom };
+            const int faceStartVertices[] = { 0, 6, 12, 18, 24, 30 };
+            const int verticesPerFace     = 6;
+
+            for (int face = 0; face < 6; ++face) {
+                glBindTexture(GL_TEXTURE_2D, faceTextures[face]);
+                glDrawArrays(GL_TRIANGLES, faceStartVertices[face], verticesPerFace);
+            }
         }
     } else {
         assertr(false);
