@@ -116,6 +116,16 @@ BlockFaceConfig getBlockFaceConfig(BlockType type)
             config.right  = side;
         } break;
 
+        case BlockType::BLOCK_OAKLEAF: {
+            GLuint side   = bg::TextureResourceManagerSingleton::get().get("block.oakleaf");
+            config.top    = side;
+            config.bottom = side;
+            config.front  = side;
+            config.back   = side;
+            config.left   = side;
+            config.right  = side;
+        } break;
+
         case BlockType::BLOCK_AIR:
         default: {
             logError("{} failed. Block type has no face config: {}", __func__, static_cast<int>(type));

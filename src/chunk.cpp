@@ -8,6 +8,7 @@
 #include <glm/glm.hpp>
 
 #include <algorithm>
+#include <array>
 #include <cassert>
 #include <cmath>
 #include <cstdint>
@@ -45,6 +46,15 @@ glm::vec3 getWorldPos(ChunkPos const& chunkPos, glm::vec3 blockOffset)
                       (chunkPos.z * chunkSize) + blockOffset.z };
 }
 
+bool isBlockInChunk(ChunkPos const& chunkPos, ivec3 const& blockPos)
+{
+    std::int32_t localX = blockPos.x - (chunkPos.x * chunkSize);
+    std::int32_t localZ = blockPos.z - (chunkPos.z * chunkSize);
+
+    return (localX >= 0) && (localX < chunkSize) && (localZ >= 0) && (localZ < chunkSize) && (blockPos.y >= 0) &&
+           (blockPos.y < chunkHeight);
+}
+
 ChunkUpdates ChunkManager::updateChunks(glm::vec3 const& worldPos, std::int32_t const chunkLoadRadius,
                                         std::uint64_t const seed)
 {
@@ -73,6 +83,8 @@ ChunkUpdates ChunkManager::updateChunks(glm::vec3 const& worldPos, std::int32_t 
 
                 auto chunk    = std::make_unique<Chunk>();
                 chunk->blocks = std::vector<BlockType>(chunkSize * chunkSize * chunkHeight, BlockType::BLOCK_AIR);
+                std::vector<Block> surfaceBlocks{};
+                surfaceBlocks.reserve(chunkSize * chunkSize);
                 for (int i = 0; i < chunkSize; ++i) {
                     for (int j = 0; j < chunkHeight; ++j) {
                         for (int k = 0; k < chunkSize; ++k) {
@@ -102,6 +114,7 @@ ChunkUpdates ChunkManager::updateChunks(glm::vec3 const& worldPos, std::int32_t 
                                 } else {
                                     blockType = BlockType::BLOCK_DIRT;
                                 }
+                                surfaceBlocks.push_back(Block{ toBlockPos(pos), blockType });
                             } else if (j > surfaceY) {
                                 // Above the surface.
                                 if (j <= sealevel) {
@@ -109,6 +122,127 @@ ChunkUpdates ChunkManager::updateChunks(glm::vec3 const& worldPos, std::int32_t 
                                 } else {
                                     blockType = BlockType::BLOCK_AIR;
                                 }
+                            }
+                        }
+                    }
+                }
+
+                auto const cx = static_cast<std::uint64_t>(static_cast<std::int64_t>(targetChunkPos.x));
+                auto const cz = static_cast<std::uint64_t>(static_cast<std::int64_t>(targetChunkPos.z));
+
+                std::mt19937_64 chunkLocalRNGGen{
+                    (seed + cx * cx * 4987142ULL + cx * 5947611ULL + cz * cz * 4392871ULL + cz * 389711ULL) ^ seed
+                };
+
+                // Generate trees
+                {
+                    std::vector<ivec3> targetTreePositions{};
+                    for (auto const& surfaceBlock : surfaceBlocks) {
+                        if (surfaceBlock.type == BlockType::BLOCK_GRASS) {
+                            targetTreePositions.push_back(surfaceBlock.pos + ivec3{ 0, 1, 0 });
+                        }
+                    }
+
+                    if (!targetTreePositions.empty()) {
+                        std::uniform_int_distribution<> treeCountDist(0, 3);
+                        std::uniform_int_distribution<> treeDist(0, targetTreePositions.size() - 1);
+                        int const treeCount = treeCountDist(chunkLocalRNGGen);
+                        for (int i = 0; i < treeCount; ++i) {
+                            if (targetTreePositions.empty()) {
+                                break;
+                            }
+                            ivec3 const treePos = targetTreePositions[treeDist(chunkLocalRNGGen)];
+
+                            static constexpr auto logOffsets = std::to_array({
+                                ivec3{ 0, 0, 0 },
+                                ivec3{ 0, 1, 0 },
+                                ivec3{ 0, 2, 0 },
+                                ivec3{ 0, 3, 0 },
+                                ivec3{ 0, 4, 0 },
+                            });
+                            // clang-format off
+                            static constexpr auto leafOffsets = std::to_array({
+                                ivec3{ -1, 2, 2 },
+                                ivec3{ 0, 2, 2 },
+                                ivec3{ 1, 2, 2 },
+                                ivec3{ 2, 2, 2 },
+                                ivec3{ -1, 3, 2 },
+                                ivec3{ 0, 3, 2 },
+                                ivec3{ 1, 3, 2 },
+
+                                ivec3{ -2, 2, 1 },
+                                ivec3{ -1, 2, 1 },
+                                ivec3{ 0, 2, 1 },
+                                ivec3{ 1, 2, 1 },
+                                ivec3{ 2, 2, 1 },
+                                ivec3{ -2, 3, 1 },
+                                ivec3{ -1, 3, 1 },
+                                ivec3{ 0, 3, 1 },
+                                ivec3{ 1, 3, 1 },
+                                ivec3{ 2, 3, 1 },
+                                ivec3{ 0, 4, 1 },
+                                ivec3{ -1, 4, 1 },
+                                ivec3{ 0, 5, 1 },
+
+                                ivec3{ -2, 2, 0 },
+                                ivec3{ -1, 2, 0 },
+                                ivec3{ 1, 2, 0 },
+                                ivec3{ 2, 2, 0 },
+                                ivec3{ -2, 3, 0 },
+                                ivec3{ -1, 3, 0 },
+                                ivec3{ 1, 3, 0 },
+                                ivec3{ 2, 3, 0 },
+                                ivec3{ -1, 4, 0 },
+                                ivec3{ -1, 5, 0 },
+                                ivec3{ 0, 5, 0 },
+                                ivec3{ 1, 5, 0 },
+                                ivec3{ 1, 4, 0 },
+
+                                ivec3{ -2, 2, -1 },
+                                ivec3{ -1, 2, -1 },
+                                ivec3{ 0, 2, -1 },
+                                ivec3{ 1, 2, -1 },
+                                ivec3{ 2, 2, -1 },
+                                ivec3{ -2, 3, -1 },
+                                ivec3{ -1, 3, -1 },
+                                ivec3{ 0, 3, -1 },
+                                ivec3{ 1, 3, -1 },
+                                ivec3{ 2, 3, -1 },
+                                ivec3{ 0, 4, -1 },
+                                ivec3{ 0, 5, -1 },
+
+                                ivec3{ -1, 2, -2 },
+                                ivec3{ 0, 2, -2 },
+                                ivec3{ 1, 2, -2 },
+                                ivec3{ -2, 3, -2 },
+                                ivec3{ -1, 3, -2 },
+                                ivec3{ 0, 3, -2 },
+                                ivec3{ 1, 3, -2 },
+                                ivec3{ 2, 3, -2 },
+                            });
+                            // clang-format on
+                            bool canGenTree = true;
+                            for (auto const& offset : logOffsets) {
+                                if (!isBlockInChunk(targetChunkPos, treePos + offset)) {
+                                    canGenTree = false;
+                                    break;
+                                }
+                            }
+                            for (auto const& offset : leafOffsets) {
+                                if (!isBlockInChunk(targetChunkPos, treePos + offset)) {
+                                    canGenTree = false;
+                                    break;
+                                }
+                            }
+
+                            if (canGenTree) {
+                                for (auto const& offset : logOffsets) {
+                                    getBlockType(targetChunkPos, *chunk, treePos + offset) = BlockType::BLOCK_OAK;
+                                }
+                                for (auto const& offset : leafOffsets) {
+                                    getBlockType(targetChunkPos, *chunk, treePos + offset) = BlockType::BLOCK_OAKLEAF;
+                                }
+                                std::erase(targetTreePositions, treePos);
                             }
                         }
                     }

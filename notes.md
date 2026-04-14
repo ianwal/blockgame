@@ -68,3 +68,9 @@ Then, the projection matrix is used to project the vertices onto the projection 
 ## Coordinate System
 
 Blocks positions are integers, and the integer is the center of the block in world position. This should be changed to corner-centered.
+
+## Reencoding files to opus
+
+```
+ffmpeg -i input.ogg -c:a libopus -b:a 96k -vbr on -compression_level 10 output.opus
+```

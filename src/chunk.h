@@ -65,6 +65,9 @@ ChunkPos getChunkPos(ivec3 const& worldPos);
 /// Get the world position of a block from the provided chunk position and block offset from the chunk position.
 glm::vec3 getWorldPos(ChunkPos const& chunkPos, glm::vec3 blockOffset);
 
+/// Check if a block at the given world position is within the target chunk.
+bool isBlockInChunk(ChunkPos const& chunkPos, ivec3 const& blockPos);
+
 struct ChunkManagerStats {
     std::uint32_t loadedChunkCount{};
     std::uint32_t worldChunkCount{};
@@ -116,7 +119,7 @@ private:
         std::int32_t localX = blockWorldPos.x - (chunkPos.x * chunkSize);
         std::int32_t localY = blockWorldPos.y;
         std::int32_t localZ = blockWorldPos.z - (chunkPos.z * chunkSize);
-        return chunk.blocks[localX + chunkSize * (localZ + chunkSize * localY)];
+        return chunk.blocks.at(localX + chunkSize * (localZ + chunkSize * localY));
     }
 
     [[nodiscard]] static ivec3 getBlockWorldPos(ChunkPos chunkPos, std::size_t index)

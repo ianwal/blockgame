@@ -41,6 +41,10 @@
       "path": "assets/textures/water.png"
     },
     {
+      "name": "block.oakleaf",
+      "path": "assets/textures/oakleaf.png"
+    },
+    {
       "name": "player.hand",
       "path": "assets/textures/hand.png"
     }

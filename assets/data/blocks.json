@@ -63,7 +63,10 @@
       "name": "block.oak",
       "prettyName": "Oak Wood",
       "breakSounds": [
-        "block.dig.cobble.1"
+        "block.dig.wood.1",
+        "block.dig.wood.2",
+        "block.dig.wood.3",
+        "block.dig.wood.4"
       ]
     },
     {
@@ -72,6 +75,17 @@
       "prettyName": "Water",
       "breakSounds": [
         "block.dig.cobble.1"
+      ]
+    },
+    {
+      "id": 8,
+      "name": "block.oakleaf",
+      "prettyName": "Oak Leaves",
+      "breakSounds": [
+        "block.dig.grass.1",
+        "block.dig.grass.2",
+        "block.dig.grass.3",
+        "block.dig.grass.4"
       ]
     }
   ]
