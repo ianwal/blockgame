@@ -21,6 +21,7 @@ struct AppContext {
     std::unique_ptr<GameContext> game{ std::make_unique<GameContext>() };
 
     AudioResourceManager audioResourceManager{};
+    BlockManager blockManager{};
 
     SDL_AppResult app_quit{ SDL_APP_CONTINUE };
     Timestamp current_time{};

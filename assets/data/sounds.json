@@ -1,6 +1,5 @@
 {
-  "sounds":
-  [
+  "sounds": [
     {
       "name": "block.dig.cobble.1",
       "path": "assets/audio/sounds/block/stone/break/stone1.opus"

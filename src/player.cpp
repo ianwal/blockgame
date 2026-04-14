@@ -127,7 +127,8 @@ void Player::tick()
                 if (footstepProgressTicks >= footstepDurationTicks) {
                     auto blockStandingOnResult = GlobalGame::get().chunkManager.getBlock(
                         ivec3{ std::floor(pos.x), std::floor(pos.y) - 1, std::floor(pos.z) });
-                    if (blockStandingOnResult.has_value()) {
+                    if (blockStandingOnResult.has_value() &&
+                        blockStandingOnResult.value().type != BlockType::BLOCK_AIR) {
                         playSound2d(getBlockBreakSoundName(blockStandingOnResult.value().type));
                     }
                     footstepProgressTicks = 0;

@@ -1,0 +1,78 @@
+{
+  "blocks": [
+    {
+      "id": 0,
+      "name": "block.air",
+      "prettyName": "Air",
+      "breakSounds": []
+    },
+    {
+      "id": 1,
+      "name": "block.stone",
+      "prettyName": "Stone",
+      "breakSounds": [
+        "block.dig.cobble.1",
+        "block.dig.cobble.2",
+        "block.dig.cobble.3",
+        "block.dig.cobble.4"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "block.cobble",
+      "prettyName": "Cobblestone",
+      "breakSounds": [
+        "block.dig.cobble.1",
+        "block.dig.cobble.2",
+        "block.dig.cobble.3",
+        "block.dig.cobble.4"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "block.grass",
+      "prettyName": "Grass Block",
+      "breakSounds": [
+        "block.dig.grass.1",
+        "block.dig.grass.2",
+        "block.dig.grass.3",
+        "block.dig.grass.4"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "block.dirt",
+      "prettyName": "Dirt",
+      "breakSounds": [
+        "block.dig.dirt.1",
+        "block.dig.dirt.2",
+        "block.dig.dirt.3",
+        "block.dig.dirt.4"
+      ]
+    },
+    {
+      "id": 5,
+      "name": "block.lucky",
+      "prettyName": "Lucky Block",
+      "breakSounds": [
+        "block.dig.cobble.1"
+      ]
+    },
+    {
+      "id": 6,
+      "name": "block.oak",
+      "prettyName": "Oak Wood",
+      "breakSounds": [
+        "block.dig.cobble.1"
+      ]
+    },
+    {
+      "id": 7,
+      "name": "block.water",
+      "prettyName": "Water",
+      "breakSounds": [
+        "block.dig.cobble.1"
+      ]
+    }
+  ]
+}

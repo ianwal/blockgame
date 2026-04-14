@@ -2,6 +2,7 @@
 
 #include "src/aabb.h"
 #include "src/app_context.h"
+#include "src/assertr.h"
 #include "src/logger.h"
 #include "src/shaders.h"
 
@@ -11,10 +12,12 @@
 #include <array>
 #include <cassert>
 #include <cstdint>
+#include <format>
 #include <random>
 #include <span>
 #include <string>
 #include <string_view>
+#include <vector>
 
 namespace bg
 {
@@ -33,45 +36,7 @@ AABB getBlockAABB(Block const& block)
 
 GLuint getBlockTexture(BlockType type)
 {
-    std::string name{};
-    switch (type) {
-        case BlockType::BLOCK_STONE: {
-            name = "block.stone";
-        } break;
-
-        case BlockType::BLOCK_COBBLE: {
-            name = "block.cobble";
-        } break;
-
-        case BlockType::BLOCK_LUCKY: {
-            name = "block.lucky";
-        } break;
-
-        case BlockType::BLOCK_GRASS: {
-            name = "block.grass";
-        } break;
-
-        case BlockType::BLOCK_DIRT: {
-            name = "block.dirt";
-        } break;
-
-        case BlockType::BLOCK_OAK: {
-            name = "block.oak";
-        } break;
-
-        case BlockType::BLOCK_WATER: {
-            name = "block.water";
-        } break;
-
-        case BlockType::BLOCK_AIR:
-        default: {
-            // Block type texture not added to lookup table. Add it.
-            logError("{} failed. Block type has no texture: {}", __func__, static_cast<int>(type));
-            assertr(false);
-        } break;
-    };
-
-    return bg::TextureResourceManagerSingleton::get().get(name);
+    return bg::TextureResourceManagerSingleton::get().get(std::string{ App::get().blockManager.getName(type) });
 }
 
 BlockFaceConfig getBlockFaceConfig(BlockType type)
@@ -161,7 +126,7 @@ BlockFaceConfig getBlockFaceConfig(BlockType type)
     return config;
 }
 
-static std::string_view getRandomBlockBreakSoundName(std::span<std::string_view> soundNames)
+static std::string_view getRandomBlockBreakSoundName(std::vector<std::string> soundNames)
 {
     static std::mt19937 gen{ std::random_device{}() };
     std::uniform_int_distribution<> dist(0, soundNames.size() - 1);
@@ -171,50 +136,77 @@ static std::string_view getRandomBlockBreakSoundName(std::span<std::string_view>
 std::string getBlockBreakSoundName(BlockType type)
 {
     std::string name{};
-    switch (type) {
-        case BlockType::BLOCK_OAK:
-        case BlockType::BLOCK_STONE:
-        case BlockType::BLOCK_COBBLE: {
-            static auto names =
-                std::to_array({ std::string_view{ "block.dig.cobble.1" }, std::string_view{ "block.dig.cobble.2" },
-
-                                std::string_view{ "block.dig.cobble.3" }, std::string_view{ "block.dig.cobble.4" } });
-            name = getRandomBlockBreakSoundName(names);
-        } break;
-
-        case BlockType::BLOCK_LUCKY: {
-            name = "block.dig.cobble.1";
-        } break;
-
-        case BlockType::BLOCK_GRASS: {
-            static auto names =
-                std::to_array({ std::string_view{ "block.dig.grass.1" }, std::string_view{ "block.dig.grass.2" },
-
-                                std::string_view{ "block.dig.grass.3" }, std::string_view{ "block.dig.grass.4" } });
-            name = getRandomBlockBreakSoundName(names);
-        } break;
-
-        case BlockType::BLOCK_DIRT: {
-            static auto names =
-                std::to_array({ std::string_view{ "block.dig.dirt.1" }, std::string_view{ "block.dig.dirt.2" },
-                                std::string_view{ "block.dig.dirt.3" }, std::string_view{ "block.dig.dirt.4" } });
-            name = getRandomBlockBreakSoundName(names);
-        } break;
-
-        case BlockType::BLOCK_AIR:
-        default: {
-            // Block type not added to lookup table. Add it.
-            logWarn("{} failed. Using default sounds instead. Block type has no sound break name: {}", __func__,
-                    static_cast<int>(type));
-            static auto names =
-                std::to_array({ std::string_view{ "block.dig.cobble.1" }, std::string_view{ "block.dig.cobble.2" },
-
-                                std::string_view{ "block.dig.cobble.3" }, std::string_view{ "block.dig.cobble.4" } });
-            name = getRandomBlockBreakSoundName(names);
-        } break;
-    };
+    auto const breakSounds = App::get().blockManager.getBreakSounds(type);
+    if (breakSounds.empty()) {
+        // Block type not added to lookup table. Add it.
+        logWarn("Block type has no sound break sounds: {}. Using default sounds instead.", static_cast<int>(type));
+        name = "block.dig.dirt.1";
+    } else {
+        name = getRandomBlockBreakSoundName(breakSounds);
+    }
 
     return name;
+}
+
+BlockType BlockManager::getType(std::string const& name)
+{
+    for (auto const& [blockType, blockName] : names) {
+        if (name == blockName) {
+            return blockType;
+        }
+    }
+    assertr(false, std::format("No block type found for name: {}", name));
+    return {};
+}
+
+std::string_view BlockManager::getName(BlockType type)
+{
+    for (auto const& [blockType, blockName] : names) {
+        if (type == blockType) {
+            return blockName;
+        }
+    }
+
+    assertr(false, std::format("No name found for block type: {}", std::to_underlying(type)));
+    return {};
+}
+
+std::string_view BlockManager::getPrettyName(BlockType type)
+{
+    for (auto const& [blockType, blockPrettyName] : prettyNames) {
+        if (type == blockType) {
+            return blockPrettyName;
+        }
+    }
+
+    assertr(false, std::format("No pretty name found for block type: {}", std::to_underlying(type)));
+    return {};
+}
+
+std::vector<std::string> BlockManager::getBreakSounds(BlockType type)
+{
+    for (auto const& [blockType, blockBreakSounds] : breakSounds) {
+        if (type == blockType) {
+            return blockBreakSounds;
+        }
+    }
+
+    logWarn("No break sounds found for block type: {}", std::to_underlying(type));
+    return {};
+}
+
+BlockManager& BlockManager::load(std::string const& name, std::uint16_t id, std::string const& prettyName,
+                                 std::vector<std::string> const& blockBreakSounds)
+{
+    auto const type = static_cast<BlockType>(id);
+    assertr(!names.contains(type), name);
+    assertr(!prettyNames.contains(type), name);
+    assertr(!breakSounds.contains(type), name);
+
+    names[type]       = name;
+    prettyNames[type] = prettyName;
+    breakSounds[type] = blockBreakSounds;
+    return *this;
 }
 
 } // namespace bg

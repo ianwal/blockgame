@@ -1,5 +1,6 @@
 #include "src/app_context.h"
 
+#include "src/block.h"
 #include "src/common.h"
 #include "src/lib/json.hpp"
 #include "src/logger.h"
@@ -19,10 +20,20 @@ AppContext::AppContext(SDL_Window* window) : window{ window }
     mixer = MIX_CreateMixerDevice(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, nullptr);
     track = MIX_CreateTrack(mixer);
 
-    std::ifstream soundFiles{ "assets/data/sounds.json" };
-    nlohmann::json const soundData = nlohmann::json::parse(soundFiles);
-    for (auto const& sound : soundData["sounds"]) {
-        audioResourceManager.load(sound["name"], sound["path"]);
+    {
+        std::ifstream soundFiles{ "assets/data/sounds.json" };
+        nlohmann::json const soundData = nlohmann::json::parse(soundFiles);
+        for (auto const& sound : soundData["sounds"]) {
+            audioResourceManager.load(sound["name"], sound["path"]);
+        }
+    }
+
+    {
+        std::ifstream blockFiles{ "assets/data/blocks.json" };
+        nlohmann::json const blockData = nlohmann::json::parse(blockFiles);
+        for (auto const& block : blockData["blocks"]) {
+            blockManager.load(block["name"], block["id"], block["prettyName"], block["breakSounds"]);
+        }
     }
 
     std::mt19937 gen{ std::random_device{}() };

@@ -1,6 +1,5 @@
 {
-  "shaders":
-  [
+  "shaders": [
     {
       "name": "line",
       "vertex": "assets/shaders/line.glsl",

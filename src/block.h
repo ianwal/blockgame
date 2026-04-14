@@ -7,7 +7,10 @@
 
 #include <cstdint>
 #include <functional>
+#include <map>
 #include <string>
+#include <string_view>
+#include <vector>
 
 namespace bg
 {
@@ -98,5 +101,30 @@ GLuint getBlockTexture(BlockType type);
 BlockFaceConfig getBlockFaceConfig(BlockType type);
 
 std::string getBlockBreakSoundName(BlockType type);
+
+class BlockManager
+{
+public:
+    /// Get the block type by name.
+    BlockType getType(std::string const& name);
+
+    /// Get the block name by block type.
+    std::string_view getName(BlockType type);
+
+    /// Get the block pretty name.
+    std::string_view getPrettyName(BlockType type);
+
+    /// Get the block break sounds.
+    std::vector<std::string> getBreakSounds(BlockType type);
+
+    /// Load the block data.
+    BlockManager& load(std::string const& name, std::uint16_t id, std::string const& prettyName,
+                       std::vector<std::string> const& blockBreakSounds);
+
+private:
+    std::map<BlockType, std::string, std::less<>> names{};
+    std::map<BlockType, std::string, std::less<>> prettyNames{};
+    std::map<BlockType, std::vector<std::string>, std::less<>> breakSounds{};
+};
 
 } // namespace bg
