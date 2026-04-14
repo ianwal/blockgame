@@ -85,7 +85,7 @@ GameContext::GameContext()
     player.updatePos(glm::vec3{ 0, 100, 0 });
 
     // Add some items
-    playerInventory.addItem(ItemStack{ ItemType::OAK_BLOCK, 10 });
+    playerInventory.addItem(ItemStack{ ItemType::OAK_WOOD, 10 });
     playerInventory.addItem(ItemStack{ ItemType::LUCKY_BLOCK, 10 });
 }
 
@@ -182,7 +182,8 @@ void handleSwingAction(GameContext& game)
     if (!removeBlockResult) {
         return;
     }
-    auto droppedItemTypeResult = toDroppedItemType(block.type);
+
+    auto droppedItemTypeResult = toItemType(block.type);
     if (droppedItemTypeResult.has_value()) {
         auto droppedItem = std::make_unique<EntityDroppedItem>();
         droppedItem->setItemType(droppedItemTypeResult.value());

@@ -121,8 +121,8 @@ PRIVATE
     src/handrenderer.cpp
     src/game.cpp
     src/font.cpp
-    src/entitydroppeditemrenderer.cpp
     src/entityrenderermanager.cpp
+    src/entitydroppeditemrenderer.cpp
     src/entitydroppeditem.cpp
     src/entity.cpp
     src/crosshair_renderer.cpp
@@ -130,6 +130,7 @@ PRIVATE
     src/chunkrenderer.cpp
     src/chunk.cpp
     src/button.cpp
+    src/blockitem.cpp
     src/block.cpp
     src/block_renderer.cpp
     src/audio.cpp

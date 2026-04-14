@@ -9,6 +9,7 @@
 
 #include <cassert>
 #include <fstream>
+#include <limits>
 #include <random>
 
 namespace bg
@@ -29,15 +30,32 @@ AppContext::AppContext(SDL_Window* window) : window{ window }
     }
 
     {
-        std::ifstream blockFiles{ "assets/data/blocks.json" };
-        nlohmann::json const blockData = nlohmann::json::parse(blockFiles);
-        for (auto const& block : blockData["blocks"]) {
-            blockManager.load(block["name"], block["id"], block["prettyName"], block["breakSounds"]);
+        std::ifstream blockData{ "assets/data/blocks.json" };
+        nlohmann::json const blocks = nlohmann::json::parse(blockData);
+        for (auto const& block : blocks["blocks"]) {
+            blockRegistry.load(block["name"], block["id"], block["prettyName"], block["breakSounds"]);
         }
     }
 
-    std::mt19937 gen{ std::random_device{}() };
-    std::uniform_int_distribution<> dist(0, 10000000);
+    {
+        std::ifstream itemData{ "assets/data/items.json" };
+        nlohmann::json const items = nlohmann::json::parse(itemData);
+        for (auto const& item : items["items"]) {
+            itemRegistry.load(item["id"], item["name"], item["prettyName"]);
+        }
+    }
+
+    {
+        std::ifstream blockItemsData{ "assets/data/blockitems.json" };
+        nlohmann::json const blockItems = nlohmann::json::parse(blockItemsData);
+        for (auto const& blockItem : blockItems["blockItems"]) {
+            blockItemRegistry.load(blockItem["blockName"], blockItem["itemName"]);
+        }
+        // TODO: Check if the loaded block and item names actually exist.
+    }
+
+    std::mt19937_64 gen{ std::random_device{}() };
+    std::uniform_int_distribution<> dist(0, std::numeric_limits<std::uint64_t>::max());
     std::uint64_t const worldSeed = dist(gen);
     logInfo("World Seed: {}", worldSeed);
     game->worldSeed = worldSeed;

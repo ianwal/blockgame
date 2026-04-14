@@ -1,0 +1,39 @@
+{
+  "items": [
+    {
+      "id": 0,
+      "name": "block.stone",
+      "prettyName": "Stone"
+    },
+    {
+      "id": 1,
+      "name": "block.cobble",
+      "prettyName": "Cobblestone"
+    },
+    {
+      "id": 2,
+      "name": "block.grass",
+      "prettyName": "Grass Block"
+    },
+    {
+      "id": 3,
+      "name": "block.dirt",
+      "prettyName": "Dirt Block"
+    },
+    {
+      "id": 4,
+      "name": "block.lucky",
+      "prettyName": "Lucky Block"
+    },
+    {
+      "id": 5,
+      "name": "block.oak",
+      "prettyName": "Oak Wood"
+    },
+    {
+      "id": 6,
+      "name": "block.oakleaf",
+      "prettyName": "Oak Leaf"
+    }
+  ]
+}

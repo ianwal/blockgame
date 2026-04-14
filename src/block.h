@@ -29,6 +29,8 @@ enum class BlockType : std::uint16_t {
     NUM_BLOCK_TYPES, ///< Meta
 };
 
+std::string to_string(BlockType blockType);
+
 /// Integer vec3.
 using ivec3 = glm::tvec3<std::int32_t>;
 
@@ -103,24 +105,24 @@ BlockFaceConfig getBlockFaceConfig(BlockType type);
 
 std::string getBlockBreakSoundName(BlockType type);
 
-class BlockManager
+class BlockRegistry
 {
 public:
     /// Get the block type by name.
     BlockType getType(std::string const& name);
 
     /// Get the block name by block type.
-    std::string_view getName(BlockType type);
+    std::string getName(BlockType type);
 
     /// Get the block pretty name.
-    std::string_view getPrettyName(BlockType type);
+    std::string getPrettyName(BlockType type);
 
     /// Get the block break sounds.
     std::vector<std::string> getBreakSounds(BlockType type);
 
     /// Load the block data.
-    BlockManager& load(std::string const& name, std::uint16_t id, std::string const& prettyName,
-                       std::vector<std::string> const& blockBreakSounds);
+    BlockRegistry& load(std::string const& name, std::uint16_t id, std::string const& prettyName,
+                        std::vector<std::string> const& blockBreakSounds);
 
 private:
     std::map<BlockType, std::string, std::less<>> names{};

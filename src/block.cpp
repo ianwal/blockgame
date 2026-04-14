@@ -22,6 +22,11 @@
 namespace bg
 {
 
+std::string to_string(BlockType blockType)
+{
+    return App::get().blockRegistry.getName(blockType);
+}
+
 AABB getBlockAABB(Block const& block)
 {
     AABB aabb{};
@@ -36,7 +41,7 @@ AABB getBlockAABB(Block const& block)
 
 GLuint getBlockTexture(BlockType type)
 {
-    return bg::TextureResourceManagerSingleton::get().get(std::string{ App::get().blockManager.getName(type) });
+    return bg::TextureResourceManagerSingleton::get().get(std::string{ App::get().blockRegistry.getName(type) });
 }
 
 BlockFaceConfig getBlockFaceConfig(BlockType type)
@@ -146,7 +151,7 @@ static std::string_view getRandomBlockBreakSoundName(std::vector<std::string> so
 std::string getBlockBreakSoundName(BlockType type)
 {
     std::string name{};
-    auto const breakSounds = App::get().blockManager.getBreakSounds(type);
+    auto const breakSounds = App::get().blockRegistry.getBreakSounds(type);
     if (breakSounds.empty()) {
         // Block type not added to lookup table. Add it.
         logWarn("Block type has no sound break sounds: {}. Using default sounds instead.", static_cast<int>(type));
@@ -158,7 +163,7 @@ std::string getBlockBreakSoundName(BlockType type)
     return name;
 }
 
-BlockType BlockManager::getType(std::string const& name)
+BlockType BlockRegistry::getType(std::string const& name)
 {
     for (auto const& [blockType, blockName] : names) {
         if (name == blockName) {
@@ -169,7 +174,7 @@ BlockType BlockManager::getType(std::string const& name)
     return {};
 }
 
-std::string_view BlockManager::getName(BlockType type)
+std::string BlockRegistry::getName(BlockType type)
 {
     for (auto const& [blockType, blockName] : names) {
         if (type == blockType) {
@@ -181,7 +186,7 @@ std::string_view BlockManager::getName(BlockType type)
     return {};
 }
 
-std::string_view BlockManager::getPrettyName(BlockType type)
+std::string BlockRegistry::getPrettyName(BlockType type)
 {
     for (auto const& [blockType, blockPrettyName] : prettyNames) {
         if (type == blockType) {
@@ -193,7 +198,7 @@ std::string_view BlockManager::getPrettyName(BlockType type)
     return {};
 }
 
-std::vector<std::string> BlockManager::getBreakSounds(BlockType type)
+std::vector<std::string> BlockRegistry::getBreakSounds(BlockType type)
 {
     for (auto const& [blockType, blockBreakSounds] : breakSounds) {
         if (type == blockType) {
@@ -205,8 +210,8 @@ std::vector<std::string> BlockManager::getBreakSounds(BlockType type)
     return {};
 }
 
-BlockManager& BlockManager::load(std::string const& name, std::uint16_t id, std::string const& prettyName,
-                                 std::vector<std::string> const& blockBreakSounds)
+BlockRegistry& BlockRegistry::load(std::string const& name, std::uint16_t id, std::string const& prettyName,
+                                   std::vector<std::string> const& blockBreakSounds)
 {
     auto const type = static_cast<BlockType>(id);
     assertr(!names.contains(type), name);

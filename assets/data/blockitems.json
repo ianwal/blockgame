@@ -1,0 +1,32 @@
+{
+  "blockItems": [
+    {
+      "blockName": "block.stone",
+      "itemName": "block.stone"
+    },
+    {
+      "blockName": "block.cobble",
+      "itemName": "block.cobble"
+    },
+    {
+      "blockName": "block.grass",
+      "itemName": "block.grass"
+    },
+    {
+      "blockName": "block.dirt",
+      "itemName": "block.dirt"
+    },
+    {
+      "blockName": "block.lucky",
+      "itemName": "block.lucky"
+    },
+    {
+      "blockName": "block.oak",
+      "itemName": "block.oak"
+    },
+    {
+      "blockName": "block.oakleaf",
+      "itemName": "block.oakleaf"
+    }
+  ]
+}

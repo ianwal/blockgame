@@ -4,7 +4,9 @@
 #include "src/block.h"
 
 #include <cstdint>
+#include <map>
 #include <optional>
+#include <string>
 #include <utility>
 
 namespace bg
@@ -12,80 +14,31 @@ namespace bg
 
 enum class ItemType : std::uint16_t {
     STONE_BLOCK = 0,
-    GRASS_BLOCK,
-    DIRT_BLOCK,
-    LUCKY_BLOCK,
     COBBLE_BLOCK,
-    OAK_BLOCK,
+    DIRT_BLOCK,
+    GRASS_BLOCK,
+    LUCKY_BLOCK,
+    OAK_WOOD,
+    OAK_LEAF,
 };
 
-constexpr std::string_view to_string(ItemType itemType)
-{
-    switch (itemType) {
-        case ItemType::STONE_BLOCK:
-            return "Stone";
-        case ItemType::GRASS_BLOCK:
-            return "Grass Block";
-        case ItemType::DIRT_BLOCK:
-            return "Dirt";
-        case ItemType::LUCKY_BLOCK:
-            return "Lucky Block";
-        case ItemType::COBBLE_BLOCK:
-            return "Cobblestone";
-        case ItemType::OAK_BLOCK:
-            return "Oak Wood";
-        default: {
-            return "Unknown";
-        } break;
-    }
-}
+std::string to_string(ItemType itemType);
 
-/// Get the block type that corresponds with the item type.
-///
-/// Only placeable items have a block type.
-constexpr std::optional<BlockType> toBlockType(ItemType itemType)
+class ItemRegistry
 {
-    switch (itemType) {
-        case ItemType::STONE_BLOCK:
-            return BlockType::BLOCK_STONE;
-        case ItemType::GRASS_BLOCK:
-            return BlockType::BLOCK_GRASS;
-        case ItemType::DIRT_BLOCK:
-            return BlockType::BLOCK_DIRT;
-        case ItemType::LUCKY_BLOCK:
-            return BlockType::BLOCK_LUCKY;
-        case ItemType::COBBLE_BLOCK:
-            return BlockType::BLOCK_COBBLE;
-        case ItemType::OAK_BLOCK:
-            return BlockType::BLOCK_OAK;
-        default: {
-            return std::nullopt;
-        } break;
-    }
-}
+public:
+    ItemType getType(std::string const& name);
 
-/// Get the item drop type that corresponds with the broken block type.
-///
-/// Not all blocks drop items when broken.
-constexpr std::optional<ItemType> toDroppedItemType(BlockType const blockType)
-{
-    switch (blockType) {
-        case BlockType::BLOCK_STONE:
-            return ItemType::STONE_BLOCK;
-        case BlockType::BLOCK_GRASS:
-            return ItemType::GRASS_BLOCK;
-        case BlockType::BLOCK_DIRT:
-            return ItemType::DIRT_BLOCK;
-        case BlockType::BLOCK_LUCKY:
-            return ItemType::LUCKY_BLOCK;
-        case BlockType::BLOCK_COBBLE:
-            return ItemType::COBBLE_BLOCK;
-        case BlockType::BLOCK_OAK:
-            return ItemType::OAK_BLOCK;
-        default: {
-            return std::nullopt;
-        } break;
-    }
-}
+    std::string getName(ItemType type);
+
+    std::string getPrettyName(ItemType type);
+
+    /// Load the item data.
+    void load(std::uint16_t id, std::string const& name, std::string const& prettyName);
+
+private:
+    std::map<ItemType, std::string, std::less<>> names{};
+    std::map<ItemType, std::string, std::less<>> prettyNames{};
+};
 
 } // namespace bg

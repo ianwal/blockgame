@@ -143,16 +143,17 @@ void EntityDroppedItemRenderer::render(IEntity const& ientity, float partialTick
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
 
-    auto blockTypeResult     = toBlockType(entity.getItemType());
-    auto const renderAsBlock = blockTypeResult.has_value();
+    auto const blockTypeResult = toBlockType(entity.getItemType());
+    auto const renderAsBlock   = blockTypeResult.has_value();
     if (renderAsBlock) {
-        assertr(blockTypeResult.value() != BlockType::BLOCK_AIR);
+        BlockType const blockType = blockTypeResult.value();
+        assertr(blockType != BlockType::BLOCK_AIR);
         std::map<BlockType, std::vector<InstanceData>> byType{};
         InstanceData d{};
         d.pos   = entity.getRenderPos(partialTick);
         d.rot   = glm::mat3_cast(glm::quat(entity.getRenderRotation(partialTick)));
         d.scale = 0.25f;
-        byType[blockTypeResult.value()].push_back(d);
+        byType[blockType].push_back(d);
 
         glUseProgram(shaderId);
         glBindVertexArray(vao);

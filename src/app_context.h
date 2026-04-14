@@ -1,8 +1,11 @@
 #pragma once
 
 #include "src/audio.h"
+#include "src/block.h"
+#include "src/blockitem.h"
 #include "src/common.h"
 #include "src/game.h"
+#include "src/item.h"
 #include "src/time.h"
 
 #include <SDL3/SDL.h>
@@ -21,7 +24,9 @@ struct AppContext {
     std::unique_ptr<GameContext> game{ std::make_unique<GameContext>() };
 
     AudioResourceManager audioResourceManager{};
-    BlockManager blockManager{};
+    BlockItemRegistry blockItemRegistry{};
+    BlockRegistry blockRegistry{};
+    ItemRegistry itemRegistry{};
 
     SDL_AppResult app_quit{ SDL_APP_CONTINUE };
     Timestamp current_time{};
