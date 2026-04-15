@@ -314,6 +314,18 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
                 SDLK_2, [&pendingActions]() { pendingActions.push_back(ChangeHotbarPosAction{ 1 }); });
             app.game->input_manager.registerCallbackOnRelease(
                 SDLK_3, [&pendingActions]() { pendingActions.push_back(ChangeHotbarPosAction{ 2 }); });
+            app.game->input_manager.registerCallbackOnRelease(
+                SDLK_4, [&pendingActions]() { pendingActions.push_back(ChangeHotbarPosAction{ 3 }); });
+            app.game->input_manager.registerCallbackOnRelease(
+                SDLK_5, [&pendingActions]() { pendingActions.push_back(ChangeHotbarPosAction{ 4 }); });
+            app.game->input_manager.registerCallbackOnRelease(
+                SDLK_6, [&pendingActions]() { pendingActions.push_back(ChangeHotbarPosAction{ 5 }); });
+            app.game->input_manager.registerCallbackOnRelease(
+                SDLK_7, [&pendingActions]() { pendingActions.push_back(ChangeHotbarPosAction{ 6 }); });
+            app.game->input_manager.registerCallbackOnRelease(
+                SDLK_8, [&pendingActions]() { pendingActions.push_back(ChangeHotbarPosAction{ 7 }); });
+            app.game->input_manager.registerCallbackOnRelease(
+                SDLK_9, [&pendingActions]() { pendingActions.push_back(ChangeHotbarPosAction{ 8 }); });
 
             app.game->input_manager.registerCallbackOnRelease(
                 SDLK_Q, [&pendingActions]() { pendingActions.push_back(DropItemAction{}); });
@@ -407,6 +419,60 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
             } else if ((input.type == SDL_EVENT_KEY_UP) && (input.key.key == SDLK_3)) {
                 app.game->input_manager.queueInputOnRelease(SDLK_3);
                 curr_inputs.num3 = false;
+            } else if ((input.type == SDL_EVENT_KEY_DOWN) && (input.key.key == SDLK_4)) {
+                if (!app.game->prev_inputs.num4) {
+                    app.game->input_manager.queueInputOnDown(SDLK_4);
+                }
+                app.game->input_manager.queueInputOnHold(SDLK_4);
+                curr_inputs.num4 = true;
+            } else if ((input.type == SDL_EVENT_KEY_UP) && (input.key.key == SDLK_4)) {
+                app.game->input_manager.queueInputOnRelease(SDLK_4);
+                curr_inputs.num4 = false;
+            } else if ((input.type == SDL_EVENT_KEY_DOWN) && (input.key.key == SDLK_5)) {
+                if (!app.game->prev_inputs.num5) {
+                    app.game->input_manager.queueInputOnDown(SDLK_5);
+                }
+                app.game->input_manager.queueInputOnHold(SDLK_5);
+                curr_inputs.num5 = true;
+            } else if ((input.type == SDL_EVENT_KEY_UP) && (input.key.key == SDLK_5)) {
+                app.game->input_manager.queueInputOnRelease(SDLK_5);
+                curr_inputs.num5 = false;
+            } else if ((input.type == SDL_EVENT_KEY_DOWN) && (input.key.key == SDLK_6)) {
+                if (!app.game->prev_inputs.num6) {
+                    app.game->input_manager.queueInputOnDown(SDLK_6);
+                }
+                app.game->input_manager.queueInputOnHold(SDLK_6);
+                curr_inputs.num6 = true;
+            } else if ((input.type == SDL_EVENT_KEY_UP) && (input.key.key == SDLK_6)) {
+                app.game->input_manager.queueInputOnRelease(SDLK_6);
+                curr_inputs.num6 = false;
+            } else if ((input.type == SDL_EVENT_KEY_DOWN) && (input.key.key == SDLK_7)) {
+                if (!app.game->prev_inputs.num7) {
+                    app.game->input_manager.queueInputOnDown(SDLK_7);
+                }
+                app.game->input_manager.queueInputOnHold(SDLK_7);
+                curr_inputs.num7 = true;
+            } else if ((input.type == SDL_EVENT_KEY_UP) && (input.key.key == SDLK_7)) {
+                app.game->input_manager.queueInputOnRelease(SDLK_7);
+                curr_inputs.num7 = false;
+            } else if ((input.type == SDL_EVENT_KEY_DOWN) && (input.key.key == SDLK_8)) {
+                if (!app.game->prev_inputs.num8) {
+                    app.game->input_manager.queueInputOnDown(SDLK_8);
+                }
+                app.game->input_manager.queueInputOnHold(SDLK_8);
+                curr_inputs.num8 = true;
+            } else if ((input.type == SDL_EVENT_KEY_UP) && (input.key.key == SDLK_8)) {
+                app.game->input_manager.queueInputOnRelease(SDLK_8);
+                curr_inputs.num8 = false;
+            } else if ((input.type == SDL_EVENT_KEY_DOWN) && (input.key.key == SDLK_9)) {
+                if (!app.game->prev_inputs.num9) {
+                    app.game->input_manager.queueInputOnDown(SDLK_9);
+                }
+                app.game->input_manager.queueInputOnHold(SDLK_9);
+                curr_inputs.num9 = true;
+            } else if ((input.type == SDL_EVENT_KEY_UP) && (input.key.key == SDLK_9)) {
+                app.game->input_manager.queueInputOnRelease(SDLK_9);
+                curr_inputs.num9 = false;
             } else if ((input.type == SDL_EVENT_KEY_DOWN) && (input.key.key == SDLK_A)) {
                 if (!app.game->prev_inputs.a) {
                     app.game->input_manager.queueInputOnDown(SDLK_A);
@@ -716,7 +782,9 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
             auto& imguiIO = ImGui::GetIO();
             if (game.f3_window_on) {
                 imguiIO.NavActive = false;
-                ImGui::Begin("F3 Menu", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+                ImGui::Begin("F3 Menu", nullptr,
+                             ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDecoration |
+                                 ImGuiWindowFlags_NoMove);
                 auto const chunkManagerStats = game.chunkManager.getStats();
                 // clang-format off
                 ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / imguiIO.Framerate, imguiIO.Framerate);

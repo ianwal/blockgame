@@ -119,6 +119,7 @@ PRIVATE
     src/item.cpp
     src/img.cpp
     src/handrenderer.cpp
+    src/guihotbar.cpp
     src/game.cpp
     src/font.cpp
     src/entityrenderermanager.cpp

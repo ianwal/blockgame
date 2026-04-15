@@ -1,5 +1,6 @@
 #include "src/app_context.h"
 
+#include "assertr.h"
 #include "src/block.h"
 #include "src/common.h"
 #include "src/lib/json.hpp"
@@ -7,7 +8,6 @@
 
 #include <SDL3/SDL.h>
 
-#include <cassert>
 #include <fstream>
 #include <limits>
 #include <random>
@@ -17,7 +17,7 @@ namespace bg
 
 AppContext::AppContext(SDL_Window* window) : window{ window }
 {
-    assert(this->window != nullptr);
+    assertr(this->window != nullptr);
     mixer = MIX_CreateMixerDevice(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, nullptr);
     track = MIX_CreateTrack(mixer);
 
@@ -55,7 +55,7 @@ AppContext::AppContext(SDL_Window* window) : window{ window }
     }
 
     std::mt19937_64 gen{ std::random_device{}() };
-    std::uniform_int_distribution<> dist(0, std::numeric_limits<std::uint64_t>::max());
+    std::uniform_int_distribution<std::uint64_t> dist(0, std::numeric_limits<std::uint64_t>::max());
     std::uint64_t const worldSeed = dist(gen);
     logInfo("World Seed: {}", worldSeed);
     game->worldSeed = worldSeed;
@@ -65,7 +65,7 @@ Dim2d getWindowSize(AppContext& ctx)
 {
     Dim2d dim{};
     auto get_window_size_status = SDL_GetWindowSize(ctx.window, &dim.width, &dim.height);
-    assert(get_window_size_status);
+    assertr(get_window_size_status);
     return dim;
 }
 

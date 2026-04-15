@@ -10,6 +10,7 @@
 #include "src/crosshair_renderer.h"
 #include "src/entitydroppeditemrenderer.h"
 #include "src/game.h"
+#include "src/guihotbar.h"
 #include "src/handrenderer.h"
 #include "src/linerenderer.h"
 #include "src/logger.h"
@@ -261,6 +262,8 @@ void Renderer::render(AppContext& ctx, float partialTick)
         HandRenderer::render(ctx, partialTick);
         CrosshairRenderer::render(ctx);
     }
+
+    GuiHotbar{}.render(game.playerInventory);
 
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

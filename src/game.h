@@ -62,6 +62,12 @@ struct Inputs {
     bool num1{};
     bool num2{};
     bool num3{};
+    bool num4{};
+    bool num5{};
+    bool num6{};
+    bool num7{};
+    bool num8{};
+    bool num9{};
 
     bool w{};
     bool a{};

@@ -46,7 +46,7 @@ public:
 
     std::optional<ItemStack> getCurrentHeldItem() const;
 
-    std::array<std::array<std::optional<ItemStack>, numColumns>, numRows> getInventory() const;
+    std::array<std::array<std::optional<ItemStack>, numColumns>, numRows> const& getInventory() const;
 
     static constexpr std::uint32_t getNumColumns()
     {

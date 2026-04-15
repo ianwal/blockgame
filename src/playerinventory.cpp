@@ -78,4 +78,10 @@ std::optional<ItemStack> PlayerInventory::getCurrentHeldItem() const
     return inventorySlots[0][currentHotbarSlot];
 }
 
+std::array<std::array<std::optional<ItemStack>, PlayerInventory::numColumns>, PlayerInventory::numRows> const&
+PlayerInventory::getInventory() const
+{
+    return inventorySlots;
+}
+
 } // namespace bg
