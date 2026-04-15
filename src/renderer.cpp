@@ -10,6 +10,7 @@
 #include "src/crosshair_renderer.h"
 #include "src/entitydroppeditemrenderer.h"
 #include "src/game.h"
+#include "src/gui_esc_menu.h"
 #include "src/guihotbar.h"
 #include "src/guiinventory.h"
 #include "src/handrenderer.h"
@@ -261,11 +262,20 @@ void Renderer::render(AppContext& ctx, float partialTick)
 
     if (game.ingameHudVisible) {
         HandRenderer::render(ctx, partialTick);
-        CrosshairRenderer::render(ctx);
-        if (game.inventoryOpen) {
+        if (!game.escMenu.isOpen()) {
+            CrosshairRenderer::render(ctx);
+        }
+    }
+
+    if (game.escMenu.isOpen()) {
+        game.escMenu.render();
+    } else {
+        if (game.guiInventory.isOpen()) {
             GuiInventory{}.render(game.playerInventory);
         } else {
-            GuiHotbar{}.render(game.playerInventory);
+            if (game.ingameHudVisible) {
+                GuiHotbar{}.render(game.playerInventory);
+            }
         }
     }
 

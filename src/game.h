@@ -10,6 +10,8 @@
 #include "src/entityrenderermanager.h"
 #include "src/event_handling.h"
 #include "src/game.h"
+#include "src/gui_esc_menu.h"
+#include "src/guiinventory.h"
 #include "src/input_manager.h"
 #include "src/levelmanager.h"
 #include "src/player.h"
@@ -134,10 +136,12 @@ struct GameContext {
 
     Inputs prev_inputs{};
 
-    bool inventoryOpen   = false;
     bool f3_window_on    = false;
     bool debug_window_on = false;
     bool ingameHudVisible{ true };
+
+    GuiInventory guiInventory{};
+    GuiEscMenu escMenu{};
 
     float fastNoClipSpeed = false;
 
@@ -158,6 +162,13 @@ struct GameContext {
     std::uint64_t tick{};
     std::uint64_t frame_num{};
     Timestamp prevTickTimestamp{};
+
+    bool paused{ false }; /// use unpauseGame() and pauseGame() functions. don't modify directly.
+
+    bool isPaused()
+    {
+        return paused;
+    };
 };
 
 /// Global game singleton.
@@ -171,6 +182,13 @@ public:
 private:
     static GameContext* game;
 };
+
+void pauseGame(GameContext& game);
+
+void unpauseGame(GameContext& game);
+
+/// Quit the game.
+void quitGame(GameContext& game);
 
 /// Get the block that the player is currently looking at, if there is one.
 std::optional<Block> getBlockPlayerIsLookingAt(ChunkManager const& chunkManager, Player const& player);

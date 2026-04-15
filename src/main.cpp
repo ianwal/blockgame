@@ -333,16 +333,12 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
             app.game->input_manager.registerCallbackOnRelease(SDLK_F, [&app]() { toggleWindowFullscreen(app.window); });
 
             app.game->input_manager.registerCallbackOnRelease(SDLK_E, [&app]() {
-                if (app.game->inventoryOpen) {
-                    app.game->inventoryOpen = false;
-                    SDL_HideCursor();
-                    SDL_SetWindowRelativeMouseMode(app.window, true);
+                if (app.game->guiInventory.isOpen()) {
+                    app.game->guiInventory.close();
                 } else {
-                    app.game->inventoryOpen = true;
-                    SDL_ShowCursor();
-                    SDL_SetWindowRelativeMouseMode(app.window, false);
-                    auto const windowSize = getWindowSize(app);
-                    SDL_WarpMouseInWindow(app.window, windowSize.width / 2.0f, windowSize.height / 2.0f);
+                    if (!app.game->escMenu.isOpen()) {
+                        app.game->guiInventory.open();
+                    }
                 }
             });
 
@@ -353,11 +349,24 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
                 SDL_BUTTON_RIGHT, [&app, &pendingActions]() { pendingActions.push_back(PlaceAction{}); });
 
             app.game->input_manager.registerCallbackOnRelease(SDLK_ESCAPE, [&app]() {
-                // Quit the game.
-                std::quick_exit(0); // TODO: Just for debugging for instant exit.
-                SDL_Event quit_event{};
-                quit_event.type = SDL_EVENT_QUIT;
-                SDL_PushEvent(&quit_event);
+                if (app.game->escMenu.isOpen()) {
+                    app.game->escMenu.close();
+                } else {
+                    if (app.game->guiInventory.isOpen()) {
+                        app.game->guiInventory.close();
+                    } else {
+                        app.game->escMenu.open();
+                    }
+                }
+
+                static bool constexpr esc_to_quit = false;
+                if constexpr (esc_to_quit) {
+                    // Quit the game.
+                    std::quick_exit(0); // TODO: Just for debugging for instant exit.
+                    SDL_Event quit_event{};
+                    quit_event.type = SDL_EVENT_QUIT;
+                    SDL_PushEvent(&quit_event);
+                }
             });
 
             gameInputManagerInitialized = true;
@@ -685,7 +694,7 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
             return std::clamp(pitch - (yRel * mouseSensitivity), -89.0f, 89.0f);
         };
 
-        if (!game.debug_window_on && !game.inventoryOpen) {
+        if (!game.debug_window_on && !game.guiInventory.isOpen() && !game.escMenu.isOpen()) {
             // Update camera
             constexpr float mouseSensitivity{ 0.7 };
             if (mouse_updated) {
@@ -728,55 +737,59 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
             if (timeSinceLastTick >= timeBetweenTicks) {
                 ++app.game->tick;
 
+                // Fix camera jitter.
                 game.player.updatePos(game.player.getPos(1.0));
 
-                game.levelManager.updateChunks(game.player.getPos(1.0), game.chunkLoadRadius, game.worldSeed);
+                if (!game.isPaused()) {
 
-                // TODO: This is bad. Sneaking should be updated before processing move actions always.
-                if (game.player.isSneaking()) {
-                    game.player.setSneaking(false);
-                }
+                    game.levelManager.updateChunks(game.player.getPos(1.0), game.chunkLoadRadius, game.worldSeed);
 
-                // Process game logic.
-                if (!game.debug_window_on && !game.inventoryOpen) {
-                    for (auto&& action : pendingActions) {
-                        std::visit(bg::overloaded{
-                                       [&](bg::SwingAction&) {
-                                           if (!alreadySwung) {
-                                               handleSwingAction(game);
-                                               game.player.swing();
-                                               alreadySwung = true;
-                                           }
-                                       },
-                                       [&](bg::SneakAction&) { game.player.setSneaking(true); },
-                                       [&](bg::MoveAction& action) {
-                                           movesBitfield =
-                                               static_cast<MoveAction::Direction>(movesBitfield | action.direction);
-                                       },
-                                       [&](bg::PlaceAction&) {
-                                           handlePlaceAction(game);
-                                           alreadyPlaced = true;
-                                       },
-                                       [&](bg::DropItemAction&) {
-                                           handleDropItemAction(game);
-                                           alreadyDroppedItem = true;
-                                       },
-                                       [&](bg::ChangeHotbarPosAction& action) {
-                                           handleChangeHotbarPosAction(game, action);
-                                           alreadyChangedHotbarPos = true;
-                                       },
-                                   },
-                                   action);
+                    // TODO: This is bad. Sneaking should be updated before processing move actions always.
+                    if (game.player.isSneaking()) {
+                        game.player.setSneaking(false);
                     }
-                    handleMoveAction(game, MoveAction{ movesBitfield });
+
+                    // Process game logic.
+                    if (!game.debug_window_on && !game.guiInventory.isOpen() && !game.escMenu.isOpen()) {
+                        for (auto&& action : pendingActions) {
+                            std::visit(bg::overloaded{
+                                           [&](bg::SwingAction&) {
+                                               if (!alreadySwung) {
+                                                   handleSwingAction(game);
+                                                   game.player.swing();
+                                                   alreadySwung = true;
+                                               }
+                                           },
+                                           [&](bg::SneakAction&) { game.player.setSneaking(true); },
+                                           [&](bg::MoveAction& action) {
+                                               movesBitfield =
+                                                   static_cast<MoveAction::Direction>(movesBitfield | action.direction);
+                                           },
+                                           [&](bg::PlaceAction&) {
+                                               handlePlaceAction(game);
+                                               alreadyPlaced = true;
+                                           },
+                                           [&](bg::DropItemAction&) {
+                                               handleDropItemAction(game);
+                                               alreadyDroppedItem = true;
+                                           },
+                                           [&](bg::ChangeHotbarPosAction& action) {
+                                               handleChangeHotbarPosAction(game, action);
+                                               alreadyChangedHotbarPos = true;
+                                           },
+                                       },
+                                       action);
+                        }
+                        handleMoveAction(game, MoveAction{ movesBitfield });
+                    }
+
+                    game.player.tick();
+
+                    game.levelManager.tick();
+
+                    // TODO: Probably only need to do this periodically.
+                    game.levelManager.cleanupDeadEntities();
                 }
-
-                game.player.tick();
-
-                game.levelManager.tick();
-
-                // TODO: Probably only need to do this periodically.
-                game.levelManager.cleanupDeadEntities();
 
                 pendingActions.clear();
 
@@ -805,12 +818,13 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
             auto& imguiIO = ImGui::GetIO();
             if (game.f3_window_on) {
                 imguiIO.NavActive = false;
+                ImGui::SetNextWindowPos(ImVec2{ 0.0f, 0.0f }, ImGuiCond_Always);
                 ImGui::Begin("F3 Menu", nullptr,
                              ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDecoration |
                                  ImGuiWindowFlags_NoMove);
                 auto const chunkManagerStats = game.chunkManager.getStats();
                 // clang-format off
-                ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / imguiIO.Framerate, imguiIO.Framerate);
+                ImGui::Text("Average: %.3f ms/frame (%.1f FPS)", 1000.0f / imguiIO.Framerate, imguiIO.Framerate);
                 ImGui::Text(" ");
                 ImGui::Text("%s", std::format("Pos: {}", glm::to_string(game.player.getPos(partialTick))).c_str());
                 ImGui::Text("%s", std::format("Angle: {}", glm::to_string(game.player.currentCamera->getFront(partialTick))).c_str());

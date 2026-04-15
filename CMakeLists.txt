@@ -121,6 +121,7 @@ PRIVATE
     src/handrenderer.cpp
     src/guiinventory.cpp
     src/guihotbar.cpp
+    src/gui_esc_menu.cpp
     src/game.cpp
     src/font.cpp
     src/entityrenderermanager.cpp

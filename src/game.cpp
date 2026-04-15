@@ -89,6 +89,16 @@ GameContext::GameContext()
     playerInventory.addItem(ItemStack{ ItemType::LUCKY_BLOCK, 10 });
 }
 
+void pauseGame(GameContext& game)
+{
+    game.paused = true;
+}
+
+void unpauseGame(GameContext& game)
+{
+    game.paused = false;
+}
+
 std::optional<Block> getBlockPlayerIsLookingAt(ChunkManager const& chunkManager, Player const& player)
 {
     // Use first person camera because looking is done in first person.
@@ -408,6 +418,15 @@ void handleChangeHotbarPosAction(GameContext& game, ChangeHotbarPosAction const&
     game.playerInventory.setCurrentHotbarSlot(action.index);
     // TODO: Add change item animation where the item dips out of view and changes to the new one if the new held item
     // is different.
+}
+
+void quitGame(GameContext& game)
+{
+    static_cast<void>(game);
+
+    SDL_Event quit_event{};
+    quit_event.type = SDL_EVENT_QUIT;
+    SDL_PushEvent(&quit_event);
 }
 
 GameContext* GlobalGame::game = nullptr;

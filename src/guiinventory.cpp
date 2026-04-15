@@ -5,11 +5,38 @@
 #include "src/blockitem.h"
 #include "src/playerinventory.h"
 
+#include <SDL3/SDL.h>
+
 #include <format>
 #include <string>
 
 namespace bg
 {
+
+void GuiInventory::open()
+{
+    if (!isopen) {
+        isopen = true;
+        SDL_ShowCursor();
+        SDL_SetWindowRelativeMouseMode(App::get().window, false);
+        auto const windowSize = getWindowSize(App::get());
+        SDL_WarpMouseInWindow(App::get().window, windowSize.width / 2.0f, windowSize.height / 2.0f);
+    }
+}
+
+void GuiInventory::close()
+{
+    if (isopen) {
+        isopen = false;
+        SDL_HideCursor();
+        SDL_SetWindowRelativeMouseMode(App::get().window, true);
+    }
+}
+
+bool GuiInventory::isOpen() const
+{
+    return isopen;
+}
 
 void GuiInventory::render(PlayerInventory const& playerInventory)
 {
@@ -20,7 +47,7 @@ void GuiInventory::render(PlayerInventory const& playerInventory)
     ImGui::Begin("##tint", nullptr,
                  ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
                      ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoBringToFrontOnFocus);
-    ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(0, 0), ImGui::GetIO().DisplaySize, IM_COL32(0, 0, 0, 120));
+    ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(0, 0), ImGui::GetIO().DisplaySize, IM_COL32(0, 0, 0, 200));
     ImGui::End();
 
     ImVec2 const gameWindowSize = ImGui::GetIO().DisplaySize;
