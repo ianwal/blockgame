@@ -73,6 +73,7 @@ struct Inputs {
     bool a{};
     bool s{};
     bool d{};
+    bool e{};
     bool z{};
     bool q{};
     bool f{};
@@ -133,6 +134,7 @@ struct GameContext {
 
     Inputs prev_inputs{};
 
+    bool inventoryOpen   = false;
     bool f3_window_on    = false;
     bool debug_window_on = false;
     bool ingameHudVisible{ true };

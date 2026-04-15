@@ -10,6 +10,13 @@
 namespace bg
 {
 
+PlayerInventory::PlayerInventory()
+{
+    for (auto& row : inventorySlots) {
+        row.fill(std::nullopt);
+    }
+}
+
 std::uint32_t PlayerInventory::addItem(ItemStack itemStack)
 {
     // Try to add to an existing stack.

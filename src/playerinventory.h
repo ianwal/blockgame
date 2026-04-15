@@ -26,7 +26,7 @@ private:
     static constexpr std::uint32_t numRows    = 5;
 
 public:
-    PlayerInventory() = default;
+    PlayerInventory();
 
     /// Try to add an item to the inventory in the first available space.
     ///

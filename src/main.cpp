@@ -332,6 +332,20 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
 
             app.game->input_manager.registerCallbackOnRelease(SDLK_F, [&app]() { toggleWindowFullscreen(app.window); });
 
+            app.game->input_manager.registerCallbackOnRelease(SDLK_E, [&app]() {
+                if (app.game->inventoryOpen) {
+                    app.game->inventoryOpen = false;
+                    SDL_HideCursor();
+                    SDL_SetWindowRelativeMouseMode(app.window, true);
+                } else {
+                    app.game->inventoryOpen = true;
+                    SDL_ShowCursor();
+                    SDL_SetWindowRelativeMouseMode(app.window, false);
+                    auto const windowSize = getWindowSize(app);
+                    SDL_WarpMouseInWindow(app.window, windowSize.width / 2.0f, windowSize.height / 2.0f);
+                }
+            });
+
             app.game->input_manager.registerCallbackOnRelease(
                 SDL_BUTTON_LEFT, [&app, &pendingActions]() { pendingActions.push_back(SwingAction{}); });
 
@@ -536,6 +550,15 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
             } else if ((input.type == SDL_EVENT_KEY_UP) && (input.key.key == SDLK_LSHIFT)) {
                 app.game->input_manager.queueInputOnRelease(SDLK_LSHIFT);
                 curr_inputs.lshift = false;
+            } else if ((input.type == SDL_EVENT_KEY_DOWN) && (input.key.key == SDLK_E)) {
+                if (!app.game->prev_inputs.e) {
+                    app.game->input_manager.queueInputOnDown(SDLK_E);
+                }
+                app.game->input_manager.queueInputOnHold(SDLK_E);
+                curr_inputs.e = true;
+            } else if ((input.type == SDL_EVENT_KEY_UP) && (input.key.key == SDLK_E)) {
+                app.game->input_manager.queueInputOnRelease(SDLK_E);
+                curr_inputs.e = false;
             } else if ((input.type == SDL_EVENT_KEY_DOWN) && (input.key.key == SDLK_Z)) {
                 if (!app.game->prev_inputs.z) {
                     app.game->input_manager.queueInputOnDown(SDLK_Z);
@@ -662,7 +685,7 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
             return std::clamp(pitch - (yRel * mouseSensitivity), -89.0f, 89.0f);
         };
 
-        if (!game.debug_window_on) {
+        if (!game.debug_window_on && !game.inventoryOpen) {
             // Update camera
             constexpr float mouseSensitivity{ 0.7 };
             if (mouse_updated) {
@@ -671,13 +694,13 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
                 game.player.currentCamera->setPitch(
                     calculateNewPitch(curr_inputs.yRel, game.player.currentCamera->getPitch(), mouseSensitivity));
             }
-
-            // Note:
-            // The camera front must be calculated before movement because camera front is used in movement
-            // calculations.
-            game.player.currentCamera->updateFront(
-                bg::cameraFront(game.player.currentCamera->getYaw(), game.player.currentCamera->getPitch()));
         }
+
+        // Note:
+        // The camera front must be calculated before movement because camera front is used in movement
+        // calculations.
+        game.player.currentCamera->updateFront(
+            bg::cameraFront(game.player.currentCamera->getYaw(), game.player.currentCamera->getPitch()));
 
         std::chrono::nanoseconds timeSinceLastTick = bg::get_time() - app.game->prevTickTimestamp;
 
@@ -715,7 +738,7 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
                 }
 
                 // Process game logic.
-                if (!game.debug_window_on) {
+                if (!game.debug_window_on && !game.inventoryOpen) {
                     for (auto&& action : pendingActions) {
                         std::visit(bg::overloaded{
                                        [&](bg::SwingAction&) {
