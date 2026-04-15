@@ -4,7 +4,8 @@
       "id": 0,
       "name": "block.air",
       "prettyName": "Air",
-      "breakSounds": []
+      "breakSounds": [],
+      "hardness": -1.0
     },
     {
       "id": 1,
@@ -15,7 +16,8 @@
         "block.dig.cobble.2",
         "block.dig.cobble.3",
         "block.dig.cobble.4"
-      ]
+      ],
+      "hardness": 1.5
     },
     {
       "id": 2,
@@ -26,7 +28,8 @@
         "block.dig.cobble.2",
         "block.dig.cobble.3",
         "block.dig.cobble.4"
-      ]
+      ],
+      "hardness": 1.5
     },
     {
       "id": 3,
@@ -37,7 +40,8 @@
         "block.dig.grass.2",
         "block.dig.grass.3",
         "block.dig.grass.4"
-      ]
+      ],
+      "hardness": 1.0
     },
     {
       "id": 4,
@@ -48,7 +52,8 @@
         "block.dig.dirt.2",
         "block.dig.dirt.3",
         "block.dig.dirt.4"
-      ]
+      ],
+      "hardness": 1.0
     },
     {
       "id": 5,
@@ -56,7 +61,8 @@
       "prettyName": "Lucky Block",
       "breakSounds": [
         "block.dig.cobble.1"
-      ]
+      ],
+      "hardness": 1.5
     },
     {
       "id": 6,
@@ -67,7 +73,8 @@
         "block.dig.wood.2",
         "block.dig.wood.3",
         "block.dig.wood.4"
-      ]
+      ],
+      "hardness": 2.0
     },
     {
       "id": 7,
@@ -75,7 +82,8 @@
       "prettyName": "Water",
       "breakSounds": [
         "block.dig.cobble.1"
-      ]
+      ],
+      "hardness": -1.0
     },
     {
       "id": 8,
@@ -86,7 +94,8 @@
         "block.dig.grass.2",
         "block.dig.grass.3",
         "block.dig.grass.4"
-      ]
+      ],
+      "hardness": 0.2
     },
     {
       "id": 9,
@@ -97,7 +106,8 @@
         "block.dig.cobble.2",
         "block.dig.cobble.3",
         "block.dig.cobble.4"
-      ]
+      ],
+      "hardness": -1.0
     }
   ]
 }

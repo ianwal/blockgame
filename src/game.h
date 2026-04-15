@@ -3,6 +3,7 @@
 #include "src/actions.h"
 #include "src/assertr.h"
 #include "src/block.h"
+#include "src/blockdamagetracker.h"
 #include "src/button.h"
 #include "src/camera.h"
 #include "src/chunk.h"
@@ -154,12 +155,15 @@ struct GameContext {
 
     PlayerInventory playerInventory{};
 
+    BlockDamageTracker blockDamageTracker{};
+
     std::uint64_t worldSeed{};
 
     std::unique_ptr<EventBuffer> input_event_buffer{ std::make_unique<EventBuffer>() };
     InputManager input_manager{};
     std::vector<InputAction> pendingActions{};
     std::uint64_t tick{};
+    std::uint64_t ingameTickCounter{}; /// Actual game tick counter (unpaused)
     std::uint64_t frame_num{};
     Timestamp prevTickTimestamp{};
 

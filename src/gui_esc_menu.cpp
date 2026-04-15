@@ -56,10 +56,6 @@ void GuiEscMenu::render()
     ImGui::Begin("ESC Menu", nullptr,
                  ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove);
 
-    auto centerElement = [](float elementWidth) {
-        ImGui::SetCursorPosX((ImGui::GetWindowSize().x - elementWidth) * 0.5f);
-    };
-
     if (ImGui::Button("Resume Game", ImVec2(120.0f, 0.0f))) {
         this->close();
     }

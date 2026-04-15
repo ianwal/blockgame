@@ -187,7 +187,15 @@ void handleSwingAction(GameContext& game)
         return;
     }
 
-    Block const block            = blockResult.value();
+    Block const block      = blockResult.value();
+    float const handDamage = 1.0f;
+    game.blockDamageTracker.damageBlock(block, handDamage, game.ingameTickCounter);
+
+    if (game.blockDamageTracker.getDamageProgress() < 1.0f) {
+        // Block not broken.
+        return;
+    }
+
     bool const removeBlockResult = game.levelManager.removeBlock(block);
     if (!removeBlockResult) {
         return;
@@ -209,7 +217,6 @@ void handleSwingAction(GameContext& game)
         droppedItem->setVelocity(vel);
         game.levelManager.addEntity(std::move(droppedItem));
     }
-    playSound2d(getBlockBreakSoundName(block.type));
 }
 
 void handleMoveAction(GameContext& game, MoveAction const& action)

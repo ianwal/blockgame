@@ -134,6 +134,7 @@ PRIVATE
     src/chunk.cpp
     src/button.cpp
     src/blockitem.cpp
+    src/blockdamagetracker.cpp
     src/block.cpp
     src/block_renderer.cpp
     src/audio.cpp

@@ -220,17 +220,31 @@ std::vector<std::string> BlockRegistry::getBreakSounds(BlockType type)
     return {};
 }
 
+float BlockRegistry::getHardness(BlockType type)
+{
+    for (auto const& [blockType, blockHardness] : hardnesses) {
+        if (type == blockType) {
+            return blockHardness;
+        }
+    }
+
+    assertr(false, std::format("No block hardness found for block type: {}", std::to_underlying(type)));
+    return {};
+}
+
 BlockRegistry& BlockRegistry::load(std::string const& name, std::uint16_t id, std::string const& prettyName,
-                                   std::vector<std::string> const& blockBreakSounds)
+                                   std::vector<std::string> const& blockBreakSounds, float hardness)
 {
     auto const type = static_cast<BlockType>(id);
     assertr(!names.contains(type), name);
     assertr(!prettyNames.contains(type), name);
     assertr(!breakSounds.contains(type), name);
+    assertr(!hardnesses.contains(type), name);
 
     names[type]       = name;
     prettyNames[type] = prettyName;
     breakSounds[type] = blockBreakSounds;
+    hardnesses[type]  = hardness;
     return *this;
 }
 

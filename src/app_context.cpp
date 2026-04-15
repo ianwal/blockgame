@@ -33,7 +33,8 @@ AppContext::AppContext(SDL_Window* window) : window{ window }
         std::ifstream blockData{ "assets/data/blocks.json" };
         nlohmann::json const blocks = nlohmann::json::parse(blockData);
         for (auto const& block : blocks["blocks"]) {
-            blockRegistry.load(block["name"], block["id"], block["prettyName"], block["breakSounds"]);
+            blockRegistry.load(block["name"], block["id"], block["prettyName"], block["breakSounds"],
+                               block["hardness"]);
         }
     }
 

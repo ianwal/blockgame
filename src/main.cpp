@@ -342,7 +342,7 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
                 }
             });
 
-            app.game->input_manager.registerCallbackOnRelease(
+            app.game->input_manager.registerCallbackOnHold(
                 SDL_BUTTON_LEFT, [&app, &pendingActions]() { pendingActions.push_back(SwingAction{}); });
 
             app.game->input_manager.registerCallbackOnRelease(
@@ -397,8 +397,8 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
                     // any keycodes, so it's fine for now.
                     app.game->input_manager.queueInputOnDown(SDL_BUTTON_LEFT);
                 }
-                // TODO: This doesn't work. Button/mouse event is different than keyboard events.
-                app.game->input_manager.queueInputOnHold(SDL_BUTTON_LEFT);
+                // Note: No hold event here, it has to be applied below because mouse buttons don't send a constant down
+                // event.
                 curr_inputs.mouse1 = true;
             } else if ((input.type == SDL_EVENT_MOUSE_BUTTON_UP) && (input.button.button == SDL_BUTTON_LEFT)) {
                 app.game->input_manager.queueInputOnRelease(SDL_BUTTON_LEFT);
@@ -409,8 +409,8 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
                     // any keycodes, so it's fine for now.
                     app.game->input_manager.queueInputOnDown(SDL_BUTTON_RIGHT);
                 }
-                // TODO: This doesn't work. Button/mouse event is different than keyboard events.
-                app.game->input_manager.queueInputOnHold(SDL_BUTTON_RIGHT);
+                // Note: No hold event here, it has to be applied below because mouse buttons don't send a constant down
+                // event.
                 curr_inputs.mouse2 = true;
             } else if ((input.type == SDL_EVENT_MOUSE_BUTTON_UP) && (input.button.button == SDL_BUTTON_RIGHT)) {
                 app.game->input_manager.queueInputOnRelease(SDL_BUTTON_RIGHT);
@@ -659,6 +659,16 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
             }
         }
 
+        // Apply mouse button on hold not working based only on down event, since down event is only applied once.
+        if (curr_inputs.mouse1 == true) {
+            app.game->input_manager.queueInputOnHold(SDL_BUTTON_LEFT);
+        }
+
+        // Apply mouse button on hold not working based only on down event, since down event is only applied once.
+        if (curr_inputs.mouse2 == true) {
+            app.game->input_manager.queueInputOnHold(SDL_BUTTON_RIGHT);
+        }
+
         // Process input
         app.game->input_manager.processQueues();
 
@@ -749,6 +759,13 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
                         game.player.setSneaking(false);
                     }
 
+                    // Reset current block tracker if looked away from the block.
+                    auto currentBlockResult = getBlockPlayerIsLookingAt(game.chunkManager, game.player);
+                    if (!currentBlockResult.has_value() ||
+                        (*currentBlockResult != game.blockDamageTracker.getCurrentBlock())) {
+                        game.blockDamageTracker = BlockDamageTracker{};
+                    }
+
                     // Process game logic.
                     if (!game.debug_window_on && !game.guiInventory.isOpen() && !game.escMenu.isOpen()) {
                         for (auto&& action : pendingActions) {
@@ -775,6 +792,7 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
                                            },
                                            [&](bg::ChangeHotbarPosAction& action) {
                                                handleChangeHotbarPosAction(game, action);
+                                               game.blockDamageTracker = BlockDamageTracker{};
                                                alreadyChangedHotbarPos = true;
                                            },
                                        },
@@ -783,12 +801,16 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
                         handleMoveAction(game, MoveAction{ movesBitfield });
                     }
 
+                    game.blockDamageTracker.tick(game.ingameTickCounter);
+
                     game.player.tick();
 
                     game.levelManager.tick();
 
                     // TODO: Probably only need to do this periodically.
                     game.levelManager.cleanupDeadEntities();
+
+                    ++game.ingameTickCounter;
                 }
 
                 pendingActions.clear();
@@ -840,6 +862,8 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
                 ImGui::Text(" ");
                 ImGui::Text("%s", std::format("Loaded Chunk Count: {}", chunkManagerStats.loadedChunkCount).c_str());
                 ImGui::Text("%s", std::format("World Chunk Count: {}", chunkManagerStats.worldChunkCount).c_str());
+
+                ImGui::Text("%s", std::format("Block Damage: {}", game.blockDamageTracker.getDamageProgress()).c_str());
                 // clang-format on
                 ImGui::End();
             }

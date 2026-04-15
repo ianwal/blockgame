@@ -74,3 +74,7 @@ Blocks positions are integers, and the integer is the center of the block in wor
 ```
 ffmpeg -i input.ogg -c:a libopus -b:a 96k -vbr on -compression_level 10 output.opus
 ```
+
+## Image Resampling
+
+When resampling pixel art, use Nearest Neighbor resampling for the best results.

@@ -52,6 +52,9 @@ constexpr ivec3 toBlockPos(glm::vec3 const& worldPos)
 struct Block {
     ivec3 pos{};
     BlockType type{};
+
+    bool operator==(Block const&) const = default;
+    bool operator!=(Block const&) const = default;
 };
 
 struct BlockFaceConfig {
@@ -62,9 +65,9 @@ struct BlockFaceConfig {
     GLuint left;
     GLuint right;
 
-    bool operator==(const BlockFaceConfig& other) const = default;
+    bool operator==(BlockFaceConfig const&) const = default;
 
-    bool operator<(const BlockFaceConfig& other) const
+    bool operator<(BlockFaceConfig const& other) const
     {
         if (top != other.top)
             return top < other.top;
@@ -86,7 +89,7 @@ namespace std
 {
 template <>
 struct hash<bg::BlockFaceConfig> {
-    size_t operator()(const bg::BlockFaceConfig& cfg) const
+    size_t operator()(bg::BlockFaceConfig const& cfg) const
     {
         return std::hash<GLuint>()(cfg.top) ^ (std::hash<GLuint>()(cfg.bottom) << 1) ^
                (std::hash<GLuint>()(cfg.front) << 2) ^ (std::hash<GLuint>()(cfg.back) << 3) ^
@@ -118,17 +121,21 @@ public:
     /// Get the block pretty name.
     std::string getPrettyName(BlockType type);
 
+    /// Get the block hardness.
+    float getHardness(BlockType type);
+
     /// Get the block break sounds.
     std::vector<std::string> getBreakSounds(BlockType type);
 
     /// Load the block data.
     BlockRegistry& load(std::string const& name, std::uint16_t id, std::string const& prettyName,
-                        std::vector<std::string> const& blockBreakSounds);
+                        std::vector<std::string> const& blockBreakSounds, float hardness);
 
 private:
     std::map<BlockType, std::string, std::less<>> names{};
     std::map<BlockType, std::string, std::less<>> prettyNames{};
     std::map<BlockType, std::vector<std::string>, std::less<>> breakSounds{};
+    std::map<BlockType, float, std::less<>> hardnesses{};
 };
 
 } // namespace bg
