@@ -5,6 +5,7 @@
 #include "src/app_context.h"
 #include "src/block.h"
 #include "src/block_renderer.h"
+#include "src/blockbreakprogressrenderer.h"
 #include "src/button.h"
 #include "src/chunkrenderer.h"
 #include "src/crosshair_renderer.h"
@@ -191,6 +192,7 @@ void Renderer::init()
     glBindBufferBase(GL_UNIFORM_BUFFER, 0, viewProjectionUboID); // bind to slot 0
 
     // BlockRenderer::init();
+    BlockBreakProgressRenderer::init();
     ChunkRenderer::init();
     LineRenderer::init();
     CrosshairRenderer::init();
@@ -201,6 +203,7 @@ void Renderer::cleanup()
 {
     glDeleteBuffers(1, &viewProjectionUboID);
     // BlockRenderer::cleanup();
+    BlockBreakProgressRenderer::cleanup();
     ChunkRenderer::cleanup();
     LineRenderer::cleanup();
     CrosshairRenderer::cleanup();
@@ -245,6 +248,8 @@ void Renderer::render(AppContext& ctx, float partialTick)
     for (auto const& entity : game.levelManager.getEntities()) {
         game.entityRendererManager.renderEntity(*entity, partialTick);
     }
+
+    BlockBreakProgressRenderer::render();
 
     // TODO: This is probably slow to compute every frame. Pre-compute per tick and get from the player instead?
     std::optional<Block> const lookedAtBlock = getBlockPlayerIsLookingAt(game.chunkManager, game.player);

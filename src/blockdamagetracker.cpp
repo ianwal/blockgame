@@ -35,7 +35,7 @@ void BlockDamageTracker::damageBlock(Block const& block, float damage, std::uint
     }
 }
 
-float BlockDamageTracker::getDamageProgress()
+float BlockDamageTracker::getDamageProgress() const
 {
     return currentDamage;
 }

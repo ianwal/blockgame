@@ -17,7 +17,7 @@ public:
     void damageBlock(Block const& block, float damage, std::uint64_t currentIngameTickCounter);
 
     /// Get the block damage progress from 0.0 to 1.0.
-    float getDamageProgress();
+    float getDamageProgress() const;
 
     Block const& getCurrentBlock() const;
 

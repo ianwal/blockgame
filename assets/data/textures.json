@@ -51,6 +51,46 @@
     {
       "name": "block.bedrock",
       "path": "assets/textures/bedrock.png"
+    },
+    {
+      "name": "break.0",
+      "path": "assets/textures/break/break-0.png"
+    },
+    {
+      "name": "break.1",
+      "path": "assets/textures/break/break-1.png"
+    },
+    {
+      "name": "break.2",
+      "path": "assets/textures/break/break-2.png"
+    },
+    {
+      "name": "break.3",
+      "path": "assets/textures/break/break-3.png"
+    },
+    {
+      "name": "break.4",
+      "path": "assets/textures/break/break-4.png"
+    },
+    {
+      "name": "break.5",
+      "path": "assets/textures/break/break-5.png"
+    },
+    {
+      "name": "break.6",
+      "path": "assets/textures/break/break-6.png"
+    },
+    {
+      "name": "break.7",
+      "path": "assets/textures/break/break-7.png"
+    },
+    {
+      "name": "break.8",
+      "path": "assets/textures/break/break-8.png"
+    },
+    {
+      "name": "break.9",
+      "path": "assets/textures/break/break-9.png"
     }
   ]
 }
