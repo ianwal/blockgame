@@ -31,6 +31,10 @@
     {
       "blockName": "block.bedrock",
       "itemName": "block.bedrock"
+    },
+    {
+      "blockName": "block.oakplanks",
+      "itemName": "block.oakplanks"
     }
   ]
 }

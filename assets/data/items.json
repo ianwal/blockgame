@@ -39,6 +39,11 @@
       "id": 7,
       "name": "block.bedrock",
       "prettyName": "Bedrock"
+    },
+    {
+      "id": 8,
+      "name": "block.oakplanks",
+      "prettyName": "Oak Planks"
     }
   ]
 }

@@ -108,6 +108,18 @@
         "block.dig.cobble.4"
       ],
       "hardness": -1.0
+    },
+    {
+      "id": 10,
+      "name": "block.oakplanks",
+      "prettyName": "Oak Planks",
+      "breakSounds": [
+        "block.dig.wood.1",
+        "block.dig.wood.2",
+        "block.dig.wood.3",
+        "block.dig.wood.4"
+      ],
+      "hardness": 1.5
     }
   ]
 }

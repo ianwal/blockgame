@@ -21,6 +21,7 @@ enum class ItemType : std::uint16_t {
     OAK_WOOD,
     OAK_LEAF,
     BEDROCK_BLOCK,
+    OAKPLANKS,
 };
 
 std::string to_string(ItemType itemType);

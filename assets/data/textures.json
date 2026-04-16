@@ -53,6 +53,10 @@
       "path": "assets/textures/bedrock.png"
     },
     {
+      "name": "block.oakplanks",
+      "path": "assets/textures/planks-oak.png"
+    },
+    {
       "name": "break.0",
       "path": "assets/textures/break/break-0.png"
     },
