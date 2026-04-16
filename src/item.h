@@ -31,6 +31,8 @@ struct ItemStack {
 
 std::string to_string(ItemType itemType);
 
+GLuint getItemTexture(ItemType itemType);
+
 class ItemRegistry
 {
 public:

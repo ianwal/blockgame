@@ -1,0 +1,16 @@
+{
+  "craftingRecipes": [
+    {
+      "input": [
+        {
+          "itemName": "block.oak",
+          "amount": 1
+        }
+      ],
+      "output": {
+        "itemName": "block.oakplanks",
+        "amount": 4
+      }
+    }
+  ]
+}

@@ -15,6 +15,11 @@ std::string to_string(ItemType itemType)
     return App::get().itemRegistry.getName(itemType);
 }
 
+GLuint getItemTexture(ItemType itemType)
+{
+    return getBlockTexture(toBlockType(itemType).value());
+}
+
 ItemType ItemRegistry::getType(std::string const& name)
 {
     for (auto const& [itemType, itemName] : names) {

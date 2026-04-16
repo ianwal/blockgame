@@ -49,8 +49,8 @@ std::uint32_t PlayerInventory::addItem(ItemStack itemStack)
 
 bool PlayerInventory::removeItem(InventorySlot slot, std::uint32_t amount)
 {
-    assertr(slot.x < getNumColumns()), std::format("{}", slot.x);
-    assertr(slot.y < getNumRows()), std::format("{}", slot.y);
+    assertr(slot.x < getNumRows()), std::format("{}", slot.x);
+    assertr(slot.y < getNumColumns()), std::format("{}", slot.y);
 
     auto& inventorySlot = inventorySlots[slot.x][slot.y];
     if (!inventorySlot.has_value()) {
@@ -69,6 +69,32 @@ bool PlayerInventory::removeItem(InventorySlot slot, std::uint32_t amount)
     return true;
 }
 
+std::uint32_t PlayerInventory::removeItemPartial(InventorySlot slot, std::uint32_t amount)
+{
+    assertr(slot.x < getNumRows()), std::format("{}", slot.x);
+    assertr(slot.y < getNumColumns()), std::format("{}", slot.y);
+
+    auto& inventorySlot = inventorySlots[slot.x][slot.y];
+    if (!inventorySlot.has_value()) {
+        return false;
+    }
+
+    std::uint32_t result{};
+    if (inventorySlot->amount < amount) {
+        result                = inventorySlot->amount;
+        inventorySlot->amount = 0;
+    } else {
+        result = amount;
+        inventorySlot->amount -= amount;
+    }
+
+    if (inventorySlot->amount == 0U) {
+        inventorySlot = std::nullopt;
+    }
+
+    return result;
+}
+
 void PlayerInventory::setCurrentHotbarSlot(std::uint32_t slotX)
 {
     assertr(slotX < getHotbarSize(), std::format("{}", slotX));
@@ -85,8 +111,7 @@ std::optional<ItemStack> PlayerInventory::getCurrentHeldItem() const
     return inventorySlots[0][currentHotbarSlot];
 }
 
-std::array<std::array<std::optional<ItemStack>, PlayerInventory::numColumns>, PlayerInventory::numRows> const&
-PlayerInventory::getInventory() const
+PlayerInventory::InventoryType const& PlayerInventory::getInventory() const
 {
     return inventorySlots;
 }

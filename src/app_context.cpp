@@ -3,6 +3,7 @@
 #include "assertr.h"
 #include "src/block.h"
 #include "src/common.h"
+#include "src/crafting.h"
 #include "src/lib/json.hpp"
 #include "src/logger.h"
 
@@ -53,6 +54,21 @@ AppContext::AppContext(SDL_Window* window) : window{ window }
             blockItemRegistry.load(blockItem["blockName"], blockItem["itemName"]);
         }
         // TODO: Check if the loaded block and item names actually exist.
+    }
+
+    {
+        std::ifstream craftingRecipeData{ "assets/data/craftingrecipes.json" };
+        nlohmann::json const craftingRecipes = nlohmann::json::parse(craftingRecipeData);
+        for (auto const& craftingRecipe : craftingRecipes["craftingRecipes"]) {
+            CraftingRecipe recipe{};
+            for (auto const& input : craftingRecipe["input"]) {
+                recipe.inputs.push_back(
+                    ItemStack{ itemRegistry.getType(input["itemName"]), static_cast<std::uint32_t>(input["amount"]) });
+            }
+            recipe.output = ItemStack{ itemRegistry.getType(craftingRecipe["output"]["itemName"]),
+                                       static_cast<std::uint32_t>(craftingRecipe["output"]["amount"]) };
+            craftingRecipeRegistry.load(recipe);
+        }
     }
 
     std::mt19937_64 gen{ std::random_device{}() };

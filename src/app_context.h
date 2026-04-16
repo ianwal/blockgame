@@ -4,6 +4,7 @@
 #include "src/block.h"
 #include "src/blockitem.h"
 #include "src/common.h"
+#include "src/crafting.h"
 #include "src/game.h"
 #include "src/item.h"
 #include "src/time.h"
@@ -31,6 +32,7 @@ struct AppContext {
     BlockItemRegistry blockItemRegistry{};
     BlockRegistry blockRegistry{};
     ItemRegistry itemRegistry{};
+    CraftingRecipeRegistry craftingRecipeRegistry{};
 
     SDL_AppResult app_quit{ SDL_APP_CONTINUE };
     Timestamp current_time{};

@@ -129,6 +129,7 @@ PRIVATE
     src/entitydroppeditem.cpp
     src/entity.cpp
     src/crosshair_renderer.cpp
+    src/crafting.cpp
     src/common.cpp
     src/chunkrenderer.cpp
     src/chunk.cpp
