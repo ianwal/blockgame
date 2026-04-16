@@ -66,6 +66,10 @@ void GuiEscMenu::render()
 
     ImGui::Text("Options");
     ImGui::SliderFloat("FOV", &App::get().gameOptions.fov, 70.0f, 110.0f, "%.0f", ImGuiSliderFlags_AlwaysClamp);
+    ImGui::SliderInt("Simulation Distance", reinterpret_cast<int*>(&App::get().gameOptions.chunkLoadRadius), 1, 32,
+                     "%d", ImGuiSliderFlags_AlwaysClamp);
+    ImGui::SliderFloat("Mouse Sensitivity", &App::get().gameOptions.mouseSensitivity, 0.0f, 1.0f, "%.2f",
+                       ImGuiSliderFlags_AlwaysClamp);
 
     ImGui::End();
 }

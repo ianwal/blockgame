@@ -268,8 +268,7 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
     auto& pendingActions = game.pendingActions;
 
     try {
-        static bool gameInputManagerInitialized = false;
-        if (!gameInputManagerInitialized) {
+        if (!game.isInputManagerInitialized) {
             app.game->input_manager.registerCallbackOnRelease(
                 SDLK_F1, [&app]() { app.game->ingameHudVisible = !app.game->ingameHudVisible; });
 
@@ -369,7 +368,7 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
                 }
             });
 
-            gameInputManagerInitialized = true;
+            app.game->isInputManagerInitialized = true;
         }
 
         // Assume nothing is changed, overwrite later.
@@ -750,8 +749,8 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
                 game.player.updatePos(game.player.getPos(1.0));
 
                 if (!game.isPaused()) {
-
-                    game.levelManager.updateChunks(game.player.getPos(1.0), game.chunkLoadRadius, game.worldSeed);
+                    game.levelManager.updateChunks(game.player.getPos(1.0), app.gameOptions.chunkLoadRadius,
+                                                   game.worldSeed);
 
                     // TODO: This is bad. Sneaking should be updated before processing move actions always.
                     if (game.player.isSneaking()) {

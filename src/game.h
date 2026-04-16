@@ -148,9 +148,6 @@ struct GameContext {
 
     ChunkManager chunkManager{};
 
-    std::int32_t chunkLoadRadius{ 4 };
-    std::int32_t chunkRenderDistance = chunkLoadRadius;
-
     LevelManager levelManager{};
 
     PlayerInventory playerInventory{};
@@ -160,6 +157,7 @@ struct GameContext {
     std::uint64_t worldSeed{};
 
     std::unique_ptr<EventBuffer> input_event_buffer{ std::make_unique<EventBuffer>() };
+    bool isInputManagerInitialized = false;
     InputManager input_manager{};
     std::vector<InputAction> pendingActions{};
     std::uint64_t tick{};

@@ -12,15 +12,19 @@
 #include <SDL3/SDL.h>
 #include <SDL3_mixer/SDL_mixer.h>
 
-#include <cassert>
+#include <cstdint>
 #include <cstdlib>
 
 namespace bg
 {
 
 struct GameOptions {
+    // Input
     float fov{ 105.0f };
     float mouseSensitivity{ 0.7f };
+
+    // Game
+    std::uint32_t chunkLoadRadius{ 4 };
 };
 
 struct AppContext {
