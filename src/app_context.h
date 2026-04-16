@@ -20,6 +20,7 @@ namespace bg
 
 struct GameOptions {
     float fov{ 105.0f };
+    float mouseSensitivity{ 0.7f };
 };
 
 struct AppContext {

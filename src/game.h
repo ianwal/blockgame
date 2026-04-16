@@ -8,15 +8,15 @@
 #include "src/camera.h"
 #include "src/chunk.h"
 #include "src/entity.h"
-#include "src/entityrenderermanager.h"
 #include "src/event_handling.h"
 #include "src/game.h"
-#include "src/gui_esc_menu.h"
-#include "src/guiinventory.h"
+#include "src/gui/gui_esc_menu.h"
+#include "src/gui/guiinventory.h"
 #include "src/input_manager.h"
 #include "src/levelmanager.h"
 #include "src/player.h"
 #include "src/playerinventory.h"
+#include "src/render/entityrenderermanager.h"
 #include "src/time.h"
 
 #include <SDL3/SDL.h>

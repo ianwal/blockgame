@@ -1,7 +1,7 @@
 #pragma once
 
 #include "src/entity.h"
-#include "src/entityrenderer.h"
+#include "src/render/entityrenderer.h"
 
 #include <map>
 #include <memory>

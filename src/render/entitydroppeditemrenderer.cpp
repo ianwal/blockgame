@@ -1,4 +1,4 @@
-#include "src/entitydroppeditemrenderer.h"
+#include "src/render/entitydroppeditemrenderer.h"
 
 #include "src/app_context.h"
 #include "src/block.h"

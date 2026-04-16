@@ -1,4 +1,4 @@
-#include "src/guiinventory.h"
+#include "src/gui/guiinventory.h"
 
 #include "imgui.h"
 #include "src/app_context.h"

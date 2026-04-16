@@ -1,9 +1,9 @@
-#include "src/blockbreakprogressrenderer.h"
+#include "src/render/blockbreakprogressrenderer.h"
 
 #include "src/app_context.h"
 #include "src/block.h"
-#include "src/chunkrenderer.h"
 #include "src/game.h"
+#include "src/render/chunkrenderer.h"
 #include "src/shaders.h"
 #include "src/time.h"
 

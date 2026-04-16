@@ -4,11 +4,11 @@
 #include "src/audio.h"
 #include "src/block.h"
 #include "src/camera.h"
-#include "src/chunkrenderer.h"
 #include "src/entity.h"
 #include "src/entitydroppeditem.h"
-#include "src/entitydroppeditemrenderer.h"
 #include "src/logger.h"
+#include "src/render/chunkrenderer.h"
+#include "src/render/entitydroppeditemrenderer.h"
 #include "src/utils.h"
 
 #include <SDL3/SDL.h>

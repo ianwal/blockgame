@@ -110,35 +110,35 @@ target_sources(${EXECUTABLE_NAME}
 PRIVATE
     src/time.cpp
     src/shaders.cpp
-    src/renderer.cpp
+    src/render/renderer.cpp
+    src/render/linerenderer.cpp
+    src/render/handrenderer.cpp
+    src/render/entityrenderermanager.cpp
+    src/render/entitydroppeditemrenderer.cpp
+    src/render/crosshair_renderer.cpp
+    src/render/chunkrenderer.cpp
+    src/render/blockbreakprogressrenderer.cpp
+    src/render/block_renderer.cpp
     src/playerinventory.cpp
     src/player.cpp
     src/main.cpp
-    src/linerenderer.cpp
     src/levelmanager.cpp
     src/item.cpp
     src/img.cpp
-    src/handrenderer.cpp
-    src/guiinventory.cpp
-    src/guihotbar.cpp
-    src/gui_esc_menu.cpp
+    src/gui/guiinventory.cpp
+    src/gui/guihotbar.cpp
+    src/gui/gui_esc_menu.cpp
     src/game.cpp
     src/font.cpp
-    src/entityrenderermanager.cpp
-    src/entitydroppeditemrenderer.cpp
     src/entitydroppeditem.cpp
     src/entity.cpp
-    src/crosshair_renderer.cpp
     src/crafting.cpp
     src/common.cpp
-    src/chunkrenderer.cpp
     src/chunk.cpp
     src/button.cpp
     src/blockitem.cpp
     src/blockdamagetracker.cpp
-    src/blockbreakprogressrenderer.cpp
     src/block.cpp
-    src/block_renderer.cpp
     src/audio.cpp
     src/assertr.cpp
     src/app_context.cpp

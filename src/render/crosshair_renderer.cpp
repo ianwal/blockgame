@@ -1,4 +1,4 @@
-#include "src/crosshair_renderer.h"
+#include "src/render/crosshair_renderer.h"
 
 #include "src/app_context.h"
 #include "src/block.h"

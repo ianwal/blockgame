@@ -12,7 +12,7 @@
 #include "src/input_manager.h"
 #include "src/lib/json.hpp"
 #include "src/logger.h"
-#include "src/renderer.h"
+#include "src/render/renderer.h"
 #include "src/shaders.h"
 #include "src/time.h"
 #include "src/utils.h"
@@ -706,12 +706,11 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
 
         if (!game.debug_window_on && !game.guiInventory.isOpen() && !game.escMenu.isOpen()) {
             // Update camera
-            constexpr float mouseSensitivity{ 0.7 };
             if (mouse_updated) {
-                game.player.currentCamera->setYaw(
-                    calculateNewYaw(curr_inputs.xRel, game.player.currentCamera->getYaw(), mouseSensitivity));
-                game.player.currentCamera->setPitch(
-                    calculateNewPitch(curr_inputs.yRel, game.player.currentCamera->getPitch(), mouseSensitivity));
+                game.player.currentCamera->setYaw(calculateNewYaw(curr_inputs.xRel, game.player.currentCamera->getYaw(),
+                                                                  App::get().gameOptions.mouseSensitivity));
+                game.player.currentCamera->setPitch(calculateNewPitch(
+                    curr_inputs.yRel, game.player.currentCamera->getPitch(), App::get().gameOptions.mouseSensitivity));
             }
         }
 

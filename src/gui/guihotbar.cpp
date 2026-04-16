@@ -1,4 +1,4 @@
-#include "src/guihotbar.h"
+#include "src/gui/guihotbar.h"
 
 #include "imgui.h"
 #include "src/app_context.h"

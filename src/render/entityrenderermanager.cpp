@@ -1,7 +1,7 @@
-#include "src/entityrenderermanager.h"
+#include "src/render/entityrenderermanager.h"
 
 #include "src/assertr.h"
-#include "src/entityrenderer.h"
+#include "src/render/entityrenderer.h"
 
 #include <map>
 #include <memory>

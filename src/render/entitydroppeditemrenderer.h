@@ -2,7 +2,7 @@
 
 #include "src/app_context.h"
 #include "src/entitydroppeditem.h"
-#include "src/entityrenderer.h"
+#include "src/render/entityrenderer.h"
 
 #include <GL/glew.h>
 
