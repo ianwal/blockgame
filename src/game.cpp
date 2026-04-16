@@ -422,7 +422,10 @@ void handleDropItemAction(GameContext& game)
 
 void handleChangeHotbarPosAction(GameContext& game, ChangeHotbarPosAction const& action)
 {
-    game.playerInventory.setCurrentHotbarSlot(action.index);
+    if (game.playerInventory.getCurrentHotbarSlot() != action.index) {
+        game.playerInventory.setCurrentHotbarSlot(action.index);
+        game.blockDamageTracker = BlockDamageTracker{};
+    }
     // TODO: Add change item animation where the item dips out of view and changes to the new one if the new held item
     // is different.
 }

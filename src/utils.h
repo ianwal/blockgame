@@ -28,7 +28,6 @@ namespace bg
 
 [[nodiscard]] constexpr bool isZeroVector(glm::vec3 const& v)
 {
-    // TODO: Compare approx equal with ULP.
     return v.x == 0.0f && v.y == 0.0f && v.z == 0.0f;
 }
 

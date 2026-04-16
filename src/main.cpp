@@ -209,6 +209,8 @@ extern "C" SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 
     App::set(static_cast<AppContext*>(*appstate));
 
+    App::get().mcFont = ImGui::GetIO().Fonts->AddFontFromFileTTF("assets/fonts/seven.ttf");
+
     GlobalGame::set(App::get().game.get());
 
     logInfo("Application started successfully!");
@@ -790,7 +792,6 @@ extern "C" SDL_AppResult SDL_AppIterate(void* appstate)
                                            },
                                            [&](bg::ChangeHotbarPosAction& action) {
                                                handleChangeHotbarPosAction(game, action);
-                                               game.blockDamageTracker = BlockDamageTracker{};
                                                alreadyChangedHotbarPos = true;
                                            },
                                        },

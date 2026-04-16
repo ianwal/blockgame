@@ -15,6 +15,9 @@
 #include <cstdint>
 #include <cstdlib>
 
+// Forward declare to avoid every header that includes this from including ImGui headers.
+struct ImFont;
+
 namespace bg
 {
 
@@ -43,6 +46,8 @@ struct AppContext {
     Timestamp current_time{};
     MIX_Mixer* mixer{};
     MIX_Track* track{};
+
+    ImFont* mcFont{};
 
     GameOptions gameOptions{};
 
