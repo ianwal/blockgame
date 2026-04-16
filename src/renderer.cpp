@@ -218,7 +218,7 @@ void Renderer::render(AppContext& ctx, float partialTick)
     glClearColor(0.25, 0.6, 1, 1);
 
     auto windowSize                 = getWindowSize(ctx);
-    float const fov                 = 90.0f;
+    float const fov                 = ctx.gameOptions.fov;
     float const near_clipping_plane = 0.1f;   // Keep as big as possible or you'll get precision issues.
     float const far_clipping_plane  = 100.0f; // Keep as small as possible.
     glm::vec3 cameraPos             = game.player.currentCamera->getPos(partialTick); // Camera position in world space.

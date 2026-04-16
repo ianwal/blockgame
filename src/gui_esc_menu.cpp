@@ -64,6 +64,9 @@ void GuiEscMenu::render()
         quitGame(*App::get().game);
     }
 
+    ImGui::Text("Options");
+    ImGui::SliderFloat("FOV", &App::get().gameOptions.fov, 70.0f, 110.0f, "%.0f", ImGuiSliderFlags_AlwaysClamp);
+
     ImGui::End();
 }
 

@@ -14,11 +14,6 @@ struct InventorySlot {
     std::uint32_t y{};
 };
 
-struct ItemStack {
-    ItemType item{};
-    std::uint32_t amount{};
-};
-
 class PlayerInventory
 {
 private:

@@ -17,6 +17,10 @@
 namespace bg
 {
 
+struct GameOptions {
+    float fov{ 105.0f };
+};
+
 struct AppContext {
     AppContext(SDL_Window* window);
 
@@ -32,6 +36,8 @@ struct AppContext {
     Timestamp current_time{};
     MIX_Mixer* mixer{};
     MIX_Track* track{};
+
+    GameOptions gameOptions{};
 
     ~AppContext()
     {

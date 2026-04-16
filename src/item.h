@@ -24,6 +24,11 @@ enum class ItemType : std::uint16_t {
     OAKPLANKS,
 };
 
+struct ItemStack {
+    ItemType item{};
+    std::uint32_t amount{};
+};
+
 std::string to_string(ItemType itemType);
 
 class ItemRegistry
