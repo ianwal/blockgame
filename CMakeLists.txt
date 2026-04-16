@@ -135,6 +135,7 @@ PRIVATE
     src/crafting.cpp
     src/common.cpp
     src/chunk.cpp
+    src/camera.cpp
     src/button.cpp
     src/blockitem.cpp
     src/blockdamagetracker.cpp

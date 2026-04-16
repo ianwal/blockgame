@@ -8,14 +8,7 @@ namespace bg
 {
 
 /// @brief Get the camera front vector from the yaw and pitch.
-inline glm::vec3 cameraFront(float yaw, float pitch)
-{
-    glm::vec3 direction{};
-    direction.x = glm::cos(glm::radians(yaw)) * glm::cos(glm::radians(pitch));
-    direction.y = glm::sin(glm::radians(pitch));
-    direction.z = glm::sin(glm::radians(yaw)) * glm::cos(glm::radians(pitch));
-    return glm::normalize(direction);
-}
+glm::vec3 cameraFront(float yaw, float pitch);
 
 /// Check if a point is within a 1x1 cube (inclusive).
 ///
@@ -29,60 +22,27 @@ constexpr bool isPointInCube(glm::vec3 point, glm::vec3 cubePos)
 class Camera
 {
 public:
-    Camera(glm::vec3 pos)
-    {
-        prevCameraPos = pos;
-        cameraPos     = pos;
-    }
+    Camera(glm::vec3 pos);
 
-    void updatePos(glm::vec3 newPos)
-    {
-        prevCameraPos = cameraPos;
-        cameraPos     = newPos;
-    }
+    void updatePos(glm::vec3 newPos);
 
     // Get the interpolated camera position for the current partial tick.
-    glm::vec3 getPos(float partialTick) const
-    {
-        return lerp(prevCameraPos, cameraPos, partialTick);
-    }
+    glm::vec3 getPos(float partialTick) const;
 
-    void updateFront(glm::vec3 front)
-    {
-        this->prevCameraFront = this->cameraFront;
-        this->cameraFront     = front;
-    }
+    void updateFront(glm::vec3 front);
 
     // Get the interpolated camera front for the current partial tick.
-    glm::vec3 getFront(float partialTick) const
-    {
-        return lerp(prevCameraFront, cameraFront, partialTick);
-    }
+    glm::vec3 getFront(float partialTick) const;
 
-    glm::vec3 getUp() const
-    {
-        return cameraUp;
-    }
+    glm::vec3 getUp() const;
 
-    void setYaw(float yaw)
-    {
-        this->yaw = yaw;
-    }
+    void setYaw(float yaw);
 
-    float getYaw() const
-    {
-        return yaw;
-    }
+    float getYaw() const;
 
-    void setPitch(float pitch)
-    {
-        this->pitch = pitch;
-    }
+    void setPitch(float pitch);
 
-    float getPitch() const
-    {
-        return this->pitch;
-    }
+    float getPitch() const;
 
 private:
     glm::vec3 cameraPos{ 0.0f, 0.0f, 0.0f };    // Camera position in world space.
