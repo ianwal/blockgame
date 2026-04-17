@@ -135,4 +135,10 @@ std::vector<std::unique_ptr<IEntity>> const& LevelManager::getEntities()
     return loadedEntities;
 }
 
+void LevelManager::sortEntities()
+{
+    std::stable_sort(loadedEntities.begin(), loadedEntities.end(),
+                     [](auto const& e1, auto const& e2) { return e1->isOpaque() > e2->isOpaque(); });
+}
+
 } // namespace bg

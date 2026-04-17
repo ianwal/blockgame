@@ -2,8 +2,10 @@
 
 #include "src/aabb.h"
 #include "src/audio.h"
+#include "src/blockitem.h"
 #include "src/entity.h"
 #include "src/game.h"
+#include "src/item.h"
 #include "src/logger.h"
 #include "src/utils.h"
 
@@ -151,6 +153,13 @@ void EntityDroppedItem::setDead()
 [[nodiscard]] bool EntityDroppedItem::isDead() const
 {
     return dead;
+}
+
+[[nodiscard]] bool EntityDroppedItem::isOpaque() const
+{
+    // Assume items are always transluscent and blocks are not.
+    // This will not be true if transluscent blocks are added.
+    return toBlockType(this->itemType).has_value();
 }
 
 ////////////////////////////////////////

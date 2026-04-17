@@ -44,6 +44,16 @@
       "id": 8,
       "name": "block.oakplanks",
       "prettyName": "Oak Planks"
+    },
+    {
+      "id": 9,
+      "name": "item.stick.wood",
+      "prettyName": "Stick"
+    },
+    {
+      "id": 10,
+      "name": "item.pickaxe.wood",
+      "prettyName": "Wooden Pickaxe"
     }
   ]
 }

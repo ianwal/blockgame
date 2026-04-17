@@ -39,6 +39,8 @@ public:
 
     [[nodiscard]] virtual bool isDead() const = 0;
 
+    [[nodiscard]] virtual bool isOpaque() const = 0;
+
     virtual ~IEntity() = default;
 
 private:

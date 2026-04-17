@@ -46,6 +46,9 @@ public:
 
     std::vector<std::unique_ptr<IEntity>> const& getEntities();
 
+    /// Sort entities so that opaque entities are before transparent entities.
+    void sortEntities();
+
 private:
     std::vector<OnBlockChangedObserverFn> blockChangeObservers{};
 

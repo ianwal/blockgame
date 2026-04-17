@@ -245,6 +245,7 @@ void Renderer::render(AppContext& ctx, float partialTick)
         ChunkRenderer::render(ctx, game.chunkManager, partialTick);
     }
 
+    game.levelManager.sortEntities();
     for (auto const& entity : game.levelManager.getEntities()) {
         game.entityRendererManager.renderEntity(*entity, partialTick);
     }

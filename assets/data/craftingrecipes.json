@@ -11,6 +11,34 @@
         "itemName": "block.oakplanks",
         "amount": 4
       }
+    },
+    {
+      "input": [
+        {
+          "itemName": "block.oakplanks",
+          "amount": 2
+        }
+      ],
+      "output": {
+        "itemName": "item.stick.wood",
+        "amount": 4
+      }
+    },
+    {
+      "input": [
+        {
+          "itemName": "block.oakplanks",
+          "amount": 3
+        },
+        {
+          "itemName": "item.stick.wood",
+          "amount": 2
+        }
+      ],
+      "output": {
+        "itemName": "item.pickaxe.wood",
+        "amount": 1
+      }
     }
   ]
 }

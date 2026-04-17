@@ -95,6 +95,14 @@
     {
       "name": "break.9",
       "path": "assets/textures/break/break-9.png"
+    },
+    {
+      "name": "item.stick.wood",
+      "path": "assets/textures/items/stick.png"
+    },
+    {
+      "name": "item.pickaxe.wood",
+      "path": "assets/textures/items/wood-pickaxe.png"
     }
   ]
 }

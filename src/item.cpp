@@ -17,7 +17,15 @@ std::string to_string(ItemType itemType)
 
 GLuint getItemTexture(ItemType itemType)
 {
-    return getBlockTexture(toBlockType(itemType).value());
+    if (toBlockType(itemType).has_value()) {
+        return getBlockTexture(toBlockType(itemType).value());
+    } else {
+        // TODO: Use model based lookup. This relies on the texture having the same name as the item.
+        return bg::TextureResourceManagerSingleton::get().get(std::string{ App::get().itemRegistry.getName(itemType) });
+    }
+
+    assertr(false);
+    return 0;
 }
 
 ItemType ItemRegistry::getType(std::string const& name)

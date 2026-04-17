@@ -22,6 +22,8 @@ enum class ItemType : std::uint16_t {
     OAK_LEAF,
     BEDROCK_BLOCK,
     OAKPLANKS,
+    WOOD_STICK,
+    WOODEN_PICKAXE,
 };
 
 struct ItemStack {

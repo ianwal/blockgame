@@ -87,6 +87,7 @@ GameContext::GameContext()
     // Add some items
     playerInventory.addItem(ItemStack{ ItemType::OAK_WOOD, 10 });
     playerInventory.addItem(ItemStack{ ItemType::LUCKY_BLOCK, 10 });
+    playerInventory.addItem(ItemStack{ ItemType::WOOD_STICK, 10 });
 }
 
 void pauseGame(GameContext& game)

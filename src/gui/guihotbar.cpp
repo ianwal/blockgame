@@ -31,18 +31,20 @@ void GuiHotbar::render(PlayerInventory const& playerInventory)
         if (inventorySlot.has_value()) {
             // Item icon
             // Note: uv is flipped because OpenGL convention is flipped UV, so otherwise it would be upside-down.
-            ImGui::Image((ImTextureID) (intptr_t) getBlockTexture(toBlockType(inventorySlot->item).value()), imageSize,
-                         ImVec2{ 0, 1 }, ImVec2{ 1, 0 }, ImVec4{ 1, 1, 1, 1 }, borderColor);
+            ImGui::Image((ImTextureID) (intptr_t) getItemTexture(inventorySlot->item), imageSize, ImVec2{ 0, 1 },
+                         ImVec2{ 1, 0 }, ImVec4{ 1, 1, 1, 1 }, borderColor);
 
-            ImVec2 const botRight         = ImGui::GetItemRectMax();
-            std::string const itemSizeStr = std::format("{}", inventorySlot->amount);
-            ImVec2 const textSize         = ImGui::CalcTextSize(itemSizeStr.c_str());
-            ImVec2 const textPos          = ImVec2(botRight.x - textSize.x + 4, botRight.y - textSize.y + 4);
-            // Item count text shadow
-            ImGui::GetWindowDrawList()->AddText(ImVec2{ textPos.x + 1, textPos.y + 1 }, IM_COL32(0, 0, 0, 250),
-                                                itemSizeStr.c_str());
-            // Item count text
-            ImGui::GetWindowDrawList()->AddText(textPos, IM_COL32(255, 255, 255, 255), itemSizeStr.c_str());
+            if (inventorySlot->amount > 1) {
+                ImVec2 const botRight         = ImGui::GetItemRectMax();
+                std::string const itemSizeStr = std::format("{}", inventorySlot->amount);
+                ImVec2 const textSize         = ImGui::CalcTextSize(itemSizeStr.c_str());
+                ImVec2 const textPos          = ImVec2(botRight.x - textSize.x + 4, botRight.y - textSize.y + 4);
+                // Item count text shadow
+                ImGui::GetWindowDrawList()->AddText(ImVec2{ textPos.x + 1, textPos.y + 1 }, IM_COL32(0, 0, 0, 250),
+                                                    itemSizeStr.c_str());
+                // Item count text
+                ImGui::GetWindowDrawList()->AddText(textPos, IM_COL32(255, 255, 255, 255), itemSizeStr.c_str());
+            }
         } else {
             ImGui::Image((ImTextureID) 0, imageSize, ImVec2{ 0, 1 }, ImVec2{ 1, 0 }, ImVec4{ 1, 1, 1, 1 }, borderColor);
         }

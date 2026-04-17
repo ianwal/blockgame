@@ -166,10 +166,10 @@ void EntityDroppedItemRenderer::render(IEntity const& ientity, float partialTick
             faceConfig = getBlockFaceConfig(type);
             // Face textures and their vertex ranges
             // Front face (0), Back face (1), Right face (2), Left face (3), Top face (4), Bottom face (5)
-            const GLuint faceTextures[]   = { faceConfig.front, faceConfig.back, faceConfig.right,
+            GLuint const faceTextures[]   = { faceConfig.front, faceConfig.back, faceConfig.right,
                                               faceConfig.left,  faceConfig.top,  faceConfig.bottom };
-            const int faceStartVertices[] = { 0, 6, 12, 18, 24, 30 };
-            const int verticesPerFace     = 6;
+            int const faceStartVertices[] = { 0, 6, 12, 18, 24, 30 };
+            int const verticesPerFace     = 6;
 
             for (int face = 0; face < 6; ++face) {
                 glBindTexture(GL_TEXTURE_2D, faceTextures[face]);
@@ -177,7 +177,35 @@ void EntityDroppedItemRenderer::render(IEntity const& ientity, float partialTick
             }
         }
     } else {
-        assertr(false);
+        std::map<ItemType, std::vector<InstanceData>> byType{};
+        InstanceData d{};
+        d.pos = entity.getRenderPos(partialTick);
+
+        // Billboard the rotation towards the player
+        auto const playerPos = App::get().game->player.getPos(partialTick);
+        glm::vec3 dir        = d.pos - playerPos;
+        dir.y                = 0.0f;
+        dir                  = glm::normalize(dir);
+        glm::quat q          = glm::quatLookAt(dir, glm::vec3(0, 1, 0));
+        d.rot                = glm::mat3_cast(q);
+
+        d.scale = 0.3f;
+        byType[entity.getItemType()].push_back(d);
+
+        glUseProgram(shaderId);
+        glBindVertexArray(vao);
+        glActiveTexture(GL_TEXTURE0);
+        for (auto& [type, instances] : byType) {
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+            glBindBuffer(GL_ARRAY_BUFFER, vbo);
+            glBufferData(GL_ARRAY_BUFFER, instances.size() * sizeof(InstanceData), instances.data(), GL_DYNAMIC_DRAW);
+
+            int const verticesPerFace = 6;
+            glBindTexture(GL_TEXTURE_2D, getItemTexture(entity.getItemType()));
+            glDrawArrays(GL_TRIANGLES, 0, verticesPerFace);
+            glDisable(GL_BLEND);
+        }
     }
 
     glDisable(GL_DEPTH_TEST);

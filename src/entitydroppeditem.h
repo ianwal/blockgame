@@ -31,6 +31,8 @@ public:
 
     [[nodiscard]] bool isDead() const override;
 
+    [[nodiscard]] bool isOpaque() const override;
+
     //////
 
     bool isGrounded() const;
