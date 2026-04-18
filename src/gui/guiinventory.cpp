@@ -200,6 +200,14 @@ void GuiInventory::render(PlayerInventory const& playerInventory)
                     assertr(recipeInput.amount == 0, std::format("{}", recipeInput.amount));
                 }
 
+                // Use same row for next image
+                std::int32_t const itemsPerRow{ 2 };
+                if ((recipeIndex % itemsPerRow) == 0) {
+                    ImGui::SameLine(0, 10);
+                }
+            }
+
+            if (recipe.output.amount > 1) {
                 ImVec2 const botRight         = ImGui::GetItemRectMax();
                 std::string const itemSizeStr = std::format("{}", recipe.output.amount);
                 ImVec2 const textSize         = ImGui::CalcTextSize(itemSizeStr.c_str());
@@ -209,12 +217,6 @@ void GuiInventory::render(PlayerInventory const& playerInventory)
                                                     itemSizeStr.c_str());
                 // Item count text
                 ImGui::GetWindowDrawList()->AddText(textPos, IM_COL32(255, 255, 255, 255), itemSizeStr.c_str());
-
-                // Use same row for next image
-                std::int32_t const itemsPerRow{ 2 };
-                if ((recipeIndex % itemsPerRow) == 0) {
-                    ImGui::SameLine(0, 10);
-                }
             }
             ++recipeIndex;
         }
