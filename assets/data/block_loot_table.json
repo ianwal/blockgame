@@ -1,0 +1,26 @@
+{
+  "block.stone": {
+    "dropItemName": "block.cobble"
+  },
+  "block.cobble": {
+    "dropItemName": "block.cobble"
+  },
+  "block.grass": {
+    "dropItemName": "block.dirt"
+  },
+  "block.dirt": {
+    "dropItemName": "block.dirt"
+  },
+  "block.lucky": {
+    "dropItemName": "block.lucky"
+  },
+  "block.oak": {
+    "dropItemName": "block.oak"
+  },
+  "block.oakleaf": {
+    "dropItemName": "block.oakleaf"
+  },
+  "block.oakplanks": {
+    "dropItemName": "block.oakplanks"
+  }
+}

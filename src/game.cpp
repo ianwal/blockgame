@@ -249,10 +249,11 @@ void handleSwingAction(GameContext& game)
 
     if (shouldDropItemOnBreak(block.type, (heldItemResult.has_value() ? std::optional<ItemType>{ heldItemResult->item }
                                                                       : std::nullopt))) {
-        auto droppedItemTypeResult = toItemType(block.type);
+
+        auto droppedItemTypeResult = App::get().blockLootTableRegistry.getItemDrop(blockName);
         if (droppedItemTypeResult.has_value()) {
             auto droppedItem = std::make_unique<EntityDroppedItem>();
-            droppedItem->setItemType(droppedItemTypeResult.value());
+            droppedItem->setItemType(App::get().itemRegistry.getType(*droppedItemTypeResult));
             droppedItem->updatePos(block.pos);
             static std::mt19937 gen{ std::random_device{}() };
             static std::uniform_int_distribution<int> dist(0, 10);

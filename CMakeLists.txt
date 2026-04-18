@@ -138,6 +138,7 @@ PRIVATE
     src/camera.cpp
     src/button.cpp
     src/blocktagregistry.cpp
+    src/blockloottableregistry.cpp
     src/blockitem.cpp
     src/blockdamagetracker.cpp
     src/block.cpp

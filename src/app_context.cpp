@@ -91,6 +91,15 @@ AppContext::AppContext(SDL_Window* window) : window{ window }
         // TODO: Check if the loaded block name actually exists?
     }
 
+    {
+        std::ifstream blockLootTableData{ "assets/data/block_loot_table.json" };
+        nlohmann::json const blockLootTable = nlohmann::json::parse(blockLootTableData);
+        for (auto const& [blockName, dropTable] : blockLootTable.items()) {
+            blockLootTableRegistry.load(blockName, dropTable["dropItemName"]);
+        }
+        // TODO: Check if the loaded block name and item name actually exists?
+    }
+
     std::mt19937_64 gen{ std::random_device{}() };
     std::uniform_int_distribution<std::uint64_t> dist(0, std::numeric_limits<std::uint64_t>::max());
     std::uint64_t const worldSeed = dist(gen);

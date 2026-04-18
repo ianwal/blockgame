@@ -3,6 +3,7 @@
 #include "src/audio.h"
 #include "src/block.h"
 #include "src/blockitem.h"
+#include "src/blockloottableregistry.h"
 #include "src/blocktagregistry.h"
 #include "src/common.h"
 #include "src/crafting.h"
@@ -39,6 +40,7 @@ struct AppContext {
 
     AudioResourceManager audioResourceManager{};
     BlockItemRegistry blockItemRegistry{};
+    BlockLootTableRegistry blockLootTableRegistry{};
     BlockTagRegistry blockTagRegistry{};
     BlockRegistry blockRegistry{};
     ItemRegistry itemRegistry{};
