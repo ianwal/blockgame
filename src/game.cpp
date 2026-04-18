@@ -88,6 +88,8 @@ GameContext::GameContext()
     playerInventory.addItem(ItemStack{ ItemType::OAK_WOOD, 10 });
     playerInventory.addItem(ItemStack{ ItemType::LUCKY_BLOCK, 10 });
     playerInventory.addItem(ItemStack{ ItemType::WOOD_STICK, 10 });
+    playerInventory.addItem(ItemStack{ ItemType::STONE_BLOCK, 10 });
+    playerInventory.addItem(ItemStack{ ItemType::WOODEN_PICKAXE, 1 });
 }
 
 void pauseGame(GameContext& game)
@@ -181,6 +183,25 @@ std::optional<ivec3> getBlockPosToPlaceAt(ChunkManager const& chunkManager, Play
     return toBlockPos(glm::vec3{ pos.x, pos.y, pos.z } + normal);
 }
 
+static bool shouldDropItemOnBreak(BlockType blockType, std::optional<ItemType> const& heldItem)
+{
+    auto const& blockTagRegistry = App::get().blockTagRegistry;
+    auto const& blockRegistry    = App::get().blockRegistry;
+    auto const blockName         = blockRegistry.getName(blockType);
+
+    static std::vector<ItemType> const woodTools{ ItemType::WOODEN_PICKAXE };
+    if (blockTagRegistry.hasTag(blockName, "requires.wood")) {
+        if (!heldItem.has_value()) {
+            return false;
+        }
+
+        // TODO: If tool tier is > this one, then it should also drop.
+        return std::ranges::contains(woodTools, heldItem.value());
+    }
+
+    return true;
+}
+
 void handleSwingAction(GameContext& game)
 {
     std::optional<Block> blockResult = getBlockPlayerIsLookingAt(game.chunkManager, game.player);
@@ -189,10 +210,11 @@ void handleSwingAction(GameContext& game)
     }
 
     Block const block      = blockResult.value();
+    auto const blockName   = App::get().blockRegistry.getName(block.type);
     float const baseDamage = 1.0f;
 
     auto const heldItemResult = game.playerInventory.getCurrentHeldItem();
-    float const destroySpeed  = [&block, &heldItemResult]() {
+    float const destroySpeed  = [&block, &blockName, &heldItemResult]() {
         if (!heldItemResult.has_value()) {
             return 1.0f;
         }
@@ -205,7 +227,6 @@ void handleSwingAction(GameContext& game)
             return 1.0f;
         }
 
-        auto const blockName = App::get().blockRegistry.getName(block.type);
         if (App::get().blockTagRegistry.hasTag(blockName, tooltag)) {
             // TODO: Add tiers for the tools. For now just make it 2x faster if it's the preferred tool.
             return 2.0f;
@@ -226,21 +247,24 @@ void handleSwingAction(GameContext& game)
         return;
     }
 
-    auto droppedItemTypeResult = toItemType(block.type);
-    if (droppedItemTypeResult.has_value()) {
-        auto droppedItem = std::make_unique<EntityDroppedItem>();
-        droppedItem->setItemType(droppedItemTypeResult.value());
-        droppedItem->updatePos(block.pos);
-        static std::mt19937 gen{ std::random_device{}() };
-        static std::uniform_int_distribution<int> dist(0, 10);
-        static std::uniform_int_distribution<int> distPositive(0, 1);
-        float const randomX = 0.1 * dist(gen) * (distPositive(gen) ? 1.0f : -1.0f);
-        float const randomY = 0.01 * dist(gen); // Always goes up.
-        float const randomZ = 0.1 * dist(gen) * (distPositive(gen) ? 1.0f : -1.0f);
-        auto vel            = glm::normalize(glm::vec3{ randomX, 0.0f, randomZ }) * 0.1f;
-        vel += glm::vec3{ 0.0f, randomY, 0.0f };
-        droppedItem->setVelocity(vel);
-        game.levelManager.addEntity(std::move(droppedItem));
+    if (shouldDropItemOnBreak(block.type, (heldItemResult.has_value() ? std::optional<ItemType>{ heldItemResult->item }
+                                                                      : std::nullopt))) {
+        auto droppedItemTypeResult = toItemType(block.type);
+        if (droppedItemTypeResult.has_value()) {
+            auto droppedItem = std::make_unique<EntityDroppedItem>();
+            droppedItem->setItemType(droppedItemTypeResult.value());
+            droppedItem->updatePos(block.pos);
+            static std::mt19937 gen{ std::random_device{}() };
+            static std::uniform_int_distribution<int> dist(0, 10);
+            static std::uniform_int_distribution<int> distPositive(0, 1);
+            float const randomX = 0.1 * dist(gen) * (distPositive(gen) ? 1.0f : -1.0f);
+            float const randomY = 0.01 * dist(gen); // Always goes up.
+            float const randomZ = 0.1 * dist(gen) * (distPositive(gen) ? 1.0f : -1.0f);
+            auto vel            = glm::normalize(glm::vec3{ randomX, 0.0f, randomZ }) * 0.1f;
+            vel += glm::vec3{ 0.0f, randomY, 0.0f };
+            droppedItem->setVelocity(vel);
+            game.levelManager.addEntity(std::move(droppedItem));
+        }
     }
 }
 

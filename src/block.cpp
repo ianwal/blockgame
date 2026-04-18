@@ -183,7 +183,7 @@ std::string getBlockBreakSoundName(BlockType type)
     return name;
 }
 
-BlockType BlockRegistry::getType(std::string const& name)
+BlockType BlockRegistry::getType(std::string const& name) const
 {
     for (auto const& [blockType, blockName] : names) {
         if (name == blockName) {
@@ -194,7 +194,7 @@ BlockType BlockRegistry::getType(std::string const& name)
     return {};
 }
 
-std::string BlockRegistry::getName(BlockType type)
+std::string BlockRegistry::getName(BlockType type) const
 {
     for (auto const& [blockType, blockName] : names) {
         if (type == blockType) {
@@ -206,7 +206,7 @@ std::string BlockRegistry::getName(BlockType type)
     return {};
 }
 
-std::string BlockRegistry::getPrettyName(BlockType type)
+std::string BlockRegistry::getPrettyName(BlockType type) const
 {
     for (auto const& [blockType, blockPrettyName] : prettyNames) {
         if (type == blockType) {
@@ -218,7 +218,7 @@ std::string BlockRegistry::getPrettyName(BlockType type)
     return {};
 }
 
-std::vector<std::string> BlockRegistry::getBreakSounds(BlockType type)
+std::vector<std::string> BlockRegistry::getBreakSounds(BlockType type) const
 {
     for (auto const& [blockType, blockBreakSounds] : breakSounds) {
         if (type == blockType) {
@@ -230,7 +230,7 @@ std::vector<std::string> BlockRegistry::getBreakSounds(BlockType type)
     return {};
 }
 
-float BlockRegistry::getHardness(BlockType type)
+float BlockRegistry::getHardness(BlockType type) const
 {
     for (auto const& [blockType, blockHardness] : hardnesses) {
         if (type == blockType) {

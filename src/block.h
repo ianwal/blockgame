@@ -114,19 +114,19 @@ class BlockRegistry
 {
 public:
     /// Get the block type by name.
-    BlockType getType(std::string const& name);
+    BlockType getType(std::string const& name) const;
 
     /// Get the block name by block type.
-    std::string getName(BlockType type);
+    std::string getName(BlockType type) const;
 
     /// Get the block pretty name.
-    std::string getPrettyName(BlockType type);
+    std::string getPrettyName(BlockType type) const;
 
     /// Get the block hardness.
-    float getHardness(BlockType type);
+    float getHardness(BlockType type) const;
 
     /// Get the block break sounds.
-    std::vector<std::string> getBreakSounds(BlockType type);
+    std::vector<std::string> getBreakSounds(BlockType type) const;
 
     /// Load the block data.
     BlockRegistry& load(std::string const& name, std::uint16_t id, std::string const& prettyName,

@@ -1,0 +1,6 @@
+{
+  "requires.wood" : [
+    "block.stone",
+    "block.cobble"
+  ]
+}

@@ -80,6 +80,17 @@ AppContext::AppContext(SDL_Window* window) : window{ window }
         // TODO: Check if the loaded block name actually exists?
     }
 
+    {
+        std::ifstream toolTierRequirementsData{ "assets/data/tags/blocks/tool_tier_requirements.json" };
+        nlohmann::json const toolTierRequirements = nlohmann::json::parse(toolTierRequirementsData);
+        for (auto const& [toolTier, blockNames] : toolTierRequirements.items()) {
+            for (auto const& blockName : blockNames) {
+                blockTagRegistry.addTags(blockName, std::vector<std::string>{ toolTier });
+            }
+        }
+        // TODO: Check if the loaded block name actually exists?
+    }
+
     std::mt19937_64 gen{ std::random_device{}() };
     std::uniform_int_distribution<std::uint64_t> dist(0, std::numeric_limits<std::uint64_t>::max());
     std::uint64_t const worldSeed = dist(gen);
