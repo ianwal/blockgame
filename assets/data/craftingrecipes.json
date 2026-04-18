@@ -39,6 +39,86 @@
         "itemName": "item.pickaxe.wood",
         "amount": 1
       }
+    },
+    {
+      "input": [
+        {
+          "itemName": "block.oakplanks",
+          "amount": 3
+        },
+        {
+          "itemName": "item.stick.wood",
+          "amount": 2
+        }
+      ],
+      "output": {
+        "itemName": "item.axe.wood",
+        "amount": 1
+      }
+    },
+    {
+      "input": [
+        {
+          "itemName": "block.oakplanks",
+          "amount": 3
+        },
+        {
+          "itemName": "item.stick.wood",
+          "amount": 1
+        }
+      ],
+      "output": {
+        "itemName": "item.shovel.wood",
+        "amount": 1
+      }
+    },
+    {
+      "input": [
+        {
+          "itemName": "block.cobble",
+          "amount": 3
+        },
+        {
+          "itemName": "item.stick.wood",
+          "amount": 2
+        }
+      ],
+      "output": {
+        "itemName": "item.pickaxe.stone",
+        "amount": 1
+      }
+    },
+    {
+      "input": [
+        {
+          "itemName": "block.cobble",
+          "amount": 3
+        },
+        {
+          "itemName": "item.stick.wood",
+          "amount": 2
+        }
+      ],
+      "output": {
+        "itemName": "item.axe.stone",
+        "amount": 1
+      }
+    },
+    {
+      "input": [
+        {
+          "itemName": "block.cobble",
+          "amount": 1
+        },
+        {
+          "itemName": "item.stick.wood",
+          "amount": 2
+        }
+      ],
+      "output": {
+        "itemName": "item.shovel.stone",
+        "amount": 1
+      }
     }
   ]
 }

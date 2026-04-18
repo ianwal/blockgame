@@ -81,6 +81,24 @@ AppContext::AppContext(SDL_Window* window) : window{ window }
     }
 
     {
+        std::ifstream blockTagsData{ "assets/data/tags/blocks/mineable/axe.json" };
+        nlohmann::json const blockTags = nlohmann::json::parse(blockTagsData);
+        for (auto const& block : blockTags["mineable.axe"]) {
+            blockTagRegistry.addTags(block, std::vector<std::string>{ "mineable.axe" });
+        }
+        // TODO: Check if the loaded block name actually exists?
+    }
+
+    {
+        std::ifstream blockTagsData{ "assets/data/tags/blocks/mineable/shovel.json" };
+        nlohmann::json const blockTags = nlohmann::json::parse(blockTagsData);
+        for (auto const& block : blockTags["mineable.shovel"]) {
+            blockTagRegistry.addTags(block, std::vector<std::string>{ "mineable.shovel" });
+        }
+        // TODO: Check if the loaded block name actually exists?
+    }
+
+    {
         std::ifstream toolTierRequirementsData{ "assets/data/tags/blocks/tool_tier_requirements.json" };
         nlohmann::json const toolTierRequirements = nlohmann::json::parse(toolTierRequirementsData);
         for (auto const& [toolTier, blockNames] : toolTierRequirements.items()) {

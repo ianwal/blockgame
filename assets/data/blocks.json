@@ -41,7 +41,7 @@
         "block.dig.grass.3",
         "block.dig.grass.4"
       ],
-      "hardness": 1.0
+      "hardness": 1.2
     },
     {
       "id": 4,
@@ -53,7 +53,7 @@
         "block.dig.dirt.3",
         "block.dig.dirt.4"
       ],
-      "hardness": 1.0
+      "hardness": 1.2
     },
     {
       "id": 5,

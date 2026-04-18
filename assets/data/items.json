@@ -54,6 +54,31 @@
       "id": 10,
       "name": "item.pickaxe.wood",
       "prettyName": "Wooden Pickaxe"
+    },
+    {
+      "id": 11,
+      "name": "item.axe.wood",
+      "prettyName": "Wooden Axe"
+    },
+    {
+      "id": 12,
+      "name": "item.shovel.wood",
+      "prettyName": "Wooden Shovel"
+    },
+    {
+      "id": 13,
+      "name": "item.pickaxe.stone",
+      "prettyName": "Stone Pickaxe"
+    },
+    {
+      "id": 14,
+      "name": "item.axe.stone",
+      "prettyName": "Stone Axe"
+    },
+    {
+      "id": 15,
+      "name": "item.shovel.stone",
+      "prettyName": "Stone Shovel"
     }
   ]
 }

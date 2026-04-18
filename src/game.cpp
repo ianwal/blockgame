@@ -85,11 +85,11 @@ GameContext::GameContext()
     player.updatePos(glm::vec3{ 0, 100, 0 });
 
     // Add some items
+    playerInventory.addItem(ItemStack{ ItemType::STONE_PICKAXE, 1 });
+    playerInventory.addItem(ItemStack{ ItemType::STONE_AXE, 1 });
+    playerInventory.addItem(ItemStack{ ItemType::STONE_SHOVEL, 1 });
     playerInventory.addItem(ItemStack{ ItemType::OAK_WOOD, 10 });
-    playerInventory.addItem(ItemStack{ ItemType::LUCKY_BLOCK, 10 });
-    playerInventory.addItem(ItemStack{ ItemType::WOOD_STICK, 10 });
     playerInventory.addItem(ItemStack{ ItemType::STONE_BLOCK, 10 });
-    playerInventory.addItem(ItemStack{ ItemType::WOODEN_PICKAXE, 1 });
 }
 
 void pauseGame(GameContext& game)
@@ -189,14 +189,19 @@ static bool shouldDropItemOnBreak(BlockType blockType, std::optional<ItemType> c
     auto const& blockRegistry    = App::get().blockRegistry;
     auto const blockName         = blockRegistry.getName(blockType);
 
-    static std::vector<ItemType> const woodTools{ ItemType::WOODEN_PICKAXE };
     if (blockTagRegistry.hasTag(blockName, "requires.wood")) {
         if (!heldItem.has_value()) {
             return false;
         }
 
-        // TODO: If tool tier is > this one, then it should also drop.
-        return std::ranges::contains(woodTools, heldItem.value());
+        return std::ranges::contains(woodTools, heldItem.value()) ||
+               std::ranges::contains(stoneTools, heldItem.value());
+    } else if (blockTagRegistry.hasTag(blockName, "requires.stone")) {
+        if (!heldItem.has_value()) {
+            return false;
+        }
+
+        return std::ranges::contains(stoneTools, heldItem.value());
     }
 
     return true;
@@ -214,26 +219,41 @@ void handleSwingAction(GameContext& game)
     float const baseDamage = 1.0f;
 
     auto const heldItemResult = game.playerInventory.getCurrentHeldItem();
-    float const destroySpeed  = [&block, &blockName, &heldItemResult]() {
+    float destroySpeed        = [&block, &blockName, &heldItemResult]() {
         if (!heldItemResult.has_value()) {
             return 1.0f;
         }
         ItemType const heldItem = heldItemResult->item;
         std::string tooltag{};
         // TODO: Associate tool type with items and lookup tool tag using that.
-        if (heldItem == ItemType::WOODEN_PICKAXE) {
+        if (std::ranges::contains(pickaxes, heldItem)) {
             tooltag = "mineable.pickaxe";
+        } else if (std::ranges::contains(axes, heldItem)) {
+            tooltag = "mineable.axe";
+        } else if (std::ranges::contains(shovels, heldItem)) {
+            tooltag = "mineable.shovel";
         } else {
             return 1.0f;
         }
 
         if (App::get().blockTagRegistry.hasTag(blockName, tooltag)) {
             // TODO: Add tiers for the tools. For now just make it 2x faster if it's the preferred tool.
-            return 2.0f;
+            if (std::ranges::contains(woodTools, heldItem)) {
+                return 1.5f;
+            } else if (std::ranges::contains(stoneTools, heldItem)) {
+                return 2.0f;
+            } else {
+                // Unknown tool tier.
+                assertr(false, tooltag);
+            }
         }
 
         return 1.0f;
     }();
+
+    if (!game.player.isGrounded()) {
+        destroySpeed = destroySpeed * 0.2f;
+    }
 
     game.blockDamageTracker.damageBlock(block, baseDamage * destroySpeed, game.ingameTickCounter);
 

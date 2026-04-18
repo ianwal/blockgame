@@ -103,6 +103,26 @@
     {
       "name": "item.pickaxe.wood",
       "path": "assets/textures/items/wood-pickaxe.png"
+    },
+    {
+      "name": "item.axe.wood",
+      "path": "assets/textures/items/wood-axe.png"
+    },
+    {
+      "name": "item.shovel.wood",
+      "path": "assets/textures/items/wood-shovel.png"
+    },
+    {
+      "name": "item.pickaxe.stone",
+      "path": "assets/textures/items/stone-pickaxe.png"
+    },
+    {
+      "name": "item.axe.stone",
+      "path": "assets/textures/items/stone-axe.png"
+    },
+    {
+      "name": "item.shovel.stone",
+      "path": "assets/textures/items/stone-shovel.png"
     }
   ]
 }

@@ -82,7 +82,7 @@ void GuiInventory::render(PlayerInventory const& playerInventory)
     ImGui::Begin("Inventory", nullptr,
                  ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove);
     for (std::int32_t i = static_cast<std::int32_t>(inventory.size()) - 1; i > -1; --i) {
-        for (std::int32_t j = 0; j < static_cast<std::int32_t>(inventory[i].size()) - 1; ++j) {
+        for (std::int32_t j = 0; j < static_cast<std::int32_t>(inventory[i].size()); ++j) {
             auto const& inventorySlot = inventory[i][j];
             if (inventorySlot.has_value()) {
                 // Item icon
@@ -106,7 +106,7 @@ void GuiInventory::render(PlayerInventory const& playerInventory)
             }
 
             // Use same row for next image
-            if (j < static_cast<std::int32_t>(inventory[i].size()) - 2) {
+            if (j < static_cast<std::int32_t>(inventory[i].size()) - 1) {
                 ImGui::SameLine(0, 10);
             }
         }
