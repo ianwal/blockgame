@@ -1,0 +1,7 @@
+{
+  "mineable.pickaxe": [
+    "block.stone",
+    "block.cobble",
+    "block.lucky"
+  ]
+}

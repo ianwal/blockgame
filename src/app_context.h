@@ -3,6 +3,7 @@
 #include "src/audio.h"
 #include "src/block.h"
 #include "src/blockitem.h"
+#include "src/blocktagregistry.h"
 #include "src/common.h"
 #include "src/crafting.h"
 #include "src/game.h"
@@ -38,6 +39,7 @@ struct AppContext {
 
     AudioResourceManager audioResourceManager{};
     BlockItemRegistry blockItemRegistry{};
+    BlockTagRegistry blockTagRegistry{};
     BlockRegistry blockRegistry{};
     ItemRegistry itemRegistry{};
     CraftingRecipeRegistry craftingRecipeRegistry{};

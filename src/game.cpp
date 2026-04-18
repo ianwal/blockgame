@@ -189,8 +189,32 @@ void handleSwingAction(GameContext& game)
     }
 
     Block const block      = blockResult.value();
-    float const handDamage = 1.0f;
-    game.blockDamageTracker.damageBlock(block, handDamage, game.ingameTickCounter);
+    float const baseDamage = 1.0f;
+
+    auto const heldItemResult = game.playerInventory.getCurrentHeldItem();
+    float const destroySpeed  = [&block, &heldItemResult]() {
+        if (!heldItemResult.has_value()) {
+            return 1.0f;
+        }
+        ItemType const heldItem = heldItemResult->item;
+        std::string tooltag{};
+        // TODO: Associate tool type with items and lookup tool tag using that.
+        if (heldItem == ItemType::WOODEN_PICKAXE) {
+            tooltag = "mineable.pickaxe";
+        } else {
+            return 1.0f;
+        }
+
+        auto const blockName = App::get().blockRegistry.getName(block.type);
+        if (App::get().blockTagRegistry.hasTag(blockName, tooltag)) {
+            // TODO: Add tiers for the tools. For now just make it 2x faster if it's the preferred tool.
+            return 2.0f;
+        }
+
+        return 1.0f;
+    }();
+
+    game.blockDamageTracker.damageBlock(block, baseDamage * destroySpeed, game.ingameTickCounter);
 
     if (game.blockDamageTracker.getDamageProgress() < 1.0f) {
         // Block not broken.

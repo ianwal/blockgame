@@ -71,6 +71,15 @@ AppContext::AppContext(SDL_Window* window) : window{ window }
         }
     }
 
+    {
+        std::ifstream blockTagsData{ "assets/data/tags/blocks/mineable/pickaxe.json" };
+        nlohmann::json const blockTags = nlohmann::json::parse(blockTagsData);
+        for (auto const& block : blockTags["mineable.pickaxe"]) {
+            blockTagRegistry.addTags(block, std::vector<std::string>{ "mineable.pickaxe" });
+        }
+        // TODO: Check if the loaded block name actually exists?
+    }
+
     std::mt19937_64 gen{ std::random_device{}() };
     std::uniform_int_distribution<std::uint64_t> dist(0, std::numeric_limits<std::uint64_t>::max());
     std::uint64_t const worldSeed = dist(gen);
